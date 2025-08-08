@@ -1,0 +1,1 @@
+mysql -u root -p < scripts/init-db.sql

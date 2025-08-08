@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalhes do Imóvel - Base Imóveis</title>
+    <link rel="stylesheet" href="/assets/css/style.css">
+    <link rel="stylesheet" href="/assets/css/detalhe-imovel.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lightgallery@2.1.3/css/lightgallery-bundle.min.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="main-header">
+        <div class="container">
+            <div class="logo">
+                <h1><a href="/">Base Imóveis</a></h1>
+            </div>
+            <nav class="main-nav">
+                <ul>
+                    <li><a href="/">Home</a></li>
+                    <li><a href="/imoveis">Imóveis</a></li>
+                    <li><a href="/sobre">Sobre</a></li>
+                    <li><a href="/contato">Contato</a></li>
+                    <li><a href="/private/login" class="btn-login">Área do Corretor</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb">
+        <div class="container">
+            <ul>
+                <li><a href="/">Home</a></li>
+                <li><a href="/imoveis">Imóveis</a></li>
+                <li id="breadcrumb-property-title">Detalhes</li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="property-detail-page">
+        <div class="container">
+            <!-- Cabeçalho do Imóvel -->
+            <header class="property-header">
+                <h1 id="property-title">Apartamento Luxuoso com 3 Quartos</h1>
+                <div class="property-meta">
+                    <span id="property-address"><i class="fas fa-map-marker-alt"></i> Av. Paulista, 1000 - São Paulo/SP</span>
+                    <span id="property-code"><i class="fas fa-barcode"></i> Código: <span>ABC123</span></span>
+                </div>
+                <div class="property-price" id="property-price">
+                    <span class="price">R$ 1.250.000</span>
+                    <span class="cond">ou 12x de R$ 104.166 sem juros</span>
+                </div>
+            </header>
+
+            <!-- Galeria de Fotos -->
+            <section class="property-gallery" id="property-gallery">
+                <div class="main-image">
+                    <img src="/assets/images/property-placeholder.jpg" alt="Imóvel" id="main-property-image">
+                </div>
+                <div class="thumbnail-container" id="thumbnail-container">
+                    <!-- Miniaturas serão geradas via JavaScript -->
+                </div>
+            </section>
+
+            <!-- Detalhes e Características -->
+            <section class="property-details">
+                <div class="details-column">
+                    <h2><i class="fas fa-info-circle"></i> Detalhes do Imóvel</h2>
+                    <ul class="features-list" id="property-features">
+                        <!-- Preenchido via JavaScript -->
+                    </ul>
+
+                    <div class="property-description">
+                        <h3><i class="fas fa-align-left"></i> Descrição</h3>
+                        <p id="property-description">Este apartamento luxuoso na Avenida Paulista oferece 130m² de área privativa, 3 dormitórios sendo 1 suíte master, 2 vagas de garagem, e acabamentos de alto padrão. Localizado no 15º andar com vista deslumbrante para a cidade, o edifício conta com piscina, academia, salão de festas e portaria 24h.</p>
+                    </div>
+                </div>
+
+                <div class="features-column">
+                    <h2><i class="fas fa-home"></i> Características</h2>
+                    <div class="features-grid" id="property-characteristics">
+                        <!-- Preenchido via JavaScript -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Localização -->
+            <section class="property-location">
+                <h2><i class="fas fa-map-marked-alt"></i> Localização</h2>
+                <div class="location-container">
+                    <div class="location-map" id="property-map">
+                        <!-- Mapa será inserido via JavaScript -->
+                    </div>
+                    <div class="location-info">
+                        <h3>Bairro: <span id="property-neighborhood">Bela Vista</span></h3>
+                        <p id="property-full-address">Av. Paulista, 1000 - Apartamento 1501, São Paulo - SP, 01310-100</p>
+                        
+                        <h3>Próximidades:</h3>
+                        <ul class="nearby-list" id="property-nearby">
+                            <li><i class="fas fa-subway"></i> Metrô Trianon-MASP - 300m</li>
+                            <li><i class="fas fa-shopping-bag"></i> Shopping Paulista - 500m</li>
+                            <li><i class="fas fa-school"></i> Escola Britânica - 800m</li>
+                            <li><i class="fas fa-hospital"></i> Hospital Sírio-Libanês - 1km</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Formulário de Interesse -->
+            <section class="interest-form">
+                <h2><i class="fas fa-envelope"></i> Tenho Interesse</h2>
+                <form id="interestForm" class="contact-form">
+                    <input type="hidden" id="property-id" name="property_id" value="">
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="interest-name">Nome Completo*</label>
+                            <input type="text" id="interest-name" name="name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="interest-email">E-mail*</label>
+                            <input type="email" id="interest-email" name="email" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="interest-phone">Telefone*</label>
+                            <input type="tel" id="interest-phone" name="phone" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="interest-best-time">Melhor Horário</label>
+                            <select id="interest-best-time" name="best_time">
+                                <option value="">Qualquer horário</option>
+                                <option value="manha">Manhã (8h-12h)</option>
+                                <option value="tarde">Tarde (13h-18h)</option>
+                                <option value="noite">Noite (18h-21h)</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="interest-message">Mensagem</label>
+                        <textarea id="interest-message" name="message" rows="4">Gostaria de mais informações sobre este imóvel e agendar uma visita.</textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-paper-plane"></i> Enviar Interesse
+                        </button>
+                    </div>
+                </form>
+            </section>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="main-footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>Base Imóveis</h4>
+                    <p>Há mais de 10 anos ajudando você a encontrar o imóvel perfeito.</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Links Rápidos</h4>
+                    <ul>
+                        <li><a href="/">Home</a></li>
+                        <li><a href="/imoveis">Imóveis</a></li>
+                        <li><a href="/sobre">Sobre</a></li>
+                        <li><a href="/contato">Contato</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Contato</h4>
+                    <p><i class="fas fa-map-marker-alt"></i> Av. Paulista, 1000 - São Paulo/SP</p>
+                    <p><i class="fas fa-phone-alt"></i> (11) 1234-5678</p>
+                    <p><i class="fas fa-envelope"></i> contato@baseimoveis.com.br</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2023 Base Imóveis. Todos os direitos reservados.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/lightgallery@2.1.3/lightgallery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lightgallery@2.1.3/plugins/zoom/lg-zoom.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lightgallery@2.1.3/plugins/fullscreen/lg-fullscreen.min.js"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=SUA_CHAVE_API&callback=initMap&libraries=places" async defer></script>
+    <script src="/assets/js/detalhe-imovel.js"></script>
+</body>
+</html>
