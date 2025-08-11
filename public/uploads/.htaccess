@@ -1,0 +1,8 @@
+# public/uploads/.htaccess
+<FilesMatch "\.(php|php5|phtml)$">
+    Order Allow,Deny
+    Deny from all
+</FilesMatch>
+
+# Desativa listagem de arquivos
+Options -Indexes

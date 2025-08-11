@@ -1,0 +1,188 @@
+<?php
+require_once '../includes/auth.php';
+require_once '../../includes/db.php';
+require_once '../../includes/functions.php';
+require_login();
+
+$error = '';
+$success = '';
+
+// Processar formulário
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    try {
+        // Validar dados
+        $titulo = trim($_POST['titulo'] ?? '');
+        $descricao = trim($_POST['descricao'] ?? '');
+        $tipo = trim($_POST['tipo'] ?? '');
+        $cidade = trim($_POST['cidade'] ?? '');
+        $bairro = trim($_POST['bairro'] ?? '');
+        $endereco = trim($_POST['endereco'] ?? '');
+        $preco = (float) str_replace(['.', ','], ['', '.'], $_POST['preco'] ?? '0');
+        $area = (float) str_replace(',', '.', $_POST['area'] ?? '0');
+        $quartos = (int) ($_POST['quartos'] ?? 0);
+        $banheiros = (int) ($_POST['banheiros'] ?? 0);
+        $garagem = (int) ($_POST['garagem'] ?? 0);
+        $destaque = isset($_POST['destaque']) ? 1 : 0;
+        
+        // Validações básicas
+        if (empty($titulo) || empty($descricao) || empty($tipo) || empty($cidade) || empty($bairro) || $preco <= 0) {
+            throw new Exception('Preencha todos os campos obrigatórios');
+        }
+        
+        // Processar upload de imagens
+        $imagens = [];
+        $uploadDir = '../../public/uploads/';
+        
+        if (!empty($_FILES['imagens']['name'][0])) {
+            foreach ($_FILES['imagens']['tmp_name'] as $key => $tmp_name) {
+                if ($_FILES['imagens']['error'][$key] === UPLOAD_ERR_OK) {
+                    $fileName = upload_imagem([
+                        'name' => $_FILES['imagens']['name'][$key],
+                        'type' => $_FILES['imagens']['type'][$key],
+                        'tmp_name' => $_FILES['imagens']['tmp_name'][$key],
+                        'error' => $_FILES['imagens']['error'][$key],
+                        'size' => $_FILES['imagens']['size'][$key]
+                    ], $uploadDir, 1200, 800);
+                    
+                    if ($fileName) {
+                        $imagens[] = $fileName;
+                    }
+                }
+            }
+            
+            if (empty($imagens)) {
+                throw new Exception('Nenhuma imagem válida foi enviada');
+            }
+        } else {
+            throw new Exception('Pelo menos uma imagem é obrigatória');
+        }
+        
+        $imagens_str = implode(',', $imagens);
+        
+        // Inserir no banco de dados
+        $result = db_query(
+            "INSERT INTO imoveis (titulo, descricao, tipo, cidade, bairro, endereco, preco, area, quartos, banheiros, garagem, imagens, destaque) 
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            [$titulo, $descricao, $tipo, $cidade, $bairro, $endereco, $preco, $area, $quartos, $banheiros, $garagem, $imagens_str, $destaque]
+        );
+        
+        if ($result) {
+            $success = 'Imóvel cadastrado com sucesso!';
+            // Limpar formulário
+            $_POST = [];
+        } else {
+            throw new Exception('Erro ao cadastrar imóvel no banco de dados');
+        }
+    } catch (Exception $e) {
+        $error = $e->getMessage();
+        
+        // Excluir imagens que foram enviadas em caso de erro
+        if (!empty($imagens)) {
+            foreach ($imagens as $imagem) {
+                @unlink($uploadDir . $imagem);
+            }
+        }
+    }
+}
+
+// Incluir header administrativo
+include '../includes/admin-header.php';
+?>
+
+<div class="admin-content">
+    <h1>Adicionar Novo Imóvel</h1>
+    
+    <?php if ($error): ?>
+        <div class="alert alert-danger"><?= $error ?></div>
+    <?php endif; ?>
+    
+    <?php if ($success): ?>
+        <div class="alert alert-success"><?= $success ?></div>
+    <?php endif; ?>
+    
+    <form action="" method="post" enctype="multipart/form-data" class="imovel-form">
+        <div class="form-row">
+            <div class="form-group">
+                <label for="titulo">Título *</label>
+                <input type="text" id="titulo" name="titulo" value="<?= htmlspecialchars($_POST['titulo'] ?? '') ?>" required>
+            </div>
+            <div class="form-group">
+                <label for="tipo">Tipo *</label>
+                <select id="tipo" name="tipo" required>
+                    <option value="">Selecione</option>
+                    <option value="casa" <?= ($_POST['tipo'] ?? '') === 'casa' ? 'selected' : '' ?>>Casa</option>
+                    <option value="apartamento" <?= ($_POST['tipo'] ?? '') === 'apartamento' ? 'selected' : '' ?>>Apartamento</option>
+                    <option value="terreno" <?= ($_POST['tipo'] ?? '') === 'terreno' ? 'selected' : '' ?>>Terreno</option>
+                    <option value="comercial" <?= ($_POST['tipo'] ?? '') === 'comercial' ? 'selected' : '' ?>>Comercial</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label for="descricao">Descrição *</label>
+            <textarea id="descricao" name="descricao" rows="5" required><?= htmlspecialchars($_POST['descricao'] ?? '') ?></textarea>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label for="cidade">Cidade *</label>
+                <input type="text" id="cidade" name="cidade" value="<?= htmlspecialchars($_POST['cidade'] ?? '') ?>" required>
+            </div>
+            <div class="form-group">
+                <label for="bairro">Bairro *</label>
+                <input type="text" id="bairro" name="bairro" value="<?= htmlspecialchars($_POST['bairro'] ?? '') ?>" required>
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label for="endereco">Endereço</label>
+            <input type="text" id="endereco" name="endereco" value="<?= htmlspecialchars($_POST['endereco'] ?? '') ?>">
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label for="preco">Preço (R$) *</label>
+                <input type="text" id="preco" name="preco" value="<?= htmlspecialchars($_POST['preco'] ?? '') ?>" required class="preco-input">
+            </div>
+            <div class="form-group">
+                <label for="area">Área (m²)</label>
+                <input type="text" id="area" name="area" value="<?= htmlspecialchars($_POST['area'] ?? '') ?>" class="area-input">
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label for="quartos">Quartos</label>
+                <input type="number" id="quartos" name="quartos" min="0" value="<?= htmlspecialchars($_POST['quartos'] ?? '0') ?>">
+            </div>
+            <div class="form-group">
+                <label for="banheiros">Banheiros</label>
+                <input type="number" id="banheiros" name="banheiros" min="0" value="<?= htmlspecialchars($_POST['banheiros'] ?? '0') ?>">
+            </div>
+            <div class="form-group">
+                <label for="garagem">Vagas</label>
+                <input type="number" id="garagem" name="garagem" min="0" value="<?= htmlspecialchars($_POST['garagem'] ?? '0') ?>">
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label>
+                <input type="checkbox" name="destaque" value="1" <?= ($_POST['destaque'] ?? 0) ? 'checked' : '' ?>>
+                Marcar como destaque
+            </label>
+        </div>
+        
+        <div class="form-group">
+            <label for="imagens">Imagens *</label>
+            <input type="file" id="imagens" name="imagens[]" multiple accept="image/*" required>
+            <small class="form-text">Selecione várias imagens (máx. 10, primeira imagem será a principal)</small>
+        </div>
+        
+        <button type="submit" class="btn">Salvar Imóvel</button>
+    </form>
+</div>
+
+<?php
+// Incluir footer administrativo
+include '../includes/admin-footer.php';
+?>
