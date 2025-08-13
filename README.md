@@ -1,8 +1,8 @@
-text
 corretora-base/
 ├── public/                     # Arquivos públicos
 │   ├── assets/
-│   │   ├── css/style.css ✔
+│   │   ├── css/admin.css
+|   |   |-style.css ✔
 │   │   ├── images/
 │   │   ├── js/ ✔
 |   |   ├── main.js ✔
@@ -11,7 +11,7 @@ corretora-base/
 |   |   └── mobile-menu.js ✔
 |   |   |
 │   │   └── fonts/
-│   ├── uploads/ ✔  
+│   ├── uploads/ .htaccess ✔  
 |                     # Imagens dos imóveis
 ├── private/                    # Área administrativa
 │   ├── admin/✔

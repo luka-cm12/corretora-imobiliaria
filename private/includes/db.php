@@ -1,8 +1,11 @@
 <?php
+// Defina como true em desenvolvimento e false em produção
+define('DEV_ENVIRONMENT', true);
+
 // Configurações do banco de dados
 define('DB_HOST', 'localhost');     // Endereço do servidor MySQL
 define('DB_USER', 'usuario_corretora'); // Usuário do banco de dados
-define('DB_PASS', 'SenhaSegura123!');   // Senha do banco de dados
+define('DB_PASS', '');   // Senha do banco de dados
 define('DB_NAME', 'corretora_base');    // Nome do banco de dados
 
 // Tentativa de conexão
