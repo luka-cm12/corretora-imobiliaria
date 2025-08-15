@@ -1,5 +1,5 @@
 <?php
-require_once 'includes/db.php';
+require_once 'private/includes/db.php';
 
 // Verificar se o ID do imóvel foi passado
 if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {

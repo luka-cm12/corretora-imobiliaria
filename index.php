@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Corretora Base | Imóveis de Qualidade</title>
-    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="public/assets/css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
@@ -27,7 +27,7 @@
     <header class="header">
         <div class="container">
             <div class="logo">
-                <h1>Corretora<span>Base</span></h1>
+                <img src="public/assets/images/CLAUDIA C..png" alt="Claudia Colombo - Corretora de Imóveis" class="logo-img">
             </div>
             <nav class="main-nav">
                 <ul>
@@ -230,9 +230,9 @@
     </footer>
 
     <!-- No final do <body> -->
-    <script src="assets/js/main.js"></script>
-    <script src="assets/js/lightbox.js"></script>
-    <script src="assets/js/form-validation.js"></script>
-    <script src="assets/js/mobile-menu.js"></script>
+    <script src="public/assets/js/main.js"></script>
+    <script src="public/assets/js/lightbox.js"></script>
+    <script src="public/assets/js/form-validation.js"></script>
+    <script src="public/assets/js/mobile-menu.js"></script>
 </body>
 </html>
