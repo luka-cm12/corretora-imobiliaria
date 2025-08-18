@@ -14,7 +14,7 @@ $page_title = isset($page_title) ? $page_title : 'Corretora Base | Imóveis de Q
     <link rel="icon" href="assets/images/favicon.ico" type="image/x-icon">
     
     <!-- CSS -->
-    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="public/assets/css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     
     <!-- Open Graph / Social Media -->
@@ -22,7 +22,7 @@ $page_title = isset($page_title) ? $page_title : 'Corretora Base | Imóveis de Q
     <meta property="og:description" content="<?= isset($meta_description) ? htmlspecialchars($meta_description) : 'Encontre o imóvel dos seus sonhos com a Corretora Base' ?>">
     <meta property="og:type" content="website">
     <meta property="og:url" content="<?= 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] ?>">
-    <meta property="og:image" content="assets/images/og-image.jpg">
+    <meta property="og:image" content="public/assets/images/og-image.jpg">
 </head>
 <body>
     <!-- Top Bar -->

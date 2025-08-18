@@ -1,6 +1,6 @@
 <?php
-require_once 'includes/db.php';
-require_once 'includes/functions.php';
+require_once 'private/includes/db.php';
+require_once 'private/includes/functions.php';
 
 // Definir variáveis para o header
 $page_title = 'Imóveis Disponíveis | Corretora Base';
@@ -93,7 +93,7 @@ $bairros = !empty($filtros['cidade']) ?
     [];
 
 // Incluir o header
-include 'includes/header.php';
+include 'private/includes/header.php';
 ?>
 
 <!-- Page Header -->
@@ -249,5 +249,5 @@ include 'includes/header.php';
 
 <?php
 // Incluir o footer
-include 'includes/footer.php';
+include 'private/includes/footer.php';
 ?>

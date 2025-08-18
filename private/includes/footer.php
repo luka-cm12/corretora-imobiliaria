@@ -38,9 +38,9 @@
     </footer>
 
     <!-- Scripts -->
-    <script src="assets/js/main.js"></script>
+    <script src="public/assets/js/main.js"></script>
     <?php if (isset($load_lightbox) && $load_lightbox): ?>
-        <script src="assets/js/lightbox.js"></script>
+        <script src="public/assets/js/lightbox.js"></script>
     <?php endif; ?>
     
     <!-- Scripts adicionais específicos por página -->

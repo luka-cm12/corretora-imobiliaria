@@ -1,5 +1,5 @@
 <?php
-require_once 'includes/db.php';
+require_once 'private/includes/db.php';
 
 // Buscar dados da corretora (exemplo com dados estáticos, pode ser adaptado para BD)
 $sobre_nos = [
@@ -50,7 +50,7 @@ $estatisticas = [
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sobre Nós | Corretora Base</title>
-    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="public/assets/css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
@@ -120,7 +120,7 @@ $estatisticas = [
             </div>
             
             <div class="about-image">
-                <img src="assets/images/about.jpg" alt="Sobre a Corretora Base">
+                <img src="public/assets/images/about.jpg" alt="Sobre a Corretora Base">
             </div>
         </div>
     </section>
@@ -286,7 +286,7 @@ $estatisticas = [
         </div>
     </footer>
 
-    <script src="assets/js/main.js"></script>
+    <script src="public/assets/js/main.js"></script>
     <script>
         // Animação de contagem para estatísticas
         const counters = document.querySelectorAll('.counter');

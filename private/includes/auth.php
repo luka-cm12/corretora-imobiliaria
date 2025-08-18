@@ -13,7 +13,7 @@ function is_logged_in() {
 // Redirecionar para login se não estiver autenticado
 function require_login() {
     if (!is_logged_in()) {
-        header('Location: /admin/login.php');
+        header('Location: private/admin/login.php');
         exit;
     }
 }
@@ -46,6 +46,6 @@ function attempt_login($username, $password) {
 function logout() {
     $_SESSION = [];
     session_destroy();
-    header('Location: /admin/login.php');
+    header('Location: private/admin/login.php');
     exit;
 }

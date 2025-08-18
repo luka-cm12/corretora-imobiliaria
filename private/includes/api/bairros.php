@@ -1,6 +1,6 @@
 <?php
 header('Content-Type: application/json');
-require_once '../includes/db.php';
+require_once 'private/includes/db.php';
 
 if (!isset($_GET['cidade']) || empty($_GET['cidade'])) {
     echo json_encode([]);

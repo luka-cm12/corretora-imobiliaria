@@ -1,5 +1,5 @@
 <?php
-require_once 'includes/db.php';
+require_once 'private/includes/db.php';
 
 // Processar formulário de contato
 $mensagem_enviada = false;
@@ -77,7 +77,7 @@ if (isset($_GET['imovel'])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Contato | Corretora Base</title>
-    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="public/assets/css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
@@ -291,7 +291,7 @@ if (isset($_GET['imovel'])) {
         </div>
     </footer>
 
-    <script src="assets/js/main.js"></script>
+    <script src="public/assets/js/main.js"></script>
     <script>
         // Máscara para telefone
         document.getElementById('telefone').addEventListener('input', function (e) {

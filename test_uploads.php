@@ -1,5 +1,5 @@
 <?php
-$upload_dir = __DIR__ . '/public/uploads/';
+$upload_dir = __DIR__ . 'public/uploads';
 $test_file = $upload_dir . 'test_permission.txt';
 
 // Verifica se a pasta existe

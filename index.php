@@ -27,7 +27,7 @@
     <header class="header">
         <div class="container">
             <div class="logo">
-                <img src="public/assets/images/CLAUDIA C..png" alt="Claudia Colombo - Corretora de Imóveis" class="logo-img">
+                <img src="public/assets/images/" alt="Claudia Colombo - Corretora de Imóveis" class="logo-img">
             </div>
             <nav class="main-nav">
                 <ul>
