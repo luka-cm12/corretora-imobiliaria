@@ -11,12 +11,19 @@
 require_once 'config.php';
 require_once 'funcoes_seguranca.php';
 
+// Inclui arquivo com a função verificaPermissao, se necessário
+if (!function_exists('verificaPermissao')) {
+    require_once 'funcoes_permissoes.php'; // ajuste o nome do arquivo conforme necessário
+}
+
 // Verifica se o usuário é administrador
+require_once 'funcoes_login.php'; // ajuste o nome do arquivo conforme necessário
 verificaLogin();
 verificaPermissao('admin');
 
 // Conexão com o banco de dados
 require_once 'conexao.php';
+require_once 'funcoes_log.php'; // ajuste o nome do arquivo conforme necessário
 
 // Variáveis para controle da interface
 $pagina_atual = 'configuracoes';
@@ -94,7 +101,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 // Inclui o cabeçalho
-include 'admin-header.php';
+include 'private/includes/admin-header.php';
 ?>
 
 <div class="container-fluid">
@@ -395,7 +402,7 @@ include 'admin-header.php';
     </div>
 </div>
 
-<?php include 'admin-footer.php'; ?>
+<?php include 'private/includes/admin-footer.php'; ?>
 
 <!-- Scripts específicos para esta página -->
 <script>

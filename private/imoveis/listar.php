@@ -1,9 +1,9 @@
 <?php
-require_once '../../includes/auth.php';
+require_once 'private/includes/auth.php';
 require_login();
 
-require_once '../../includes/db.php';
-require_once '../../includes/functions.php';
+require_once 'private/includes/db.php';
+require_once 'private/includes/functions.php';
 
 // Paginação
 $por_pagina = 10;
@@ -37,7 +37,7 @@ $types .= 'ii';
 $imoveis = db_query($query, $params, $types)->fetch_all(MYSQLI_ASSOC);
 
 $page_title = 'Listar Imóveis | Corretora Base';
-include '../includes/header.php';
+include 'private/includes/header.php';
 ?>
 
 <div class="admin-container">
@@ -135,4 +135,4 @@ include '../includes/header.php';
     </div>
 </div>
 
-<?php include '../includes/footer.php'; ?>
+<?php include 'private/includes/footer.php'; ?>

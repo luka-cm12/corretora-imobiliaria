@@ -1,7 +1,7 @@
 <?php
-require_once '../includes/auth.php';
-require_once '../../includes/db.php';
-require_once '../../includes/functions.php';
+require_once 'private/includes/auth.php';
+require_once 'private/includes/db.php';
+require_once 'private/includes/functions.php';
 require_login();
 
 $error = '';
@@ -31,7 +31,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         // Processar upload de imagens
         $imagens = [];
-        $uploadDir = '../../public/uploads/';
+        $uploadDir = 'public/uploads/';
         
         if (!empty($_FILES['imagens']['name'][0])) {
             foreach ($_FILES['imagens']['tmp_name'] as $key => $tmp_name) {
@@ -86,7 +86,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 // Incluir header administrativo
-include '../includes/admin-header.php';
+include 'private/includes/admin-header.php';
 ?>
 
 <div class="admin-content">
@@ -184,5 +184,5 @@ include '../includes/admin-header.php';
 
 <?php
 // Incluir footer administrativo
-include '../includes/admin-footer.php';
+include 'private/includes/admin-footer.php';
 ?>

@@ -1,7 +1,12 @@
 <?php
-require_once '../includes/auth.php';
-require_once '../../includes/db.php';
+require_once 'private/includes/auth.php';
+require_once 'private/includes/db.php';
 require_login();
+
+// Função para formatar datas no formato brasileiro
+function formatar_data($data) {
+    return date('d/m/Y H:i', strtotime($data));
+}
 
 // Estatísticas para o dashboard
 $total_imoveis = db_query("SELECT COUNT(*) as total FROM imoveis")->fetch_assoc()['total'];
@@ -16,7 +21,7 @@ $ultimos_imoveis = db_query("SELECT id, titulo, cidade, created_at FROM imoveis 
 $ultimos_contatos = db_query("SELECT nome, email, assunto, created_at FROM contatos ORDER BY created_at DESC LIMIT 5")->fetch_all(MYSQLI_ASSOC);
 
 // Incluir header administrativo
-include '../includes/admin-header.php';
+include 'private/includes/admin-header.php';
 ?>
 
 <div class="admin-content">
@@ -103,5 +108,5 @@ include '../includes/admin-header.php';
 
 <?php
 // Incluir footer administrativo
-include '../includes/admin-footer.php';
+include 'private/includes/admin-footer.php';
 ?>

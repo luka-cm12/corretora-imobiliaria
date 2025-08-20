@@ -6,6 +6,9 @@
  * @version 1.1
  * @date 2023-11-20
  */
+
+// Inclui o arquivo de configuração onde BASE_URL é definido
+require_once __DIR__ . '/../config/config.php';
 ?>
 
 <footer class="admin-footer">

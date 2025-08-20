@@ -7,6 +7,9 @@
  * @date 2023-11-20
  */
 
+// Defina a BASE_URL conforme necessário
+define('BASE_URL', '/corretora-imobiliaria/');
+
 // Inicia a sessão se ainda não estiver iniciada
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
@@ -16,6 +19,15 @@ if (session_status() === PHP_SESSION_NONE) {
 if (isset($_SESSION['usuario_id'])) {
     require_once 'conexao.php';
     require_once 'log_acoes.php';
+    
+    // Define a função registrarLog caso não esteja definida
+    if (!function_exists('registrarLog')) {
+        function registrarLog($usuario_id, $acao, $descricao) {
+            global $conn;
+            $stmt = $conn->prepare("INSERT INTO logs (usuario_id, acao, descricao, data) VALUES (?, ?, ?, NOW())");
+            $stmt->execute([$usuario_id, $acao, $descricao]);
+        }
+    }
     
     $usuario_id = $_SESSION['usuario_id'];
     $session_id = session_id();

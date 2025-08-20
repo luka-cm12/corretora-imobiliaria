@@ -131,7 +131,7 @@ $query = "SELECT id, nome, email, perfil, status, DATE_FORMAT(criado_em, '%d/%m/
 $usuarios = $conn->query($query)->fetchAll(PDO::FETCH_ASSOC);
 
 // Inclui o cabeçalho
-include 'admin-header.php';
+include 'private/includes/admin-header.php';
 ?>
 
 <div class="container-fluid">
@@ -269,7 +269,7 @@ include 'admin-header.php';
     </div>
 </div>
 
-<?php include 'admin-footer.php'; ?>
+<?php include 'private/includes/admin-footer.php'; ?>
 
 <!-- Scripts específicos para esta página -->
 <script>

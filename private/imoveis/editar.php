@@ -1,7 +1,7 @@
 <?php
-require_once '../includes/auth.php';
-require_once '../../includes/db.php';
-require_once '../../includes/functions.php';
+require_once 'private/includes/auth.php';
+require_once 'private/includes/db.php';
+require_once 'private/includes/functions.php';
 require_login();
 
 // Verificar se o ID do imóvel foi passado
@@ -52,7 +52,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         
         // Processar upload de novas imagens
-        $uploadDir = '../../public/uploads/';
+        $uploadDir = 'public/uploads/';
         $novas_imagens = [];
         $imagens_para_manter = $_POST['imagens_existentes'] ?? [];
         $imagens_removidas = [];
@@ -154,13 +154,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 // Incluir header administrativo
-include '../includes/admin-header.php';
+include 'private/includes/admin-header.php';
 ?>
 
 <div class="admin-content">
     <h1>Editar Imóvel</h1>
     <p class="breadcrumb">
-        <a href="../admin/dashboard.php">Dashboard</a> /
+        <a href="private/admin/dashboard.php">Dashboard</a> /
         <a href="listar.php">Imóveis</a> /
         <span>Editar</span>
     </p>
@@ -250,7 +250,7 @@ include '../includes/admin-header.php';
             <div class="imagens-grid">
                 <?php foreach ($imovel['imagens'] as $index => $imagem): ?>
                     <div class="imagem-item">
-                        <img src="../../public/uploads/<?= htmlspecialchars($imagem) ?>" alt="Imagem <?= $index + 1 ?> do imóvel">
+                        <img src="public/uploads/<?= htmlspecialchars($imagem) ?>" alt="Imagem <?= $index + 1 ?> do imóvel">
                         <label class="checkbox-container">
                             <input type="checkbox" name="imagens_existentes[]" value="<?= htmlspecialchars($imagem) ?>" checked>
                             <span class="checkmark"></span>
@@ -276,5 +276,5 @@ include '../includes/admin-header.php';
 
 <?php
 // Incluir footer administrativo
-include '../includes/admin-footer.php';
+include 'private/includes/admin-footer.php';
 ?>
