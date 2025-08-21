@@ -4,8 +4,8 @@ define('DEV_ENVIRONMENT', true);
 
 // Configurações do banco de dados
 define('DB_HOST', '127.0.0.1');     // Endereço do servidor MySQL
-define('DB_USER', 'usuario_corretora'); // Usuário do banco de dados
-define('DB_PASS', 'corretora123');   // Senha do banco de dados
+define('DB_USER', 'root'); // Usuário do banco de dados
+define('DB_PASS', 'NovaSenha');   // Senha do banco de dados
 define('DB_NAME', 'corretora_base');    // Nome do banco de dados
 
 // Tentativa de conexão
