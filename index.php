@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Corretora Base | Imóveis de Qualidade</title>
+    <title>Corretora Claudia | Imóveis de Qualidade</title>
     <link rel="stylesheet" href="public/assets/css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
@@ -129,7 +129,7 @@
     <section class="about-section">
         <div class="container">
             <div class="about-content">
-                <h2 class="section-title">Sobre a Corretora Base</h2>
+                <h2 class="section-title">Sobre a Corretora Claudia</h2>
                 <p>Somos uma corretora de imóveis comprometida em oferecer o melhor serviço para nossos clientes. Com anos de experiência no mercado, ajudamos você a encontrar o imóvel perfeito ou a vender seu patrimônio com segurança e tranquilidade.</p>
                 <p>Nossa equipe é formada por profissionais qualificados que entendem as necessidades de cada cliente e trabalham para superar expectativas.</p>
                 <a href="sobre.php" class="btn">Saiba Mais</a>
@@ -171,7 +171,7 @@
             <div class="testimonials-slider">
                 <!-- Testimonial slides would go here -->
                 <div class="testimonial">
-                    <p>"A Corretora Base foi fundamental para eu encontrar meu apartamento dos sonhos. Profissionais extremamente competentes e atenciosos."</p>
+                    <p>"A Corretora Claudia foi fundamental para eu encontrar meu apartamento dos sonhos. Profissionais extremamente competentes e atenciosos."</p>
                     <div class="client-info">
                         <h4>João Silva</h4>
                         <p>Comprador</p>
@@ -195,7 +195,7 @@
         <div class="container">
             <div class="footer-grid">
                 <div class="footer-col">
-                    <h3>Corretora Base</h3>
+                    <h3>Corretora Claudia</h3>
                     <p>Oferecendo soluções imobiliárias completas com transparência e profissionalismo.</p>
                     <div class="footer-social">
                         <a href="#"><i class="fab fa-facebook-f"></i></a>
@@ -224,7 +224,7 @@
         </div>
         <div class="footer-bottom">
             <div class="container">
-                <p>&copy; 2023 Corretora Base. Todos os direitos reservados.</p>
+                <p>&copy; 2023 Corretora Claudia. Todos os direitos reservados.</p>
             </div>
         </div>
     </footer>
