@@ -8,20 +8,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
-    <!-- Top Bar -->
-    <div class="top-bar">
-        <div class="container">
-            <div class="contact-info">
-                <span><i class="fas fa-phone"></i> (XX) XXXX-XXXX</span>
-                <span><i class="fas fa-envelope"></i> contato@corretorabase.com.br</span>
-            </div>
-            <div class="social-icons">
-                <a href="#"><i class="fab fa-facebook-f"></i></a>
-                <a href="#"><i class="fab fa-instagram"></i></a>
-                <a href="#"><i class="fab fa-whatsapp"></i></a>
-            </div>
-        </div>
-    </div>
 
     <!-- Header -->
     <header class="header">
@@ -162,24 +148,7 @@
                 </div>
             </div>
         </div>
-    </section>
-
-    <!-- Testimonials -->
-    <section class="testimonials">
-        <div class="container">
-            <h2 class="section-title">O que dizem nossos clientes</h2>
-            <div class="testimonials-slider">
-                <!-- Testimonial slides would go here -->
-                <div class="testimonial">
-                    <p>"A Corretora Claudia foi fundamental para eu encontrar meu apartamento dos sonhos. Profissionais extremamente competentes e atenciosos."</p>
-                    <div class="client-info">
-                        <h4>João Silva</h4>
-                        <p>Comprador</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
+    </section>>
 
     <!-- Contact CTA -->
     <section class="contact-cta">
