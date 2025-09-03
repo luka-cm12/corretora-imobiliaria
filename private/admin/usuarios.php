@@ -11,6 +11,41 @@
 require_once 'config.php';
 require_once 'funcoes_seguranca.php';
 
+// Define verificaCsrfToken se não existir
+if (!function_exists('verificaCsrfToken')) {
+    function verificaCsrfToken() {
+        if (!isset($_POST['csrf_token']) && !isset($_GET['csrf_token'])) {
+            header('Location: acesso-negado.php');
+            exit;
+        }
+        $token = isset($_POST['csrf_token']) ? $_POST['csrf_token'] : $_GET['csrf_token'];
+        if (!isset($_SESSION['csrf_token']) || $token !== $_SESSION['csrf_token']) {
+            header('Location: acesso-negado.php');
+            exit;
+        }
+    }
+}
+
+// Define verificaLogin se não existir
+if (!function_exists('verificaLogin')) {
+    function verificaLogin() {
+        if (!isset($_SESSION['usuario_id'])) {
+            header('Location: login.php');
+            exit;
+        }
+    }
+}
+
+// Define verificaPermissao se não existir
+if (!function_exists('verificaPermissao')) {
+    function verificaPermissao($perfil) {
+        if (!isset($_SESSION['usuario_perfil']) || $_SESSION['usuario_perfil'] !== $perfil) {
+            header('Location: acesso-negado.php');
+            exit;
+        }
+    }
+}
+
 // Verifica se o usuário é administrador
 verificaLogin();
 verificaPermissao('admin');

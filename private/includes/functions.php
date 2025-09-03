@@ -3,6 +3,8 @@
  * Funções úteis para o sistema
  */
 
+use PHPMailer\PHPMailer\PHPMailer;
+
 /**
  * Formata o preço para exibição
  * 
@@ -160,7 +162,16 @@ function breadcrumb() {
 function enviar_email($para, $assunto, $mensagem, $de_nome = 'Corretora Base', $de_email = 'contato@corretorabase.com.br') {
     require_once 'PHPMailer/PHPMailerAutoload.php';
     
-    $mail = new PHPMailer;
+    // Adiciona o namespace PHPMailer se necessário
+    if (!class_exists('PHPMailer\PHPMailer\PHPMailer')) {
+        // Se estiver usando Composer, inclua o autoload
+        if (file_exists(__DIR__ . '/../../vendor/autoload.php')) {
+            require_once __DIR__ . '/../../vendor/autoload.php';
+        }
+    }
+
+    // Usa o namespace PHPMailer
+    $mail = new PHPMailer\PHPMailer\PHPMailer();
     $mail->isSMTP();
     $mail->Host = 'smtp.seuservidor.com';
     $mail->SMTPAuth = true;

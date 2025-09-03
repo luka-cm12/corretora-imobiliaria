@@ -22,8 +22,8 @@ $perfil_usuario = $_SESSION['usuario_tipo'] ?? 'corretor';
     <!-- Logo e Nome da Corretora -->
     <div class="sidebar-header">
         <a href="<?php echo BASE_URL; ?>admin/dashboard.php" class="d-flex align-items-center">
-            <img src="<?php echo BASE_URL; ?>assets/images/logo-admin.png" alt="<?php echo NOME_CORRETORA; ?>" class="sidebar-logo">
-            <span class="sidebar-brand"><?php echo NOME_CORRETORA; ?></span>
+            <img src="<?php echo BASE_URL; ?>assets/images/logo-admin.png" alt="<?php echo defined('NOME_CORRETORA') ? NOME_CORRETORA : 'Corretora'; ?>" class="sidebar-logo">
+            <span class="sidebar-brand"><?php echo defined('NOME_CORRETORA') ? NOME_CORRETORA : 'Corretora'; ?></span>
         </a>
     </div>
 
