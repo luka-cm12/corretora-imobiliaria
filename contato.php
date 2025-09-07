@@ -69,6 +69,9 @@ $imovel_interesse = '';
 if (isset($_GET['imovel'])) {
     $imovel_interesse = urldecode($_GET['imovel']);
 }
+
+// Incluir o header
+include 'private/includes/header.php';
 ?>
 
 <!DOCTYPE html>
@@ -81,40 +84,7 @@ if (isset($_GET['imovel'])) {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
-    <!-- Top Bar -->
-    <div class="top-bar">
-        <div class="container">
-            <div class="contact-info">
-                <span><i class="fas fa-phone"></i> (XX) XXXX-XXXX</span>
-                <span><i class="fas fa-envelope"></i> contato@corretorabase.com.br</span>
-            </div>
-            <div class="social-icons">
-                <a href="#"><i class="fab fa-facebook-f"></i></a>
-                <a href="#"><i class="fab fa-instagram"></i></a>
-                <a href="#"><i class="fab fa-whatsapp"></i></a>
-            </div>
-        </div>
-    </div>
 
-    <!-- Header -->
-    <header class="header">
-        <div class="container">
-            <div class="logo">
-                <h1>Corretora<span>Base</span></h1>
-            </div>
-            <nav class="main-nav">
-                <ul>
-                    <li><a href="index.php">Home</a></li>
-                    <li><a href="sobre.php">Sobre</a></li>
-                    <li><a href="imoveis.php">Imóveis</a></li>
-                    <li class="active"><a href="contato.php">Contato</a></li>
-                </ul>
-            </nav>
-            <div class="mobile-menu">
-                <i class="fas fa-bars"></i>
-            </div>
-        </div>
-    </header>
 
     <!-- Page Header -->
     <section class="page-header">
@@ -252,45 +222,10 @@ if (isset($_GET['imovel'])) {
         </div>
     </section>
 
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="container">
-            <div class="footer-grid">
-                <div class="footer-col">
-                    <h3>Corretora Base</h3>
-                    <p>Oferecendo soluções imobiliárias completas com transparência e profissionalismo.</p>
-                    <div class="footer-social">
-                        <a href="#"><i class="fab fa-facebook-f"></i></a>
-                        <a href="#"><i class="fab fa-instagram"></i></a>
-                        <a href="#"><i class="fab fa-whatsapp"></i></a>
-                    </div>
-                </div>
-                <div class="footer-col">
-                    <h3>Links Rápidos</h3>
-                    <ul>
-                        <li><a href="index.php">Home</a></li>
-                        <li><a href="sobre.php">Sobre</a></li>
-                        <li><a href="imoveis.php">Imóveis</a></li>
-                        <li><a href="contato.php">Contato</a></li>
-                    </ul>
-                </div>
-                <div class="footer-col">
-                    <h3>Contato</h3>
-                    <ul class="contact-info">
-                        <li><i class="fas fa-map-marker-alt"></i> Rua Exemplo, 123 - Centro</li>
-                        <li><i class="fas fa-phone"></i> (XX) XXXX-XXXX</li>
-                        <li><i class="fas fa-envelope"></i> contato@corretorabase.com.br</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-        <div class="footer-bottom">
-            <div class="container">
-                <p>&copy; 2023 Corretora Base. Todos os direitos reservados.</p>
-            </div>
-        </div>
-    </footer>
-
+    <?php
+        // Incluir o footer
+        include 'private/includes/footer.php';
+    ?>
     <script src="public/assets/js/main.js"></script>
     <script>
         // Máscara para telefone

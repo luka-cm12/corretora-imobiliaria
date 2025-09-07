@@ -1,208 +1,308 @@
+<?php
+require_once 'private/includes/db.php';
+require_once 'private/includes/functions.php';
 
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Corretora Claudia | Imóveis de Qualidade</title>
-    <link rel="stylesheet" href="public/assets/css/style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-</head>
-<body>
+// Buscar imóveis em destaque para o carrossel
+$carousel_imoveis = db_query("
+    SELECT * FROM imoveis 
+    WHERE destaque = 1 
+    ORDER BY created_at DESC 
+    LIMIT 6
+");
 
-    <!-- Header -->
-    <header class="header">
-        <div class="container">
-            <div class="logo">
-                <img src="public/assets/images/" alt="Claudia Colombo - Corretora de Imóveis" class="logo-img">
-            </div>
-            <nav class="main-nav">
-                <ul>
-                    <li><a href="index.php">Home</a></li>
-                    <li><a href="sobre.php">Sobre</a></li>
-                    <li><a href="imoveis.php">Imóveis</a></li>
-                    <li><a href="contato.php">Contato</a></li>
+// Buscar totais para estatísticas
+$total_imoveis = db_query("SELECT COUNT(*) as total FROM imoveis")->fetch_assoc()['total'];
+$total_vendas = db_query("SELECT COUNT(*) as total FROM imoveis WHERE tipo IN ('casa', 'apartamento', 'terreno')")->fetch_assoc()['total'];
+$total_locacoes = db_query("SELECT COUNT(*) as total FROM imoveis WHERE tipo = 'comercial'")->fetch_assoc()['total'];
+
+// Buscar cidades disponíveis para o filtro
+$cidades = db_query("SELECT DISTINCT cidade FROM imoveis ORDER BY cidade LIMIT 5")->fetch_all(MYSQLI_ASSOC);
+
+// Definir variáveis para o header
+$page_title = 'Corretora Claudia | Imóveis de Qualidade';
+$meta_description = 'Encontre o imóvel dos seus sonhos com a Corretora Claudia. Oferecemos as melhores opções de casas, apartamentos e imóveis comerciais.';
+$load_lightbox = true;
+$load_slick = true; // Para carregar o Slick Carousel
+
+// Incluir o header
+include 'private/includes/header.php';
+?>
+
+<!-- Carrossel no estilo Attuale -->
+<section class="home-slider">
+    <div class="container-full">
+        <div class="slick-custom-wrapper">
+            <div class="slick-main slick-initialized slick-slider slick-dotted">
+                <div class="slick-list draggable">
+                    <div class="slick-track">
+                        <?php if ($carousel_imoveis && $carousel_imoveis->num_rows > 0): ?>
+                            <?php $slide_index = 0; ?>
+                            <?php while ($imovel = $carousel_imoveis->fetch_assoc()): 
+                                $imagens = explode(',', $imovel['imagens']);
+                                $firstImage = !empty($imagens) ? 'public/uploads/' . $imagens[0] : 'public/assets/images/default-property.jpg';
+                            ?>
+                                <div class="slick-slide STARTED slick-animate-in" data-slick-index="<?= $slide_index ?>" aria-hidden="true" tabindex="-1" role="tabpanel">
+                                    <a href="imovel-detalhes.php?id=<?= $imovel['id'] ?>" class="slick-main__banner" style="background-image: url('<?= $firstImage ?>');">
+                                        <div class="slick-main__text">
+                                            <div class="slick-main__opacity"></div>
+                                            <div class="slick-main__container">
+                                                <div class="slick-main__flex-group">
+                                                    <?php if (!empty($imovel['titulo'])): ?>
+                                                        <h2 class="slick-main__title"><?= htmlspecialchars($imovel['titulo']) ?></h2>
+                                                    <?php endif; ?>
+                                                    <?php if (!empty($imovel['bairro'])): ?>
+                                                        <span class="slick-main__simple-text"><?= htmlspecialchars($imovel['bairro']) ?></span>
+                                                    <?php endif; ?>
+                                                </div>
+                                                <span class="btn-custom btn-custom--dark">
+                                                    <div class="btn-custom__grey">
+                                                        <span class="btn-custom__grey-line btn-custom__grey-line--top-bottom"></span>
+                                                        <span class="btn-custom__grey-line btn-custom__grey-line--left"></span>
+                                                        <span class="btn-custom__grey-line btn-custom__grey-line--right"></span>
+                                                    </div>
+                                                    <div class="btn-custom__grey btn-custom__grey--green">
+                                                        <span class="btn-custom__grey-line btn-custom__grey-line--top-bottom"></span>
+                                                        <span class="btn-custom__grey-line btn-custom__grey-line--left"></span>
+                                                        <span class="btn-custom__grey-line btn-custom__grey-line--right"></span>
+                                                    </div>
+                                                    Saiba Mais
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </a>
+                                </div>
+                                <?php $slide_index++; ?>
+                            <?php endwhile; ?>
+                        <?php else: ?>
+                            <!-- Slide padrão caso não haja imóveis -->
+                            <div class="slick-slide STARTED slick-animate-in slick-current slick-active" data-slick-index="0" aria-hidden="false" tabindex="-1" role="tabpanel">
+                                <div class="slick-main__banner" style="background-image: url('public/assets/images/hero-bg.jpg');">
+                                    <div class="slick-main__text">
+                                        <div class="slick-main__container">
+                                            <div class="slick-main__flex-group">
+                                                <h2 class="slick-main__title">Encontre o imóvel dos seus sonhos</h2>
+                                                <span class="slick-main__simple-text">Oferecemos as melhores opções para você e sua família</span>
+                                            </div>
+                                            <a href="imoveis.php" class="btn-custom btn-custom--dark">
+                                                <div class="btn-custom__grey">
+                                                    <span class="btn-custom__grey-line btn-custom__grey-line--top-bottom"></span>
+                                                    <span class="btn-custom__grey-line btn-custom__grey-line--left"></span>
+                                                    <span class="btn-custom__grey-line btn-custom__grey-line--right"></span>
+                                                </div>
+                                                <div class="btn-custom__grey btn-custom__grey--green">
+                                                    <span class="btn-custom__grey-line btn-custom__grey-line--top-bottom"></span>
+                                                    <span class="btn-custom__grey-line btn-custom__grey-line--left"></span>
+                                                    <span class="btn-custom__grey-line btn-custom__grey-line--right"></span>
+                                                </div>
+                                                Ver Imóveis
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+                </div>
+
+                <!-- Indicadores do carrossel -->
+                <ul class="slick-dots" role="tablist">
+                    <?php for ($i = 0; $i < ($carousel_imoveis ? $carousel_imoveis->num_rows : 1); $i++): ?>
+                        <li role="presentation" class="<?= $i === 0 ? 'slick-active' : '' ?>">
+                            <button type="button" role="tab" aria-controls="slick-slide-control<?= $i ?>" aria-label="<?= $i + 1 ?> of <?= ($carousel_imoveis ? $carousel_imoveis->num_rows : 1) ?>" tabindex="<?= $i === 0 ? '0' : '-1' ?>">
+                                <?= $i + 1 ?>
+                            </button>
+                        </li>
+                    <?php endfor; ?>
                 </ul>
-            </nav>
-            <div class="mobile-menu">
-                <i class="fas fa-bars"></i>
             </div>
+            
+            <!-- Botões de navegação -->
+            <button class="custom-arrows custom-arrows--prev slick-arrow" aria-disabled="false">
+                <img src="public/assets/images/arrows/left-arrow.png" alt="Anterior" class="custom-arrows__img force-img-white">
+            </button>
+            <button class="custom-arrows custom-arrows--next slick-arrow" aria-disabled="false">
+                <img src="public/assets/images/arrows/right-arrow.png" alt="Próximo" class="custom-arrows__img force-img-white">
+            </button>
         </div>
-    </header>
+    </div>
+</section>
 
-    <!-- Hero Banner -->
-    <section class="hero">
-        <div class="hero-content">
-            <h2>Encontre o imóvel dos seus sonhos</h2>
-            <p>Oferecemos as melhores opções para você e sua família</p>
-            <a href="imoveis.php" class="btn">Ver Imóveis</a>
-        </div>
-    </section>
+<!-- Search Box -->
+<section class="search-box">
+    <div class="container">
+        <form action="busca.php" method="get">
+            <div class="form-group">
+                <select name="tipo">
+                    <option value="">Todos os Tipos</option>
+                    <option value="casa">Casa</option>
+                    <option value="apartamento">Apartamento</option>
+                    <option value="terreno">Terreno</option>
+                    <option value="comercial">Comercial</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <select name="cidade">
+                    <option value="">Todas as Cidades</option>
+                    <?php foreach ($cidades as $cidade): ?>
+                        <option value="<?= htmlspecialchars($cidade['cidade']) ?>"><?= htmlspecialchars($cidade['cidade']) ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+            <div class="form-group">
+                <select name="preco">
+                    <option value="">Faixa de Preço</option>
+                    <option value="1">Até R$ 200.000</option>
+                    <option value="2">R$ 200.000 - R$ 500.000</option>
+                    <option value="3">Acima de R$ 500.000</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <button type="submit" class="btn-search"><i class="fas fa-search"></i> Buscar</button>
+            </div>
+        </form>
+    </div>
+</section>
 
-    <!-- Search Box -->
-    <section class="search-box">
-        <div class="container">
-            <form action="busca.php" method="get">
-                <div class="form-group">
-                    <select name="tipo">
-                        <option value="">Todos os Tipos</option>
-                        <option value="casa">Casa</option>
-                        <option value="apartamento">Apartamento</option>
-                        <option value="terreno">Terreno</option>
-                        <option value="comercial">Comercial</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <select name="cidade">
-                        <option value="">Todas as Cidades</option>
-                        <option value="cidade1">Cidade 1</option>
-                        <option value="cidade2">Cidade 2</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <select name="bairro">
-                        <option value="">Todos os Bairros</option>
-                        <option value="bairro1">Bairro 1</option>
-                        <option value="bairro2">Bairro 2</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <select name="preco">
-                        <option value="">Faixa de Preço</option>
-                        <option value="1">Até R$ 200.000</option>
-                        <option value="2">R$ 200.000 - R$ 500.000</option>
-                        <option value="3">Acima de R$ 500.000</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <button type="submit" class="btn-search"><i class="fas fa-search"></i> Buscar</button>
-                </div>
-            </form>
-        </div>
-    </section>
-
-    <!-- Featured Properties -->
-    <section class="featured-properties">
-        <div class="container">
-            <h2 class="section-title">Imóveis em Destaque</h2>
+<!-- Featured Properties -->
+<section class="featured-properties">
+    <div class="container">
+        <h2 class="section-title">Imóveis em Destaque</h2>
+        
+        <?php 
+        // Buscar imóveis em destaque para a seção
+        $destaques = db_query("SELECT * FROM imoveis WHERE destaque = 1 ORDER BY created_at DESC LIMIT 3");
+        if ($destaques && $destaques->num_rows > 0): 
+        ?>
             <div class="properties-grid">
-                <!-- PHP would loop through featured properties here -->
-                <div class="property-card">
-                    <div class="property-badge">Destaque</div>
-                    <img src="assets/images/property1.jpg" alt="Imóvel 1">
-                    <div class="property-info">
-                        <h3>Apartamento Luxo</h3>
-                        <p class="property-address"><i class="fas fa-map-marker-alt"></i> Bairro Nobre, Cidade</p>
-                        <div class="property-details">
-                            <span><i class="fas fa-bed"></i> 3</span>
-                            <span><i class="fas fa-bath"></i> 2</span>
-                            <span><i class="fas fa-car"></i> 2</span>
-                            <span><i class="fas fa-vector-square"></i> 120m²</span>
+                <?php while ($imovel = $destaques->fetch_assoc()): 
+                    $imagens = explode(',', $imovel['imagens']);
+                    $firstImage = !empty($imagens) ? 'public/uploads/' . $imagens[0] : 'public/assets/images/default-property.jpg';
+                    $preco_formatado = formatar_preco($imovel['preco']);
+                ?>
+                    <div class="property-card">
+                        <div class="property-badge">Destaque</div>
+                        <a href="imovel-detalhes.php?id=<?= $imovel['id'] ?>">
+                            <img src="<?= $firstImage ?>" alt="<?= htmlspecialchars($imovel['titulo']) ?>">
+                        </a>
+                        <div class="property-info">
+                            <h3><a href="imovel-detalhes.php?id=<?= $imovel['id'] ?>"><?= htmlspecialchars($imovel['titulo']) ?></a></h3>
+                            <p class="property-address"><i class="fas fa-map-marker-alt"></i> <?= htmlspecialchars($imovel['bairro']) ?>, <?= htmlspecialchars($imovel['cidade']) ?></p>
+                            <div class="property-details">
+                                <?php if ($imovel['quartos'] > 0): ?>
+                                    <span><i class="fas fa-bed"></i> <?= $imovel['quartos'] ?></span>
+                                <?php endif; ?>
+                                <?php if ($imovel['banheiros'] > 0): ?>
+                                    <span><i class="fas fa-bath"></i> <?= $imovel['banheiros'] ?></span>
+                                <?php endif; ?>
+                                <?php if ($imovel['garagem'] > 0): ?>
+                                    <span><i class="fas fa-car"></i> <?= $imovel['garagem'] ?></span>
+                                <?php endif; ?>
+                                <?php if ($imovel['area'] > 0): ?>
+                                    <span><i class="fas fa-vector-square"></i> <?= $imovel['area'] ?>m²</span>
+                                <?php endif; ?>
+                            </div>
+                            <p class="property-price"><?= $preco_formatado ?></p>
+                            <a href="imovel-detalhes.php?id=<?= $imovel['id'] ?>" class="btn">Ver Detalhes</a>
                         </div>
-                        <p class="property-price">R$ 850.000</p>
-                        <a href="imovel-detalhes.php?id=1" class="btn">Ver Detalhes</a>
                     </div>
-                </div>
-                
-                <!-- More property cards would go here -->
+                <?php endwhile; ?>
             </div>
-            <div class="view-all">
-                <a href="imoveis.php" class="btn">Ver Todos os Imóveis</a>
+        <?php else: ?>
+            <div class="no-properties">
+                <p>Nenhum imóvel em destaque no momento.</p>
             </div>
+        <?php endif; ?>
+        
+        <div class="view-all">
+            <a href="imoveis.php" class="btn">Ver Todos os Imóveis</a>
         </div>
-    </section>
+    </div>
+</section>
 
-    <!-- About Section -->
-    <section class="about-section">
-        <div class="container">
-            <div class="about-content">
-                <h2 class="section-title">Sobre a Corretora Claudia</h2>
-                <p>Somos uma corretora de imóveis comprometida em oferecer o melhor serviço para nossos clientes. Com anos de experiência no mercado, ajudamos você a encontrar o imóvel perfeito ou a vender seu patrimônio com segurança e tranquilidade.</p>
-                <p>Nossa equipe é formada por profissionais qualificados que entendem as necessidades de cada cliente e trabalham para superar expectativas.</p>
-                <a href="sobre.php" class="btn">Saiba Mais</a>
-            </div>
-            <div class="about-image">
-                <img src="assets/images/about.jpg" alt="Sobre nós">
-            </div>
+<!-- About Section -->
+<section class="about-section">
+    <div class="container">
+        <div class="about-content">
+            <h2 class="section-title">Sobre a Corretora Claudia</h2>
+            <p>Somos uma corretora de imóveis comprometida em oferecer o melhor serviço para nossos clientes. Com anos de experiência no mercado, ajudamos você a encontrar o imóvel perfeito ou a vender seu patrimônio com segurança e tranquilidade.</p>
+            <p>Nossa equipe é formada por profissionais qualificados que entendem as necessidades de cada cliente e trabalham para superar expectativas.</p>
+            <a href="sobre.php" class="btn">Saiba Mais</a>
         </div>
-    </section>
+        <div class="about-image">
+            <img src="public/assets/images/about.jpg" alt="Sobre nós">
+        </div>
+    </div>
+</section>
 
-    <!-- Services -->
-    <section class="services">
-        <div class="container">
-            <h2 class="section-title">Nossos Serviços</h2>
-            <div class="services-grid">
-                <div class="service-card">
-                    <i class="fas fa-home"></i>
-                    <h3>Compra e Venda</h3>
-                    <p>Encontre o imóvel perfeito ou venda seu patrimônio com a melhor assessoria.</p>
-                </div>
-                <div class="service-card">
-                    <i class="fas fa-file-signature"></i>
-                    <h3>Locacao</h3>
-                    <p>Alugue imóveis residenciais ou comerciais com toda segurança jurídica.</p>
-                </div>
-                <div class="service-card">
-                    <i class="fas fa-hand-holding-usd"></i>
-                    <h3>Avaliações</h3>
-                    <p>Avaliação profissional do seu imóvel com metodologia reconhecida.</p>
-                </div>
+<!-- Services -->
+<section class="services">
+    <div class="container">
+        <h2 class="section-title">Nossos Serviços</h2>
+        <div class="services-grid">
+            <div class="service-card">
+                <i class="fas fa-home"></i>
+                <h3>Compra e Venda</h3>
+                <p>Encontre o imóvel perfeito ou venda seu patrimônio com a melhor assessoria.</p>
+            </div>
+            <div class="service-card">
+                <i class="fas fa-file-signature"></i>
+                <h3>Locação</h3>
+                <p>Alugue imóveis residenciais ou comerciais com toda segurança jurídica.</p>
+            </div>
+            <div class="service-card">
+                <i class="fas fa-hand-holding-usd"></i>
+                <h3>Avaliações</h3>
+                <p>Avaliação profissional do seu imóvel com metodologia reconhecida.</p>
             </div>
         </div>
-    </section>>
+    </div>
+</section>
 
-    <!-- Contact CTA -->
-    <section class="contact-cta">
-        <div class="container">
-            <h2>Pronto para encontrar seu imóvel ideal?</h2>
-            <p>Entre em contato conosco e agende uma visita</p>
-            <a href="contato.php" class="btn">Fale Conosco</a>
-        </div>
-    </section>
+<!-- Contact CTA -->
+<section class="contact-cta">
+    <div class="container">
+        <h2>Pronto para encontrar seu imóvel ideal?</h2>
+        <p>Entre em contato conosco e agende uma visita</p>
+        <a href="contato.php" class="btn">Fale Conosco</a>
+    </div>
+</section>
 
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="container">
-            <div class="footer-grid">
-                <div class="footer-col">
-                    <h3>Corretora Claudia</h3>
-                    <p>Oferecendo soluções imobiliárias completas com transparência e profissionalismo.</p>
-                    <div class="footer-social">
-                        <a href="#"><i class="fab fa-facebook-f"></i></a>
-                        <a href="#"><i class="fab fa-instagram"></i></a>
-                        <a href="#"><i class="fab fa-whatsapp"></i></a>
-                    </div>
-                </div>
-                <div class="footer-col">
-                    <h3>Links Rápidos</h3>
-                    <ul>
-                        <li><a href="index.php">Home</a></li>
-                        <li><a href="sobre.php">Sobre</a></li>
-                        <li><a href="imoveis.php">Imóveis</a></li>
-                        <li><a href="contato.php">Contato</a></li>
-                    </ul>
-                </div>
-                <div class="footer-col">
-                    <h3>Contato</h3>
-                    <ul class="contact-info">
-                        <li><i class="fas fa-map-marker-alt"></i> Rua Exemplo, 123 - Centro</li>
-                        <li><i class="fas fa-phone"></i> (XX) XXXX-XXXX</li>
-                        <li><i class="fas fa-envelope"></i> contato@corretorabase.com.br</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-        <div class="footer-bottom">
-            <div class="container">
-                <p>&copy; 2023 Corretora Claudia. Todos os direitos reservados.</p>
-            </div>
-        </div>
-    </footer>
+<?php
+// Incluir o footer
+include 'private/includes/footer.php';
+?>
 
-    <!-- No final do <body> -->
-    <script src="public/assets/js/main.js"></script>
-    <script src="public/assets/js/lightbox.js"></script>
-    <script src="public/assets/js/form-validation.js"></script>
-    <script src="public/assets/js/mobile-menu.js"></script>
-</body>
-</html>
+<!-- Scripts do Slick Carousel -->
+<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.css"/>
+<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick-theme.css"/>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.min.js"></script>
+
+<script>
+// Inicialização do Slick Carousel
+$(document).ready(function(){
+    $('.slick-main').slick({
+        dots: true,
+        arrows: true,
+        infinite: true,
+        speed: 1000,
+        slidesToShow: 1,
+        slidesToScroll: 1,
+        autoplay: true,
+        autoplaySpeed: 5000,
+        fade: true,
+        cssEase: 'linear',
+        prevArrow: $('.custom-arrows--prev'),
+        nextArrow: $('.custom-arrows--next'),
+        responsive: [
+            {
+                breakpoint: 768,
+                settings: {
+                    arrows: false,
+                    dots: true
+                }
+            }
+        ]
+    });
+});
+</script>

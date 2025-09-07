@@ -1,6 +1,6 @@
 <?php
 // Definir título da página dinamicamente
-$page_title = isset($page_title) ? $page_title : 'Corretora Base | Imóveis de Qualidade';
+$page_title = isset($page_title) ? $page_title : 'Corretora Claudia Colombo | Imóveis de Qualidade';
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -19,33 +19,19 @@ $page_title = isset($page_title) ? $page_title : 'Corretora Base | Imóveis de Q
     
     <!-- Open Graph / Social Media -->
     <meta property="og:title" content="<?= htmlspecialchars($page_title) ?>">
-    <meta property="og:description" content="<?= isset($meta_description) ? htmlspecialchars($meta_description) : 'Encontre o imóvel dos seus sonhos com a Corretora Base' ?>">
+    <meta property="og:description" content="<?= isset($meta_description) ? htmlspecialchars($meta_description) : 'Encontre o imóvel dos seus sonhos com a Corretora Claudia Colombo' ?>">
     <meta property="og:type" content="website">
     <meta property="og:url" content="<?= 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] ?>">
     <meta property="og:image" content="public/assets/images/og-image.jpg">
 </head>
 <body>
-    <!-- Top Bar -->
-    <div class="top-bar">
-        <div class="container">
-            <div class="contact-info">
-                <span><i class="fas fa-phone"></i> (XX) XXXX-XXXX</span>
-                <span><i class="fas fa-envelope"></i> contato@corretorabase.com.br</span>
-            </div>
-            <div class="social-icons">
-                <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
-                <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
-                <a href="#" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
-            </div>
-        </div>
-    </div>
 
     <!-- Header -->
     <header class="header">
         <div class="container">
             <div class="logo">
                 <a href="index.php">
-                    <h1>Corretora<span>Base</span></h1>
+                    <h1>Corretora  <span>Claudia Colombo</span></h1>
                 </a>
             </div>
             <nav class="main-nav">
