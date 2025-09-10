@@ -1,8 +1,8 @@
 <?php
-require_once 'private/includes/db.php';
-require_once 'private/includes/auth.php';
+require_once(__DIR__ . '/../includes/auth.php'); // Já inclui session_start()
+require_once(__DIR__ . '/../includes/db.php');
 
-// Se já estiver logado, redirecionar para o dashboard
+// Se já estiver logado, redireciona para o dashboard
 if (is_logged_in()) {
     header('Location: dashboard.php');
     exit;
@@ -12,12 +12,12 @@ $error = '';
 
 // Processar formulário de login
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $username = trim($_POST['username'] ?? '');
+    $email = trim($_POST['email'] ?? '');
     $password = trim($_POST['password'] ?? '');
-    
-    if (empty($username) || empty($password)) {
+
+    if (empty($email) || empty($password)) {
         $error = 'Por favor, preencha todos os campos';
-    } elseif (attempt_login($username, $password)) {
+    } elseif (attempt_login($email, $password)) {
         header('Location: dashboard.php');
         exit;
     } else {
@@ -25,7 +25,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -42,15 +41,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <h1>Corretora<span>Base</span></h1>
                 <p>Área Administrativa</p>
             </div>
-            
+
             <?php if ($error): ?>
                 <div class="alert alert-danger"><?= $error ?></div>
             <?php endif; ?>
-            
+
             <form action="" method="post">
                 <div class="form-group">
-                    <label for="username"><i class="fas fa-user"></i> Usuário</label>
-                    <input type="text" id="username" name="username" required autofocus>
+                    <label for="email"><i class="fas fa-user"></i> Email</label>
+                    <input type="text" id="email" name="email" required autofocus>
                 </div>
                 <div class="form-group">
                     <label for="password"><i class="fas fa-lock"></i> Senha</label>
@@ -58,16 +57,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
                 <button type="submit" class="btn">Entrar</button>
             </form>
-
-            <a href="<?php echo BASE_URL; ?>admin/logout.php" class="logout-link">
-                <i class="fas fa-sign-out-alt"></i> Sair
-            </a>
-
-            <?php if (isset($_GET['logout']) && $_GET['logout'] === 'success'): ?>
-            <div class="alert alert-success">
-                Você foi desconectado com sucesso.
-            </div>
-            <?php endif; ?>
         </div>
     </div>
 </body>

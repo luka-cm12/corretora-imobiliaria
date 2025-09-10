@@ -16,9 +16,13 @@ require_once __DIR__ . '/../config/config.php';
         <div class="row">
             <div class="col-md-4">
                 <h5><?php echo NOME_CORRETORA; ?></h5>
-                <p><?php echo ENDERECO_CORRETORA; ?></p>
-                <p>Telefone: <?php echo TELEFONE_CORRETORA; ?></p>
-                <p>Email: <?php echo EMAIL_CORRETORA; ?></p>
+                <p>
+                    <?php 
+                        echo (defined('ENDERECO_CORRETORA') ? constant('ENDERECO_CORRETORA') : 'Endereço não definido'); 
+                    ?>
+                </p>
+                <p>Telefone: <?php echo isset($TELEFONE_CORRETORA) ? $TELEFONE_CORRETORA : (defined('TELEFONE_CORRETORA') ? constant('TELEFONE_CORRETORA') : 'Não definido'); ?></p>
+                <p>Email: <?php echo (defined('EMAIL_CORRETORA') ? constant('EMAIL_CORRETORA') : (isset($EMAIL_CORRETORA) ? $EMAIL_CORRETORA : 'Email não definido')); ?></p>
             </div>
             
             <div class="col-md-4">
@@ -34,7 +38,7 @@ require_once __DIR__ . '/../config/config.php';
             <div class="col-md-4">
                 <h5>Suporte</h5>
                 <p>Em caso de problemas, entre em contato com o administrador do sistema.</p>
-                <p>Versão do Sistema: <?php echo VERSAO_SISTEMA; ?></p>
+                <p>Versão do Sistema: <?php echo (defined('VERSAO_SISTEMA') ? constant('VERSAO_SISTEMA') : 'Versão não definida'); ?></p>
                 <p>&copy; <?php echo date('Y'); ?> <?php echo NOME_CORRETORA; ?>. Todos os direitos reservados.</p>
             </div>
         </div>

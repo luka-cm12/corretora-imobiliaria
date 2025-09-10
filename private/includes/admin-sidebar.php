@@ -7,6 +7,11 @@
  * @date 2023-11-20
  */
 
+// Defina o nome da corretora se ainda não estiver definido
+if (!defined('NOME_CORRETORA')) {
+    define('NOME_CORRETORA', 'Corretora');
+}
+
 // Verifica se o usuário está logado
 if (!isset($_SESSION['usuario_id'])) {
     header("Location: " . BASE_URL . "admin/login.php");
@@ -23,7 +28,7 @@ $perfil_usuario = $_SESSION['usuario_tipo'] ?? 'corretor';
     <div class="sidebar-header">
         <a href="<?php echo BASE_URL; ?>admin/dashboard.php" class="d-flex align-items-center">
             <img src="<?php echo BASE_URL; ?>assets/images/logo-admin.png" alt="<?php echo defined('NOME_CORRETORA') ? NOME_CORRETORA : 'Corretora'; ?>" class="sidebar-logo">
-            <span class="sidebar-brand"><?php echo defined('NOME_CORRETORA') ? NOME_CORRETORA : 'Corretora'; ?></span>
+            <span class="sidebar-brand"><?php echo (defined('NOME_CORRETORA') && NOME_CORRETORA) ? NOME_CORRETORA : 'Corretora'; ?></span>
         </a>
     </div>
 

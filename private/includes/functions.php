@@ -4,6 +4,7 @@
  */
 
 use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
 
 /**
  * Formata o preço para exibição
@@ -171,7 +172,7 @@ function enviar_email($para, $assunto, $mensagem, $de_nome = 'Corretora Base', $
     }
 
     // Usa o namespace PHPMailer
-    $mail = new PHPMailer\PHPMailer\PHPMailer();
+    $mail = new PHPMailer();
     $mail->isSMTP();
     $mail->Host = 'smtp.seuservidor.com';
     $mail->SMTPAuth = true;

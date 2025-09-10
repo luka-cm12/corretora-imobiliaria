@@ -13,39 +13,42 @@ function is_logged_in() {
 // Redirecionar para login se não estiver autenticado
 function require_login() {
     if (!is_logged_in()) {
-        header('Location: /admin/login.php');
+        header('Location: admin/login.php');
         exit;
     }
 }
 
 // Tentativa de login
-function attempt_login($username, $password) {
+function attempt_login($email, $password) {
+    require_once(__DIR__ . '/db.php');
     global $conn;
-    
-    $sql = "SELECT * FROM admin_users WHERE username = ? LIMIT 1";
+
+    $sql = "SELECT * FROM usuarios WHERE email = ? LIMIT 1";
     $stmt = $conn->prepare($sql);
-    $stmt->bind_param('s', $username);
+    $stmt->bind_param('s', $email);
     $stmt->execute();
     $result = $stmt->get_result();
-    
+
     if ($result->num_rows === 1) {
         $user = $result->fetch_assoc();
-        
-        if (password_verify($password, $user['password'])) {
-            $_SESSION['admin_logged_in'] = true;
-            $_SESSION['admin_user_id'] = $user['id'];
-            $_SESSION['admin_username'] = $user['username'];
+        if (password_verify($password, $user['senha'])) {
+            $_SESSION['logged_in'] = true;
+            $_SESSION['user_id'] = $user['id'];
+            $_SESSION['user_nome'] = $user['nome'];
+            $_SESSION['user_perfil'] = $user['perfil'];
             return true;
         }
     }
-    
+
     return false;
 }
+
+
 
 // Logout
 function logout() {
     $_SESSION = [];
     session_destroy();
-    header('Location: private/admin/login.php');
+    header('Location: admin/login.php');
     exit;
 }
