@@ -1,8 +1,7 @@
 <?php
-require_once 'private/includes/auth.php';
-require_once 'private/includes/db.php';
-require_once 'private/includes/functions.php';
-require_login();
+require_once(__DIR__ . '/../includes/auth.php');
+require_once(__DIR__ . '/../includes/db.php');
+require_once(__DIR__ . '/../includes/functions.php');
 
 $error = '';
 $success = '';

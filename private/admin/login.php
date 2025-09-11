@@ -1,8 +1,7 @@
 <?php
-require_once(__DIR__ . '/../includes/auth.php'); // Já inclui session_start()
-require_once(__DIR__ . '/../includes/db.php');
+require_once(__DIR__ . '/../includes/auth.php');
 
-// Se já estiver logado, redireciona para o dashboard
+// Se já estiver logado, vai pro dashboard
 if (is_logged_in()) {
     header('Location: dashboard.php');
     exit;
@@ -10,7 +9,6 @@ if (is_logged_in()) {
 
 $error = '';
 
-// Processar formulário de login
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = trim($_POST['email'] ?? '');
     $password = trim($_POST['password'] ?? '');
@@ -43,7 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
 
             <?php if ($error): ?>
-                <div class="alert alert-danger"><?= $error ?></div>
+                <div class="alert alert-danger"><?= htmlspecialchars($error) ?></div>
             <?php endif; ?>
 
             <form action="" method="post">
@@ -56,7 +54,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <input type="password" id="password" name="password" required>
                 </div>
                 <button type="submit" class="btn">Entrar</button>
-            </form>
+            </form>        
         </div>
     </div>
 </body>

@@ -4,10 +4,12 @@
  */
 
 session_start();
+require_once(__DIR__ . '/db.php');
+global $conn;
 
 // Verificar se usuário está logado (para área administrativa)
 function is_logged_in() {
-    return isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in'] === true;
+    return isset($_SESSION['logged_in']) && $_SESSION['logged_in'] === true;
 }
 
 // Redirecionar para login se não estiver autenticado
@@ -20,10 +22,9 @@ function require_login() {
 
 // Tentativa de login
 function attempt_login($email, $password) {
-    require_once(__DIR__ . '/db.php');
     global $conn;
 
-    $sql = "SELECT * FROM usuarios WHERE email = ? LIMIT 1";
+    $sql = "SELECT * FROM admin_users WHERE email = ? LIMIT 1";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param('s', $email);
     $stmt->execute();
@@ -31,19 +32,17 @@ function attempt_login($email, $password) {
 
     if ($result->num_rows === 1) {
         $user = $result->fetch_assoc();
-        if (password_verify($password, $user['senha'])) {
+        if (password_verify($password, $user['password'])) {
             $_SESSION['logged_in'] = true;
             $_SESSION['user_id'] = $user['id'];
-            $_SESSION['user_nome'] = $user['nome'];
-            $_SESSION['user_perfil'] = $user['perfil'];
+            $_SESSION['user_nome'] = $user['full_name'];
+            $_SESSION['user_email'] = $user['email'];
             return true;
         }
     }
 
     return false;
 }
-
-
 
 // Logout
 function logout() {
