@@ -51,12 +51,12 @@ $perfil_usuario = $_SESSION['usuario_tipo'] ?? 'corretor';
                 </a>
                 <ul class="collapse list-unstyled" id="submenu-imoveis">
                     <li>
-                        <a href="<?php echo BASE_URL; ?>admin/lista_imoveis.php" class="<?php echo (basename($_SERVER['PHP_SELF']) == 'lista_imoveis.php') ? 'active' : ''; ?>">
+                        <a href="<?php echo BASE_URL; ?>admin/listar.php" class="<?php echo (basename($_SERVER['PHP_SELF']) == 'lista_imoveis.php') ? 'active' : ''; ?>">
                             <i class="fas fa-list"></i> Listar Imóveis
                         </a>
                     </li>
                     <li>
-                        <a href="<?php echo BASE_URL; ?>admin/adicionar_imovel.php" class="<?php echo (basename($_SERVER['PHP_SELF']) == 'adicionar_imovel.php') ? 'active' : ''; ?>">
+                        <a href="<?php echo BASE_URL; ?>admin/adicionar.php" class="<?php echo (basename($_SERVER['PHP_SELF']) == 'adicionar_imovel.php') ? 'active' : ''; ?>">
                             <i class="fas fa-plus-circle"></i> Adicionar Imóvel
                         </a>
                     </li>

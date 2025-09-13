@@ -2,12 +2,14 @@
 require_once(__DIR__ . '/../includes/auth.php');
 
 // Se já estiver logado, vai pro dashboard
-if (is_logged_in()) {
+/*if (is_logged_in()) {
     header('Location: dashboard.php');
     exit;
-}
+}*/
+
 
 $error = '';
+$email = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = trim($_POST['email'] ?? '');
@@ -16,6 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (empty($email) || empty($password)) {
         $error = 'Por favor, preencha todos os campos';
     } elseif (attempt_login($email, $password)) {
+        // Redirecionar usando POST/Redirect/GET pattern para evitar reenvio
         header('Location: dashboard.php');
         exit;
     } else {
@@ -47,7 +50,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <form action="" method="post">
                 <div class="form-group">
                     <label for="email"><i class="fas fa-user"></i> Email</label>
-                    <input type="text" id="email" name="email" required autofocus>
+                    <input type="text" id="email" name="email" value="<?= htmlspecialchars($email) ?>" required autofocus>
                 </div>
                 <div class="form-group">
                     <label for="password"><i class="fas fa-lock"></i> Senha</label>
