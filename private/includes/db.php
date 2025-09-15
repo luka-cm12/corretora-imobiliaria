@@ -46,48 +46,47 @@ try {
  */
 function db_query($sql, $params = []) {
     global $conn;
-    
+
     $stmt = $conn->prepare($sql);
     if (!$stmt) {
         error_log("Erro ao preparar query: " . $conn->error);
         return false;
     }
-    
+
     if (!empty($params)) {
         $types = '';
         $values = [];
-        
+
         foreach ($params as $param) {
-            if (is_int($param)) {
-                $types .= 'i'; // integer
-            } elseif (is_float($param)) {
-                $types .= 'd'; // double
-            } elseif (is_string($param)) {
-                $types .= 's'; // string
-            } else {
-                $types .= 'b'; // blob
-            }
-            
+            if (is_int($param)) $types .= 'i';
+            elseif (is_float($param)) $types .= 'd';
+            elseif (is_string($param)) $types .= 's';
+            else $types .= 'b';
             $values[] = $param;
         }
-        
+
         $stmt->bind_param($types, ...$values);
     }
-    
+
     if (!$stmt->execute()) {
         error_log("Erro ao executar query: " . $stmt->error);
         return false;
     }
-    
-    $result = $stmt->get_result();
-    
-    // Para INSERT/UPDATE/DELETE, retornar número de linhas afetadas
-    if ($result === false) {
-        return $stmt->affected_rows;
+
+    // Para SELECT
+    if (stripos(trim($sql), 'SELECT') === 0) {
+        $result = $stmt->get_result();
+        $stmt->close();
+        return $result->fetch_all(MYSQLI_ASSOC);
     }
-    
-    return $result;
+
+    // Para INSERT/UPDATE/DELETE
+    $affected = $stmt->affected_rows;
+    $stmt->close();
+    return $affected;
 }
+
+
 
 /**
  * Escapa strings para prevenir SQL Injection

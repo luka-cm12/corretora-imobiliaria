@@ -1,9 +1,9 @@
 <?php
-require_once 'private/includes/auth.php';
-require_login();
+require_once(__DIR__ . '/../includes/auth.php');
+//require_login();
 
-require_once 'private/includes/db.php';
-require_once 'private/includes/functions.php';
+require_once(__DIR__ . '/../includes/db.php');
+require_once(__DIR__ . '/../includes/functions.php');
 
 // Paginação
 $por_pagina = 10;
@@ -25,7 +25,7 @@ if (isset($_GET['busca']) && !empty($_GET['busca'])) {
 // Total de imóveis
 $total_query = "SELECT COUNT(*) as total FROM imoveis" . $filtro;
 $stmt = db_query($total_query, $params, $types);
-$total_imoveis = $stmt->fetch_assoc()['total'];
+$total_imoveis = $stmt[0]['total'] ?? 0; // pega o primeiro elemento do array
 $total_paginas = ceil($total_imoveis / $por_pagina);
 
 // Obter imóveis
@@ -34,14 +34,14 @@ $params[] = $por_pagina;
 $params[] = $offset;
 $types .= 'ii';
 
-$imoveis = db_query($query, $params, $types)->fetch_all(MYSQLI_ASSOC);
+$imoveis = db_query($query, $params, $types); // já é array
 
 $page_title = 'Listar Imóveis | Corretora Base';
-include 'private/includes/header.php';
+include __DIR__ . '/../includes/admin-header.php';
 ?>
 
 <div class="admin-container">
-    <?php include '../includes/sidebar.php'; ?>
+    <?php include __DIR__ . '/../includes/admin-sidebar.php'; ?>
     
     <div class="main-content">
         <header class="admin-header">
@@ -135,4 +135,4 @@ include 'private/includes/header.php';
     </div>
 </div>
 
-<?php include 'private/includes/footer.php'; ?>
+<?php include __DIR__ . '/../includes/admin-footer.php'; ?>

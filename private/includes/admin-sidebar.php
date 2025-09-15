@@ -13,10 +13,10 @@ if (!defined('NOME_CORRETORA')) {
 }
 
 // Verifica se o usuário está logado
-if (!isset($_SESSION['usuario_id'])) {
+/*if (!isset($_SESSION['usuario_id'])) {
     header("Location: " . BASE_URL . "admin/login.php");
     exit();
-}
+}*/
 
 // Obtém o perfil do usuário
 $perfil_usuario = $_SESSION['usuario_tipo'] ?? 'corretor';

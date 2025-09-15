@@ -2,6 +2,7 @@
 require_once(__DIR__ . '/../includes/auth.php');
 require_once(__DIR__ . '/../includes/db.php');
 require_once(__DIR__ . '/../includes/functions.php');
+require_once(__DIR__ . '/../config/config.php');
 
 $error = '';
 $success = '';
@@ -9,29 +10,26 @@ $success = '';
 // Processar formulário
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
-        // Validar dados
         $titulo = trim($_POST['titulo'] ?? '');
         $descricao = trim($_POST['descricao'] ?? '');
         $tipo = trim($_POST['tipo'] ?? '');
         $cidade = trim($_POST['cidade'] ?? '');
         $bairro = trim($_POST['bairro'] ?? '');
         $endereco = trim($_POST['endereco'] ?? '');
-        $preco = (float) str_replace(['.', ','], ['', '.'], $_POST['preco'] ?? '0');
+        $preco = (float) str_replace(['.',''], ['',''], $_POST['preco'] ?? '0');
         $area = (float) str_replace(',', '.', $_POST['area'] ?? '0');
         $quartos = (int) ($_POST['quartos'] ?? 0);
         $banheiros = (int) ($_POST['banheiros'] ?? 0);
         $garagem = (int) ($_POST['garagem'] ?? 0);
         $destaque = isset($_POST['destaque']) ? 1 : 0;
-        
-        // Validações básicas
+
         if (empty($titulo) || empty($descricao) || empty($tipo) || empty($cidade) || empty($bairro) || $preco <= 0) {
             throw new Exception('Preencha todos os campos obrigatórios');
         }
-        
-        // Processar upload de imagens
+
         $imagens = [];
-        $uploadDir = 'public/uploads/';
-        
+        $uploadDir = '../public/uploads';
+
         if (!empty($_FILES['imagens']['name'][0])) {
             foreach ($_FILES['imagens']['tmp_name'] as $key => $tmp_name) {
                 if ($_FILES['imagens']['error'][$key] === UPLOAD_ERR_OK) {
@@ -42,50 +40,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         'error' => $_FILES['imagens']['error'][$key],
                         'size' => $_FILES['imagens']['size'][$key]
                     ], $uploadDir, 1200, 800);
-                    
-                    if ($fileName) {
-                        $imagens[] = $fileName;
-                    }
+
+                    if ($fileName) $imagens[] = $fileName;
                 }
             }
-            
-            if (empty($imagens)) {
-                throw new Exception('Nenhuma imagem válida foi enviada');
-            }
-        } else {
-            throw new Exception('Pelo menos uma imagem é obrigatória');
-        }
-        
+            if (empty($imagens)) throw new Exception('Nenhuma imagem válida foi enviada');
+        } else throw new Exception('Pelo menos uma imagem é obrigatória');
+
         $imagens_str = implode(',', $imagens);
-        
-        // Inserir no banco de dados
-        $result = db_query(
-            "INSERT INTO imoveis (titulo, descricao, tipo, cidade, bairro, endereco, preco, area, quartos, banheiros, garagem, imagens, destaque) 
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-            [$titulo, $descricao, $tipo, $cidade, $bairro, $endereco, $preco, $area, $quartos, $banheiros, $garagem, $imagens_str, $destaque]
-        );
-        
+
+        $sql = "INSERT INTO imoveis (titulo, descricao, tipo, cidade, bairro, endereco, preco, area, quartos, banheiros, garagem, imagens, destaque) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        $result = db_query($sql, [$titulo,$descricao,$tipo,$cidade,$bairro,$endereco,$preco,$area,$quartos,$banheiros,$garagem,$imagens_str,$destaque]);
+
         if ($result) {
             $success = 'Imóvel cadastrado com sucesso!';
-            // Limpar formulário
             $_POST = [];
-        } else {
-            throw new Exception('Erro ao cadastrar imóvel no banco de dados');
-        }
+        } else throw new Exception('Erro ao cadastrar imóvel no banco de dados');
+
     } catch (Exception $e) {
         $error = $e->getMessage();
-        
-        // Excluir imagens que foram enviadas em caso de erro
         if (!empty($imagens)) {
-            foreach ($imagens as $imagem) {
-                @unlink($uploadDir . $imagem);
-            }
+            foreach ($imagens as $img) @unlink($uploadDir . '/' . $img);
         }
     }
 }
 
 // Incluir header administrativo
-include 'private/includes/admin-header.php';
+include __DIR__ . '/../includes/admin-header.php';
 ?>
 
 <div class="admin-content">
@@ -183,5 +165,5 @@ include 'private/includes/admin-header.php';
 
 <?php
 // Incluir footer administrativo
-include 'private/includes/admin-footer.php';
+include __DIR__ . '/../includes/admin-footer.php';
 ?>

@@ -3,8 +3,8 @@
  * Funções úteis para o sistema
  */
 
-use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\Exception;
+/*use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;*/
 
 /**
  * Formata o preço para exibição
@@ -20,51 +20,44 @@ function formatar_preco($preco) {
  * Redimensiona e faz upload de imagem
  * 
  * @param array $imagem Array $_FILES da imagem
- * @param string $pasta Pasta de destino
- * @param int $largura Largura máxima (opcional)
- * @param int $altura Altura máxima (opcional)
- * @return string|bool Nome do arquivo ou false em caso de erro
+ * @param string $pasta Pasta de destino relativa à raiz do projeto (ex: 'public/uploads')
+ * @param int|null $largura Largura máxima opcional
+ * @param int|null $altura Altura máxima opcional
+ * @return string|bool URL da imagem ou false em caso de erro
  */
 function upload_imagem($imagem, $pasta, $largura = null, $altura = null) {
-    // Verificar erros no upload
-    if ($imagem['error'] !== UPLOAD_ERR_OK) {
-        return false;
-    }
-    
-    // Verificar tipo de arquivo
+    if ($imagem['error'] !== UPLOAD_ERR_OK) return false;
+
     $tipos_permitidos = ['image/jpeg', 'image/png', 'image/gif'];
-    if (!in_array($imagem['type'], $tipos_permitidos)) {
-        return false;
-    }
-    
-    // Criar nome único para o arquivo
+    if (!in_array($imagem['type'], $tipos_permitidos)) return false;
+
     $extensao = pathinfo($imagem['name'], PATHINFO_EXTENSION);
     $nome_arquivo = uniqid() . '.' . strtolower($extensao);
-    $caminho_completo = $pasta . $nome_arquivo;
-    
-    // Mover arquivo temporário
-    if (!move_uploaded_file($imagem['tmp_name'], $caminho_completo)) {
-        return false;
-    }
-    
-    // Redimensionar imagem se necessário
-    if ($largura || $altura) {
+
+    $caminho_pasta = __DIR__ . '/../../' . trim($pasta, '/') . '/';
+    if (!is_dir($caminho_pasta)) mkdir($caminho_pasta, 0777, true);
+
+    $caminho_completo = $caminho_pasta . $nome_arquivo;
+
+    if (!move_uploaded_file($imagem['tmp_name'], $caminho_completo)) return false;
+
+    // Redimensionar apenas se GD estiver ativo
+    if ((function_exists('imagecreatefromjpeg') || function_exists('imagecreatefrompng') || function_exists('imagecreatefromgif')) 
+        && ($largura || $altura)) {
         redimensionar_imagem($caminho_completo, $largura, $altura);
     }
-    
-    return $nome_arquivo;
+
+    // Retorna URL relativa
+    return 'http://localhost/corretora-imobiliaria/' . trim($pasta, '/') . '/' . $nome_arquivo;
 }
 
 /**
- * Redimensiona uma imagem mantendo proporções
+ * Redimensiona imagem mantendo proporções
  */
 function redimensionar_imagem($caminho, $largura_max = null, $altura_max = null) {
-    // Obter informações da imagem
     list($largura_orig, $altura_orig, $tipo) = getimagesize($caminho);
-    
-    // Calcular novas dimensões mantendo proporção
     $ratio = $largura_orig / $altura_orig;
-    
+
     if ($largura_max && $altura_max) {
         if ($largura_orig > $largura_max || $altura_orig > $altura_max) {
             if ($largura_max / $altura_max > $ratio) {
@@ -72,62 +65,38 @@ function redimensionar_imagem($caminho, $largura_max = null, $altura_max = null)
             } else {
                 $altura_max = $largura_max / $ratio;
             }
-        } else {
-            // Não redimensionar se já for menor
-            return true;
-        }
+        } else return true;
     } elseif ($largura_max) {
         $altura_max = $largura_max / $ratio;
     } elseif ($altura_max) {
         $largura_max = $altura_max * $ratio;
-    } else {
-        return false;
-    }
-    
-    // Criar imagem temporária
+    } else return false;
+
     switch ($tipo) {
-        case IMAGETYPE_JPEG:
-            $origem = imagecreatefromjpeg($caminho);
-            break;
-        case IMAGETYPE_PNG:
-            $origem = imagecreatefrompng($caminho);
-            break;
-        case IMAGETYPE_GIF:
-            $origem = imagecreatefromgif($caminho);
-            break;
-        default:
-            return false;
+        case IMAGETYPE_JPEG: $origem = imagecreatefromjpeg($caminho); break;
+        case IMAGETYPE_PNG:  $origem = imagecreatefrompng($caminho); break;
+        case IMAGETYPE_GIF:  $origem = imagecreatefromgif($caminho); break;
+        default: return false;
     }
-    
+
     $destino = imagecreatetruecolor($largura_max, $altura_max);
-    
-    // Preservar transparência PNG/GIF
     if ($tipo == IMAGETYPE_PNG || $tipo == IMAGETYPE_GIF) {
-        imagecolortransparent($destino, imagecolorallocatealpha($destino, 0, 0, 0, 127));
+        imagecolortransparent($destino, imagecolorallocatealpha($destino, 0,0,0,127));
         imagealphablending($destino, false);
         imagesavealpha($destino, true);
     }
-    
-    // Redimensionar
-    imagecopyresampled($destino, $origem, 0, 0, 0, 0, $largura_max, $altura_max, $largura_orig, $altura_orig);
-    
-    // Salvar imagem
+
+    imagecopyresampled($destino, $origem, 0,0,0,0, $largura_max, $altura_max, $largura_orig, $altura_orig);
+
     switch ($tipo) {
-        case IMAGETYPE_JPEG:
-            imagejpeg($destino, $caminho, 90);
-            break;
-        case IMAGETYPE_PNG:
-            imagepng($destino, $caminho, 9);
-            break;
-        case IMAGETYPE_GIF:
-            imagegif($destino, $caminho);
-            break;
+        case IMAGETYPE_JPEG: imagejpeg($destino, $caminho, 90); break;
+        case IMAGETYPE_PNG:  imagepng($destino, $caminho, 9); break;
+        case IMAGETYPE_GIF:  imagegif($destino, $caminho); break;
     }
-    
-    // Liberar memória
+
     imagedestroy($origem);
     imagedestroy($destino);
-    
+
     return true;
 }
 
@@ -170,23 +139,4 @@ function enviar_email($para, $assunto, $mensagem, $de_nome = 'Corretora Base', $
             require_once __DIR__ . '/../../vendor/autoload.php';
         }
     }
-
-    // Usa o namespace PHPMailer
-    $mail = new PHPMailer();
-    $mail->isSMTP();
-    $mail->Host = 'smtp.seuservidor.com';
-    $mail->SMTPAuth = true;
-    $mail->Username = 'email@corretorabase.com.br';
-    $mail->Password = 'sua_senha';
-    $mail->SMTPSecure = 'tls';
-    $mail->Port = 587;
-    
-    $mail->setFrom($de_email, $de_nome);
-    $mail->addAddress($para);
-    $mail->isHTML(true);
-    
-    $mail->Subject = $assunto;
-    $mail->Body    = $mensagem;
-    
-    return $mail->send();
 }

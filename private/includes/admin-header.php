@@ -1,9 +1,9 @@
 <?php
 // Verificar se o usuário está logado
-if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
+/*if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
     header('Location: login.php');
     exit;
-}
+}*/
 
 // Definir título da página se não estiver definido
 if (!isset($page_title)) {

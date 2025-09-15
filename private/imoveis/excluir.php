@@ -11,7 +11,7 @@ if (!isset($_SESSION['usuario_id']) || $_SESSION['usuario_tipo'] != 'admin') {
 }
 
 // Inclui o arquivo de conexão com o banco de dados
-require_once 'conexao.php';
+require_once 'db.php';
 
 // Verifica se o método de requisição é POST (mais seguro para exclusões)
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -19,7 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Verifica se o token CSRF é válido (proteção contra ataques)
     if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
         $_SESSION['erro'] = "Token de segurança inválido!";
-        header("Location: lista_imoveis.php");
+        header("Location: lista.php");
         exit();
     }
 
@@ -75,6 +75,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 // Redireciona de volta para a lista de imóveis
-header("Location: lista_imoveis.php");
+header("Location: lista.php");
 exit();
 ?>
