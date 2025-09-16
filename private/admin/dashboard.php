@@ -35,16 +35,18 @@ function formatar_data($data) {
 }
 
 // Estatísticas para o dashboard
-$total_imoveis   = db_query("SELECT COUNT(*) as total FROM imoveis")->fetch_assoc()['total'];
-$imoveis_destaque = db_query("SELECT COUNT(*) as total FROM imoveis WHERE destaque = 1")->fetch_assoc()['total'];
-$imoveis_venda    = db_query("SELECT COUNT(*) as total FROM imoveis WHERE tipo IN ('casa', 'apartamento', 'terreno')")->fetch_assoc()['total'];
-$imoveis_locacao  = db_query("SELECT COUNT(*) as total FROM imoveis WHERE tipo = 'comercial'")->fetch_assoc()['total'];
+$result = db_query("SELECT COUNT(*) as total FROM imoveis");
+$total_imoveis = $result[0]['total'];  // acessa direto o primeiro elemento do array
+$imoveis_destaque = db_query("SELECT COUNT(*) as total FROM imoveis WHERE destaque = 1")[0]['total'];
+$imoveis_venda    = db_query("SELECT COUNT(*) as total FROM imoveis WHERE tipo IN ('casa', 'apartamento', 'terreno')")[0]['total'];
+$imoveis_locacao  = db_query("SELECT COUNT(*) as total FROM imoveis WHERE tipo = 'comercial'")[0]['total'];
 
 // Últimos imóveis cadastrados
-$ultimos_imoveis = db_query("SELECT id, titulo, cidade, created_at FROM imoveis ORDER BY created_at DESC LIMIT 5")->fetch_all(MYSQLI_ASSOC);
+$ultimos_imoveis = db_query("SELECT id, titulo, cidade, created_at FROM imoveis ORDER BY created_at DESC LIMIT 5");
+// $ultimos_imoveis já é um array, não precisa de fetch_all()
 
-// Últimos contatos recebidos
-$ultimos_contatos = db_query("SELECT nome, email, assunto, created_at FROM contatos ORDER BY created_at DESC LIMIT 5")->fetch_all(MYSQLI_ASSOC);
+$ultimos_contatos = db_query("SELECT nome, email, assunto, created_at FROM contatos ORDER BY created_at DESC LIMIT 5");
+
 
 // Incluir header administrativo
 include __DIR__ . '/../includes/admin-header.php';

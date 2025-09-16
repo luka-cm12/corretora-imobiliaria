@@ -80,11 +80,17 @@ function db_query($sql, $params = []) {
         return $result->fetch_all(MYSQLI_ASSOC);
     }
 
+
+
     // Para INSERT/UPDATE/DELETE
     $affected = $stmt->affected_rows;
     $stmt->close();
     return $affected;
 }
+/* 
+// Função db_query duplicada removida para evitar erro de declaração duplicada.
+// Se precisar de uma função para consultas simples, renomeie ou adapte a função existente acima.
+*/
 
 
 

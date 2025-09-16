@@ -11,12 +11,11 @@ $carousel_imoveis = db_query("
 ");
 
 // Buscar totais para estatísticas
-$total_imoveis = db_query("SELECT COUNT(*) as total FROM imoveis")->fetch_assoc()['total'];
-$total_vendas = db_query("SELECT COUNT(*) as total FROM imoveis WHERE tipo IN ('casa', 'apartamento', 'terreno')")->fetch_assoc()['total'];
-$total_locacoes = db_query("SELECT COUNT(*) as total FROM imoveis WHERE tipo = 'comercial'")->fetch_assoc()['total'];
+$total_imoveis = db_query("SELECT COUNT(*) as total FROM imoveis")[0]['total'];
+$total_vendas  = db_query("SELECT COUNT(*) as total FROM imoveis WHERE tipo IN ('casa','apartamento','terreno')")[0]['total'];
+$total_locacoes = db_query("SELECT COUNT(*) as total FROM imoveis WHERE tipo = 'comercial'")[0]['total'];
 
-// Buscar cidades disponíveis para o filtro
-$cidades = db_query("SELECT DISTINCT cidade FROM imoveis ORDER BY cidade LIMIT 5")->fetch_all(MYSQLI_ASSOC);
+$cidades = db_query("SELECT DISTINCT cidade FROM imoveis ORDER BY cidade LIMIT 5");
 
 // Definir variáveis para o header
 $page_title = 'Corretora Claudia | Imóveis de Qualidade';

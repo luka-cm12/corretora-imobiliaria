@@ -15,13 +15,18 @@ $imovel = db_query(
     [$imovel_id]
 );
 
-if (!$imovel || $imovel->num_rows === 0) {
+$imovel_result = db_query("SELECT * FROM imoveis WHERE id = ?", [$imovel_id]);
+
+// Verifica se encontrou algum resultado
+if (!is_array($imovel_result) || count($imovel_result) === 0) {
     header('Location: imoveis.php');
     exit;
 }
 
-$imovel = $imovel->fetch_assoc();
+// Pega o primeiro resultado
+$imovel = $imovel_result[0];
 $imagens = explode(',', $imovel['imagens']);
+
 
 // Formatar preço
 $preco_formatado = 'R$ ' . number_format($imovel['preco'], 2, ',', '.');

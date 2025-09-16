@@ -86,11 +86,12 @@ $result = $stmt->get_result();
 $imoveis = $result->fetch_all(MYSQLI_ASSOC);
 
 // Obter opções para filtros
-$tipos = db_query("SELECT DISTINCT tipo FROM imoveis ORDER BY tipo")->fetch_all(MYSQLI_ASSOC);
-$cidades = db_query("SELECT DISTINCT cidade FROM imoveis ORDER BY cidade")->fetch_all(MYSQLI_ASSOC);
+$tipos = db_query("SELECT DISTINCT tipo FROM imoveis ORDER BY tipo");
+$cidades = db_query("SELECT DISTINCT cidade FROM imoveis ORDER BY cidade");
 $bairros = !empty($filtros['cidade']) ? 
-    db_query("SELECT DISTINCT bairro FROM imoveis WHERE cidade = ? ORDER BY bairro", [$filtros['cidade']])->fetch_all(MYSQLI_ASSOC) : 
-    [];
+    db_query("SELECT DISTINCT bairro FROM imoveis WHERE cidade = ?", [$filtros['cidade']], 's') 
+    : [];
+
 
 // Incluir o header
 include 'private/includes/header.php';
