@@ -45,54 +45,38 @@ try {
  * @return mysqli_result|bool Resultado da consulta ou false em caso de erro
  */
 function db_query($sql, $params = []) {
-    global $conn;
+    global $conn; // $conn deve ser um objeto mysqli
 
     $stmt = $conn->prepare($sql);
     if (!$stmt) {
-        error_log("Erro ao preparar query: " . $conn->error);
-        return false;
+        die("Erro na preparação da query: " . $conn->error);
     }
 
-    if (!empty($params)) {
-        $types = '';
-        $values = [];
-
-        foreach ($params as $param) {
-            if (is_int($param)) $types .= 'i';
-            elseif (is_float($param)) $types .= 'd';
-            elseif (is_string($param)) $types .= 's';
-            else $types .= 'b';
-            $values[] = $param;
-        }
-
-        $stmt->bind_param($types, ...$values);
+    if ($params) {
+        // Cria a string de tipos automaticamente (tudo como string 's')
+        $types = str_repeat('s', count($params));
+        // Usa o operador ... para passar os parâmetros
+        $stmt->bind_param($types, ...$params);
     }
 
-    if (!$stmt->execute()) {
-        error_log("Erro ao executar query: " . $stmt->error);
-        return false;
-    }
+    $stmt->execute();
 
-    // Para SELECT
-    if (stripos(trim($sql), 'SELECT') === 0) {
+    // Para SELECT, retorna resultado como array associativo
+    if (stripos(trim($sql), 'select') === 0) {
         $result = $stmt->get_result();
+        $rows = [];
+        while ($row = $result->fetch_assoc()) {
+            $rows[] = $row;
+        }
         $stmt->close();
-        return $result->fetch_all(MYSQLI_ASSOC);
+        return $rows;
     }
 
-
-
-    // Para INSERT/UPDATE/DELETE
+    // Para INSERT/UPDATE/DELETE, retorna número de linhas afetadas
     $affected = $stmt->affected_rows;
     $stmt->close();
     return $affected;
 }
-/* 
-// Função db_query duplicada removida para evitar erro de declaração duplicada.
-// Se precisar de uma função para consultas simples, renomeie ou adapte a função existente acima.
-*/
-
-
 
 /**
  * Escapa strings para prevenir SQL Injection
@@ -113,4 +97,15 @@ function db_escape($data) {
 function db_last_id() {
     global $conn;
     return $conn->insert_id;
+}
+
+// Exemplo de uso da função db_query para inserção
+$titulo = $_POST['titulo'] ?? '';
+$cidade = $_POST['cidade'] ?? '';
+$sql = "INSERT INTO imoveis (titulo, cidade) VALUES (?, ?)";
+db_query($sql, [$titulo, $cidade]);
+
+$imoveis = db_query("SELECT * FROM imoveis WHERE cidade = ?", [$cidade]);
+foreach ($imoveis as $imovel) {
+    // ...
 }

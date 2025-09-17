@@ -34,11 +34,11 @@ include 'private/includes/header.php';
             <div class="slick-main slick-initialized slick-slider slick-dotted">
                 <div class="slick-list draggable">
                     <div class="slick-track">
-                        <?php if ($carousel_imoveis && $carousel_imoveis->num_rows > 0): ?>
+                        <?php if ($carousel_imoveis && count($carousel_imoveis) > 0): ?>
                             <?php $slide_index = 0; ?>
-                            <?php while ($imovel = $carousel_imoveis->fetch_assoc()): 
+                            <?php foreach ($carousel_imoveis as $imovel): 
                                 $imagens = explode(',', $imovel['imagens']);
-                                $firstImage = !empty($imagens) ? 'public/uploads/' . $imagens[0] : 'public/assets/images/default-property.jpg';
+                                $firstImage = !empty($imagens) ? 'public/uploads/' . $imagens[0] : 'public/assets/images/68c74fbd67525.jpg';
                             ?>
                                 <div class="slick-slide STARTED slick-animate-in" data-slick-index="<?= $slide_index ?>" aria-hidden="true" tabindex="-1" role="tabpanel">
                                     <a href="imovel-detalhes.php?id=<?= $imovel['id'] ?>" class="slick-main__banner" style="background-image: url('<?= $firstImage ?>');">
@@ -71,11 +71,11 @@ include 'private/includes/header.php';
                                     </a>
                                 </div>
                                 <?php $slide_index++; ?>
-                            <?php endwhile; ?>
+                            <?php endforeach; ?>
                         <?php else: ?>
                             <!-- Slide padrão caso não haja imóveis -->
                             <div class="slick-slide STARTED slick-animate-in slick-current slick-active" data-slick-index="0" aria-hidden="false" tabindex="-1" role="tabpanel">
-                                <div class="slick-main__banner" style="background-image: url('public/assets/images/hero-bg.jpg');">
+                                <div class="slick-main__banner" style="background-image: url('public/assets/images/68c74fbd67525.jpg');">
                                     <div class="slick-main__text">
                                         <div class="slick-main__container">
                                             <div class="slick-main__flex-group">
@@ -105,9 +105,11 @@ include 'private/includes/header.php';
 
                 <!-- Indicadores do carrossel -->
                 <ul class="slick-dots" role="tablist">
-                    <?php for ($i = 0; $i < ($carousel_imoveis ? $carousel_imoveis->num_rows : 1); $i++): ?>
+                    <?php 
+                    $totalSlides = is_array($carousel_imoveis) ? count($carousel_imoveis) : ($carousel_imoveis && $carousel_imoveis->num_rows ? $carousel_imoveis->num_rows : 1);
+                    for ($i = 0; $i < $totalSlides; $i++): ?>
                         <li role="presentation" class="<?= $i === 0 ? 'slick-active' : '' ?>">
-                            <button type="button" role="tab" aria-controls="slick-slide-control<?= $i ?>" aria-label="<?= $i + 1 ?> of <?= ($carousel_imoveis ? $carousel_imoveis->num_rows : 1) ?>" tabindex="<?= $i === 0 ? '0' : '-1' ?>">
+                            <button type="button" role="tab" aria-controls="slick-slide-control<?= $i ?>" aria-label="<?= $i + 1 ?> of <?= $totalSlides ?>" tabindex="<?= $i === 0 ? '0' : '-1' ?>">
                                 <?= $i + 1 ?>
                             </button>
                         </li>
@@ -117,10 +119,10 @@ include 'private/includes/header.php';
             
             <!-- Botões de navegação -->
             <button class="custom-arrows custom-arrows--prev slick-arrow" aria-disabled="false">
-                <img src="public/assets/images/arrows/left-arrow.png" alt="Anterior" class="custom-arrows__img force-img-white">
+                <img src="public/assets/images/arrows/seta-esquerda.png" alt="Anterior" class="custom-arrows__img force-img-white">
             </button>
             <button class="custom-arrows custom-arrows--next slick-arrow" aria-disabled="false">
-                <img src="public/assets/images/arrows/right-arrow.png" alt="Próximo" class="custom-arrows__img force-img-white">
+                <img src="public/assets/images/arrows/seta-direita.png" alt="Próximo" class="custom-arrows__img force-img-white">
             </button>
         </div>
     </div>
@@ -170,10 +172,10 @@ include 'private/includes/header.php';
         <?php 
         // Buscar imóveis em destaque para a seção
         $destaques = db_query("SELECT * FROM imoveis WHERE destaque = 1 ORDER BY created_at DESC LIMIT 3");
-        if ($destaques && $destaques->num_rows > 0): 
+        if ($destaques && count($destaques) > 0): 
         ?>
             <div class="properties-grid">
-                <?php while ($imovel = $destaques->fetch_assoc()): 
+                <?php foreach ($destaques as $imovel): 
                     $imagens = explode(',', $imovel['imagens']);
                     $firstImage = !empty($imagens) ? 'public/uploads/' . $imagens[0] : 'public/assets/images/default-property.jpg';
                     $preco_formatado = formatar_preco($imovel['preco']);
@@ -204,7 +206,7 @@ include 'private/includes/header.php';
                             <a href="imovel-detalhes.php?id=<?= $imovel['id'] ?>" class="btn">Ver Detalhes</a>
                         </div>
                     </div>
-                <?php endwhile; ?>
+                <?php endforeach; ?>
             </div>
         <?php else: ?>
             <div class="no-properties">
@@ -284,24 +286,13 @@ $(document).ready(function(){
         dots: true,
         arrows: true,
         infinite: true,
-        speed: 1000,
+        speed: 900,
         slidesToShow: 1,
         slidesToScroll: 1,
         autoplay: true,
-        autoplaySpeed: 5000,
+        autoplaySpeed: 4500,
         fade: true,
-        cssEase: 'linear',
-        prevArrow: $('.custom-arrows--prev'),
-        nextArrow: $('.custom-arrows--next'),
-        responsive: [
-            {
-                breakpoint: 768,
-                settings: {
-                    arrows: false,
-                    dots: true
-                }
-            }
-        ]
+        cssEase: 'cubic-bezier(.4,2.3,.3,1)'
     });
 });
 </script>
