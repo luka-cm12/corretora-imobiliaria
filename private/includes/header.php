@@ -29,9 +29,10 @@ $page_title = isset($page_title) ? $page_title : 'Corretora Claudia Colombo | Im
     <!-- Header -->
     <header class="header">
         <div class="container">
-            <div class="logo">
-                <a href="index.php">
-                    <h1>Corretora  <span>Claudia Colombo</span></h1>
+            <div id="logo" class="catalogo-logo">
+                <div class="logo__bg"></div>
+                <a href="index.php" title="Home">
+                    <img class="logo-dark" src="public/assets/images/logo-dark.png" alt="Corretora Claudia Colombo">
                 </a>
             </div>
             <nav class="main-nav">
