@@ -84,33 +84,35 @@ include __DIR__ . '/../includes/admin-header.php';
                             </tr>
                         </thead>
                         <tbody>
-                            <?php foreach ($imoveis as $imovel): 
-                                $imagens = explode(',', $imovel['imagens']);
-                                $firstImage = !empty($imagens) ? '../../public/uploads/' . $imagens[0] : '../../assets/images/default-property.jpg';
-                                $preco_formatado = formatar_preco($imovel['preco']);
-                            ?>
-                                <tr>
-                                    <td><?= $imovel['id'] ?></td>
-                                    <td>
-                                        <img src="<?= $firstImage ?>" alt="<?= htmlspecialchars($imovel['titulo']) ?>" class="thumbnail">
-                                    </td>
-                                    <td><?= htmlspecialchars($imovel['titulo']) ?></td>
-                                    <td><?= htmlspecialchars($imovel['bairro']) ?>, <?= htmlspecialchars($imovel['cidade']) ?></td>
-                                    <td><?= $preco_formatado ?></td>
-                                    <td>
-                                        <?php if ($imovel['destaque']): ?>
-                                            <span class="badge success">Sim</span>
-                                        <?php else: ?>
-                                            <span class="badge">Não</span>
-                                        <?php endif; ?>
-                                    </td>
-                                    <td class="actions">
-                                        <a href="editar.php?id=<?= $imovel['id'] ?>" class="btn-edit" title="Editar"><i class="fas fa-edit"></i></a>
-                                        <a href="excluir.php?id=<?= $imovel['id'] ?>" class="btn-delete" title="Excluir" onclick="return confirm('Tem certeza que deseja excluir este imóvel?')"><i class="fas fa-trash"></i></a>
-                                    </td>
-                                </tr>
-                            <?php endforeach; ?>
-                        </tbody>
+                        <?php foreach ($imoveis as $imovel): 
+                            $imagens = explode(',', $imovel['imagens']);
+                            $firstImage = (!empty($imagens[0])) 
+                                ? '../../public/uploads/' . $imagens[0] 
+                                : '../../public/assets/images/default-property.jpg';
+                            $preco_formatado = formatar_preco($imovel['preco']);
+                        ?>
+                            <tr>
+                                <td><?= $imovel['id'] ?></td>
+                                <td>
+                                    <img src="<?= $firstImage ?>" alt="<?= htmlspecialchars($imovel['titulo']) ?>" class="thumbnail">
+                                </td>
+                                <td><?= htmlspecialchars($imovel['titulo']) ?></td>
+                                <td><?= htmlspecialchars($imovel['bairro']) ?>, <?= htmlspecialchars($imovel['cidade']) ?></td>
+                                <td><?= $preco_formatado ?></td>
+                                <td>
+                                    <?php if (!empty($imovel['destaque'])): ?>
+                                        <span class="badge success">Sim</span>
+                                    <?php else: ?>
+                                        <span class="badge">Não</span>
+                                    <?php endif; ?>
+                                </td>
+                                <td class="actions">
+                                    <a href="editar.php?id=<?= $imovel['id'] ?>" class="btn-edit" title="Editar"><i class="fas fa-edit"></i></a>
+                                    <a href="excluir.php?id=<?= $imovel['id'] ?>" class="btn-delete" title="Excluir" onclick="return confirm('Tem certeza que deseja excluir este imóvel?')"><i class="fas fa-trash"></i></a>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
                     </table>
                 </div>
                 

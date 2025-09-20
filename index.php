@@ -220,6 +220,69 @@ include 'private/includes/header.php';
     </div>
 </section>
 
+<!-- Últimos Cadastros -->
+<section class="latest-properties">
+    <div class="container">
+        <h2 class="section-title">Últimos Cadastros</h2>
+
+        <?php 
+        // Buscar os últimos imóveis cadastrados
+        $ultimos = db_query("SELECT * FROM imoveis ORDER BY created_at DESC LIMIT 6");
+
+        if ($ultimos && count($ultimos) > 0): ?>
+            <div class="properties-grid">
+                <?php foreach ($ultimos as $imovel): 
+                    $imagens = explode(',', $imovel['imagens']);
+                    $firstImage = !empty($imagens[0]) ? 'public/uploads/' . $imagens[0] : 'public/assets/images/default-property.jpg';
+                    $preco_formatado = formatar_preco($imovel['preco']);
+                ?>
+                    <div class="property-card">
+                        <a href="imovel-detalhes.php?id=<?= $imovel['id'] ?>">
+                            <img src="<?= $firstImage ?>" alt="<?= htmlspecialchars($imovel['titulo']) ?>">
+                        </a>
+                        <div class="property-info">
+                            <h3>
+                                <a href="imovel-detalhes.php?id=<?= $imovel['id'] ?>">
+                                    <?= htmlspecialchars($imovel['titulo']) ?>
+                                </a>
+                            </h3>
+                            <p class="property-address">
+                                <i class="fas fa-map-marker-alt"></i> 
+                                <?= htmlspecialchars($imovel['bairro']) ?>, <?= htmlspecialchars($imovel['cidade']) ?>
+                            </p>
+                            <div class="property-details">
+                                <?php if ($imovel['quartos'] > 0): ?>
+                                    <span><i class="fas fa-bed"></i> <?= $imovel['quartos'] ?></span>
+                                <?php endif; ?>
+                                <?php if ($imovel['banheiros'] > 0): ?>
+                                    <span><i class="fas fa-bath"></i> <?= $imovel['banheiros'] ?></span>
+                                <?php endif; ?>
+                                <?php if ($imovel['garagem'] > 0): ?>
+                                    <span><i class="fas fa-car"></i> <?= $imovel['garagem'] ?></span>
+                                <?php endif; ?>
+                                <?php if ($imovel['area'] > 0): ?>
+                                    <span><i class="fas fa-vector-square"></i> <?= $imovel['area'] ?>m²</span>
+                                <?php endif; ?>
+                            </div>
+                            <p class="property-price"><?= $preco_formatado ?></p>
+                            <a href="imovel-detalhes.php?id=<?= $imovel['id'] ?>" class="btn">Ver Detalhes</a>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+        <?php else: ?>
+            <div class="no-properties">
+                <p>Nenhum imóvel cadastrado recentemente.</p>
+            </div>
+        <?php endif; ?>
+
+        <div class="view-all">
+            <a href="imoveis.php" class="btn">Ver Todos os Imóveis</a>
+        </div>
+    </div>
+</section>
+
+
 <!-- About Section -->
 <section class="about-section">
     <div class="container">
