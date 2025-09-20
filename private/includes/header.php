@@ -32,7 +32,7 @@ $page_title = isset($page_title) ? $page_title : 'Corretora Claudia Colombo | Im
             <div id="logo" class="catalogo-logo">
                 <div class="logo__bg"></div>
                 <a href="index.php" title="Home">
-                    <img class="logo-dark" src="public/assets/images/logo-dark.png" alt="Corretora Claudia Colombo">
+                    <img class="logo-dark" src="public/assets/images/logo/logo-dark.png" alt="Corretora Claudia Colombo">
                 </a>
             </div>
             <nav class="main-nav">
