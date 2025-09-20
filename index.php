@@ -1,6 +1,6 @@
 <?php
-require_once 'private/includes/db.php';
-require_once 'private/includes/functions.php';
+//require_once 'private/includes/db.php';
+//require_once 'private/includes/functions.php';
 
 // Buscar imóveis em destaque para o carrossel
 $carousel_imoveis = db_query("
