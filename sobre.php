@@ -3,7 +3,7 @@ require_once 'private/includes/db.php';
 
 // Buscar dados da corretora (exemplo com dados estáticos, pode ser adaptado para BD)
 $sobre_nos = [
-    'titulo' => 'Sobre a Corretora Base',
+    'titulo' => 'Sobre a Corretora Claudia Colombo',
     'descricao' => 'Somos uma corretora de imóveis comprometida em oferecer o melhor serviço para nossos clientes. Com anos de experiência no mercado, ajudamos você a encontrar o imóvel perfeito ou a vender seu patrimônio com segurança e tranquilidade.',
     'missao' => 'Proporcionar soluções imobiliárias com excelência, transparência e ética, superando as expectativas de nossos clientes.',
     'visao' => 'Ser reconhecida como a melhor opção em serviços imobiliários, através de um atendimento personalizado e resultados excepcionais.',
@@ -176,7 +176,7 @@ include 'private/includes/header.php';
                 <div class="testimonial">
                     <div class="testimonial-content">
                         <i class="fas fa-quote-left"></i>
-                        <p>A Corretora Base foi fundamental para eu encontrar meu apartamento dos sonhos. Profissionais extremamente competentes e atenciosos.</p>
+                        <p>A Corretora Claudia Colombo foi fundamental para eu encontrar meu apartamento dos sonhos. Profissionais extremamente competentes e atenciosos.</p>
                     </div>
                     <div class="client-info">
                         <h4>Ana Paula Mendes</h4>

@@ -212,13 +212,13 @@ include 'private/includes/header.php';
     </section>
 
     <!-- Similar Properties -->
-    <?php if ($similares && $similares->num_rows > 0): ?>
+    <?php if ($similares && count($similares) > 0): ?>
     <section class="similar-properties">
         <div class="container">
             <h2 class="section-title">Imóveis Similares</h2>
             
             <div class="properties-grid">
-                <?php while ($similar = $similares->fetch_assoc()): 
+                <?php foreach ($similares as $similar): 
                     $similar_imagens = explode(',', $similar['imagens']);
                     $similar_preco = 'R$ ' . number_format($similar['preco'], 2, ',', '.');
                 ?>
@@ -231,11 +231,12 @@ include 'private/includes/header.php';
                             <a href="imovel-detalhes.php?id=<?= $similar['id'] ?>" class="btn">Ver Detalhes</a>
                         </div>
                     </div>
-                <?php endwhile; ?>
+                <?php endforeach; ?>
             </div>
         </div>
     </section>
     <?php endif; ?>
+
 <?php
 // Incluir o footer
 include 'private/includes/footer.php';

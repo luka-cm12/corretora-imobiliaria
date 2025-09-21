@@ -19,10 +19,46 @@ if (session_status() === PHP_SESSION_NONE) {
  * Configuração do banco de dados
  */
 if (!defined('NOME_CORRETORA')) define('NOME_CORRETORA', 'Corretora Cláudia Colombo');
-if (!defined('DB_HOST')) define('DB_HOST', '127.0.0.1');
-if (!defined('DB_USER')) define('DB_USER', 'admin');
-if (!defined('DB_PASS')) define('DB_PASS', 'senha_admin');
-if (!defined('DB_NAME')) define('DB_NAME', 'corretora_base');
+
+// Detecta ambiente automaticamente
+$serverName = $_SERVER['SERVER_NAME'] ?? 'localhost';
+
+if ($serverName === 'localhost' || $serverName === '127.0.0.1') {
+    // Ambiente de desenvolvimento (local)
+    if (!defined('DB_HOST')) define('DB_HOST', '127.0.0.1');
+    if (!defined('DB_USER')) define('DB_USER', 'root');
+    if (!defined('DB_PASS')) define('DB_PASS', '');
+    if (!defined('DB_NAME')) define('DB_NAME', 'corretora_base');
+} else {
+    // Ambiente de produção (servidor real)
+    if (!defined('DB_HOST')) define('DB_HOST', '127.0.0.1');
+    if (!defined('DB_USER')) define('DB_USER', 'admin');
+    if (!defined('DB_PASS')) define('DB_PASS', 'senha_admin');
+    if (!defined('DB_NAME')) define('DB_NAME', 'corretora_base');
+}
+
+/**
+ * Configuração do banco de dados
+ */
+if (!defined('NOME_CORRETORA')) define('NOME_CORRETORA', 'Corretora Cláudia Colombo');
+
+try {
+    // Tenta primeiro com root (sem senha) - comum em PCs locais
+    $conn = new PDO("mysql:host=127.0.0.1;dbname=corretora_base", "root", "", [
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
+    ]);
+} catch (PDOException $e1) {
+    try {
+        // Se falhar, tenta com admin/senha_admin
+        $conn = new PDO("mysql:host=127.0.0.1;dbname=corretora_base", "admin", "senha_admin", [
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
+        ]);
+    } catch (PDOException $e2) {
+        die("Erro ao conectar ao banco: verifique usuário/senha. <br>" . $e2->getMessage());
+    }
+}
 
 
 // Tenta conectar
