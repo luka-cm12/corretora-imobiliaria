@@ -22,7 +22,7 @@ try {
     
 } catch (Exception $e) {
     // Registrar o erro em um arquivo de log (recomendado para produção)
-    error_log($e->getMessage(), 3, __DIR__ . '/../logs/db_errors.log');
+    //error_log($e->getMessage(), 3, __DIR__ . '/../logs/db_errors.log');
     
     // Exibir mensagem amigável (apenas em ambiente de desenvolvimento)
     if (defined('DEV_ENVIRONMENT') && DEV_ENVIRONMENT === true) {
