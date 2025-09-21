@@ -15,13 +15,18 @@ $imovel = db_query(
     [$imovel_id]
 );
 
-if (!$imovel || $imovel->num_rows === 0) {
+$imovel_result = db_query("SELECT * FROM imoveis WHERE id = ?", [$imovel_id]);
+
+// Verifica se encontrou algum resultado
+if (!is_array($imovel_result) || count($imovel_result) === 0) {
     header('Location: imoveis.php');
     exit;
 }
 
-$imovel = $imovel->fetch_assoc();
+// Pega o primeiro resultado
+$imovel = $imovel_result[0];
 $imagens = explode(',', $imovel['imagens']);
+
 
 // Formatar preço
 $preco_formatado = 'R$ ' . number_format($imovel['preco'], 2, ',', '.');
@@ -41,6 +46,9 @@ $tipos = [
     'terreno' => 'Terreno',
     'comercial' => 'Comercial'
 ];
+
+// Incluir o header
+include 'private/includes/header.php';
 ?>
 
 <!DOCTYPE html>
@@ -54,40 +62,7 @@ $tipos = [
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
-    <!-- Top Bar -->
-    <div class="top-bar">
-        <div class="container">
-            <div class="contact-info">
-                <span><i class="fas fa-phone"></i> (XX) XXXX-XXXX</span>
-                <span><i class="fas fa-envelope"></i> contato@corretorabase.com.br</span>
-            </div>
-            <div class="social-icons">
-                <a href="#"><i class="fab fa-facebook-f"></i></a>
-                <a href="#"><i class="fab fa-instagram"></i></a>
-                <a href="#"><i class="fab fa-whatsapp"></i></a>
-            </div>
-        </div>
-    </div>
 
-    <!-- Header -->
-    <header class="header">
-        <div class="container">
-            <div class="logo">
-                <h1>Corretora<span>Base</span></h1>
-            </div>
-            <nav class="main-nav">
-                <ul>
-                    <li><a href="index.php">Home</a></li>
-                    <li><a href="sobre.php">Sobre</a></li>
-                    <li><a href="imoveis.php">Imóveis</a></li>
-                    <li><a href="contato.php">Contato</a></li>
-                </ul>
-            </nav>
-            <div class="mobile-menu">
-                <i class="fas fa-bars"></i>
-            </div>
-        </div>
-    </header>
 
     <!-- Breadcrumb -->
     <section class="breadcrumb">
@@ -237,13 +212,13 @@ $tipos = [
     </section>
 
     <!-- Similar Properties -->
-    <?php if ($similares && $similares->num_rows > 0): ?>
+    <?php if ($similares && count($similares) > 0): ?>
     <section class="similar-properties">
         <div class="container">
             <h2 class="section-title">Imóveis Similares</h2>
             
             <div class="properties-grid">
-                <?php while ($similar = $similares->fetch_assoc()): 
+                <?php foreach ($similares as $similar): 
                     $similar_imagens = explode(',', $similar['imagens']);
                     $similar_preco = 'R$ ' . number_format($similar['preco'], 2, ',', '.');
                 ?>
@@ -256,50 +231,16 @@ $tipos = [
                             <a href="imovel-detalhes.php?id=<?= $similar['id'] ?>" class="btn">Ver Detalhes</a>
                         </div>
                     </div>
-                <?php endwhile; ?>
+                <?php endforeach; ?>
             </div>
         </div>
     </section>
     <?php endif; ?>
 
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="container">
-            <div class="footer-grid">
-                <div class="footer-col">
-                    <h3>Corretora Base</h3>
-                    <p>Oferecendo soluções imobiliárias completas com transparência e profissionalismo.</p>
-                    <div class="footer-social">
-                        <a href="#"><i class="fab fa-facebook-f"></i></a>
-                        <a href="#"><i class="fab fa-instagram"></i></a>
-                        <a href="#"><i class="fab fa-whatsapp"></i></a>
-                    </div>
-                </div>
-                <div class="footer-col">
-                    <h3>Links Rápidos</h3>
-                    <ul>
-                        <li><a href="index.php">Home</a></li>
-                        <li><a href="sobre.php">Sobre</a></li>
-                        <li><a href="imoveis.php">Imóveis</a></li>
-                        <li><a href="contato.php">Contato</a></li>
-                    </ul>
-                </div>
-                <div class="footer-col">
-                    <h3>Contato</h3>
-                    <ul class="contact-info">
-                        <li><i class="fas fa-map-marker-alt"></i> Rua Exemplo, 123 - Centro</li>
-                        <li><i class="fas fa-phone"></i> (XX) XXXX-XXXX</li>
-                        <li><i class="fas fa-envelope"></i> contato@corretorabase.com.br</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-        <div class="footer-bottom">
-            <div class="container">
-                <p>&copy; 2023 Corretora Base. Todos os direitos reservados.</p>
-            </div>
-        </div>
-    </footer>
+<?php
+// Incluir o footer
+include 'private/includes/footer.php';
+?>
 
     <!-- Scripts -->
     <script src="public/assets/js/lightbox-plus-jquery.min.js"></script>

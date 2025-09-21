@@ -17,7 +17,7 @@ if (session_status() === PHP_SESSION_NONE) {
 
 // Verifica se há um usuário logado
 if (isset($_SESSION['usuario_id'])) {
-    require_once 'conexao.php';
+    require_once 'db.php';
     require_once 'log_acoes.php';
     
     // Define a função registrarLog caso não esteja definida

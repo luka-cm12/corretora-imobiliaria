@@ -8,8 +8,8 @@
  */
 
 // Verificação de segurança
-require_once 'config.php';
-require_once 'funcoes_seguranca.php';
+require_once(__DIR__ . "/../config/config.php");
+require_once(__DIR__ . "/../includes/funcoes_seguranca.php");
 
 // Define verificaCsrfToken se não existir
 if (!function_exists('verificaCsrfToken')) {

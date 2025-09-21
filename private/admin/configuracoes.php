@@ -8,16 +8,18 @@
  */
 
 // Verificação de segurança
-require_once 'config.php';
-require_once 'funcoes_seguranca.php';
+require_once(__DIR__ . "/../config/config.php");
+require_once(__DIR__ . "/../includes/funcoes_seguranca.php");
 
 // Inclui arquivo com a função verificaPermissao, se necessário
 if (!function_exists('verificaPermissao')) {
-    require_once 'funcoes_permissoes.php'; // ajuste o nome do arquivo conforme necessário
+    require_once(__DIR__ . "/../includes/funcoes_permissoes.php");
+ // ajuste o nome do arquivo conforme necessário
 }
 
 // Verifica se o usuário é administrador
-require_once 'funcoes_login.php'; // ajuste o nome do arquivo conforme necessário
+require_once(__DIR__ . "/../includes/funcoes_login.php");
+ // ajuste o nome do arquivo conforme necessário
 verificaLogin();
 verificaPermissao('admin');
 

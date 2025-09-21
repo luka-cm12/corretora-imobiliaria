@@ -3,7 +3,7 @@
         <div class="container">
             <div class="footer-grid">
                 <div class="footer-col">
-                    <h3>Corretora Base</h3>
+                    <h3>Corretora Claudia Colombo</h3>
                     <p>Oferecendo soluções imobiliárias completas com transparência e profissionalismo.</p>
                     <div class="footer-social">
                         <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
@@ -32,7 +32,7 @@
         </div>
         <div class="footer-bottom">
             <div class="container">
-                <p>&copy; <?= date('Y') ?> Corretora Base. Todos os direitos reservados.</p>
+                <p>&copy; <?= date('Y') ?> Corretora Claudia Colombo. Todos os direitos reservados.</p>
             </div>
         </div>
     </footer>

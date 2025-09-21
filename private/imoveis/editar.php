@@ -1,8 +1,8 @@
 <?php
-require_once 'private/includes/auth.php';
-require_once 'private/includes/db.php';
-require_once 'private/includes/functions.php';
-require_login();
+require_once(__DIR__ . '/../includes/auth.php');
+require_once(__DIR__ . '/../includes/db.php');
+require_once(__DIR__ . '/../includes/functions.php');
+//require_login();
 
 // Verificar se o ID do imóvel foi passado
 if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
@@ -154,7 +154,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 // Incluir header administrativo
-include 'private/includes/admin-header.php';
+include __DIR__ . '/../includes/admin-header.php';
 ?>
 
 <div class="admin-content">
@@ -276,5 +276,5 @@ include 'private/includes/admin-header.php';
 
 <?php
 // Incluir footer administrativo
-include 'private/includes/admin-footer.php';
+include __DIR__ . '/../includes/admin-footer.php';
 ?>

@@ -7,11 +7,16 @@
  * @date 2023-11-20
  */
 
+// Defina o nome da corretora se ainda não estiver definido
+if (!defined('NOME_CORRETORA')) {
+    define('NOME_CORRETORA', 'Corretora');
+}
+
 // Verifica se o usuário está logado
-if (!isset($_SESSION['usuario_id'])) {
+/*if (!isset($_SESSION['usuario_id'])) {
     header("Location: " . BASE_URL . "admin/login.php");
     exit();
-}
+}*/
 
 // Obtém o perfil do usuário
 $perfil_usuario = $_SESSION['usuario_tipo'] ?? 'corretor';
@@ -23,7 +28,7 @@ $perfil_usuario = $_SESSION['usuario_tipo'] ?? 'corretor';
     <div class="sidebar-header">
         <a href="<?php echo BASE_URL; ?>admin/dashboard.php" class="d-flex align-items-center">
             <img src="<?php echo BASE_URL; ?>assets/images/logo-admin.png" alt="<?php echo defined('NOME_CORRETORA') ? NOME_CORRETORA : 'Corretora'; ?>" class="sidebar-logo">
-            <span class="sidebar-brand"><?php echo defined('NOME_CORRETORA') ? NOME_CORRETORA : 'Corretora'; ?></span>
+            <span class="sidebar-brand"><?php echo (defined('NOME_CORRETORA') && NOME_CORRETORA) ? NOME_CORRETORA : 'Corretora'; ?></span>
         </a>
     </div>
 
@@ -46,12 +51,12 @@ $perfil_usuario = $_SESSION['usuario_tipo'] ?? 'corretor';
                 </a>
                 <ul class="collapse list-unstyled" id="submenu-imoveis">
                     <li>
-                        <a href="<?php echo BASE_URL; ?>admin/lista_imoveis.php" class="<?php echo (basename($_SERVER['PHP_SELF']) == 'lista_imoveis.php') ? 'active' : ''; ?>">
+                        <a href="<?php echo BASE_URL; ?>admin/listar.php" class="<?php echo (basename($_SERVER['PHP_SELF']) == 'lista_imoveis.php') ? 'active' : ''; ?>">
                             <i class="fas fa-list"></i> Listar Imóveis
                         </a>
                     </li>
                     <li>
-                        <a href="<?php echo BASE_URL; ?>admin/adicionar_imovel.php" class="<?php echo (basename($_SERVER['PHP_SELF']) == 'adicionar_imovel.php') ? 'active' : ''; ?>">
+                        <a href="<?php echo BASE_URL; ?>admin/adicionar.php" class="<?php echo (basename($_SERVER['PHP_SELF']) == 'adicionar_imovel.php') ? 'active' : ''; ?>">
                             <i class="fas fa-plus-circle"></i> Adicionar Imóvel
                         </a>
                     </li>

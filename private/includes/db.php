@@ -4,8 +4,8 @@ define('DEV_ENVIRONMENT', true);
 
 // Configurações do banco de dados
 define('DB_HOST', '127.0.0.1');     // Endereço do servidor MySQL
-define('DB_USER', 'root'); // Usuário do banco de dados
-define('DB_PASS', 'NovaSenha');   // Senha do banco de dados
+define('DB_USER', 'admin'); // Usuário do banco de dados
+define('DB_PASS', 'senha_admin');   // Senha do banco de dados
 define('DB_NAME', 'corretora_base');    // Nome do banco de dados
 
 // Tentativa de conexão
@@ -22,7 +22,7 @@ try {
     
 } catch (Exception $e) {
     // Registrar o erro em um arquivo de log (recomendado para produção)
-    error_log($e->getMessage(), 3, __DIR__ . '/../logs/db_errors.log');
+    //error_log($e->getMessage(), 3, __DIR__ . '/../logs/db_errors.log');
     
     // Exibir mensagem amigável (apenas em ambiente de desenvolvimento)
     if (defined('DEV_ENVIRONMENT') && DEV_ENVIRONMENT === true) {
@@ -45,48 +45,37 @@ try {
  * @return mysqli_result|bool Resultado da consulta ou false em caso de erro
  */
 function db_query($sql, $params = []) {
-    global $conn;
-    
+    global $conn; // $conn deve ser um objeto mysqli
+
     $stmt = $conn->prepare($sql);
     if (!$stmt) {
-        error_log("Erro ao preparar query: " . $conn->error);
-        return false;
+        die("Erro na preparação da query: " . $conn->error);
     }
-    
-    if (!empty($params)) {
-        $types = '';
-        $values = [];
-        
-        foreach ($params as $param) {
-            if (is_int($param)) {
-                $types .= 'i'; // integer
-            } elseif (is_float($param)) {
-                $types .= 'd'; // double
-            } elseif (is_string($param)) {
-                $types .= 's'; // string
-            } else {
-                $types .= 'b'; // blob
-            }
-            
-            $values[] = $param;
+
+    if ($params) {
+        // Cria a string de tipos automaticamente (tudo como string 's')
+        $types = str_repeat('s', count($params));
+        // Usa o operador ... para passar os parâmetros
+        $stmt->bind_param($types, ...$params);
+    }
+
+    $stmt->execute();
+
+    // Para SELECT, retorna resultado como array associativo
+    if (stripos(trim($sql), 'select') === 0) {
+        $result = $stmt->get_result();
+        $rows = [];
+        while ($row = $result->fetch_assoc()) {
+            $rows[] = $row;
         }
-        
-        $stmt->bind_param($types, ...$values);
+        $stmt->close();
+        return $rows;
     }
-    
-    if (!$stmt->execute()) {
-        error_log("Erro ao executar query: " . $stmt->error);
-        return false;
-    }
-    
-    $result = $stmt->get_result();
-    
-    // Para INSERT/UPDATE/DELETE, retornar número de linhas afetadas
-    if ($result === false) {
-        return $stmt->affected_rows;
-    }
-    
-    return $result;
+
+    // Para INSERT/UPDATE/DELETE, retorna número de linhas afetadas
+    $affected = $stmt->affected_rows;
+    $stmt->close();
+    return $affected;
 }
 
 /**
@@ -108,4 +97,15 @@ function db_escape($data) {
 function db_last_id() {
     global $conn;
     return $conn->insert_id;
+}
+
+// Exemplo de uso da função db_query para inserção
+$titulo = $_POST['titulo'] ?? '';
+$cidade = $_POST['cidade'] ?? '';
+$sql = "INSERT INTO imoveis (titulo, cidade) VALUES (?, ?)";
+db_query($sql, [$titulo, $cidade]);
+
+$imoveis = db_query("SELECT * FROM imoveis WHERE cidade = ?", [$cidade]);
+foreach ($imoveis as $imovel) {
+    // ...
 }
