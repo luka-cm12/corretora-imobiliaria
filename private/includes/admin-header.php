@@ -31,6 +31,7 @@ if (!isset($page_title)) {
                     <li><a href="dashboard.php" <?= basename($_SERVER['PHP_SELF']) == 'dashboard.php' ? 'class="active"' : '' ?>><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
                     <li><a href="../imoveis/listar.php" <?= basename($_SERVER['PHP_SELF']) == 'listar.php' ? 'class="active"' : '' ?>><i class="fas fa-home"></i> Imóveis</a></li>
                     <li><a href="../imoveis/adicionar.php" <?= basename($_SERVER['PHP_SELF']) == 'adicionar.php' ? 'class="active"' : '' ?>><i class="fas fa-plus-circle"></i> Adicionar Imóvel</a></li>
+                    <li><a href="../imoveis/proprietario-cadastrar.php" <?= basename($_SERVER['PHP_SELF']) == 'proprietarios.php' ? 'class="active"' : '' ?>><i class="fas fa-user-tie"></i> Proprietários</a></li>
                     <li><a href="usuarios.php" <?= basename($_SERVER['PHP_SELF']) == 'usuarios.php' ? 'class="active"' : '' ?>><i class="fas fa-users"></i> Usuários</a></li>
                     <li><a href="configuracoes.php" <?= basename($_SERVER['PHP_SELF']) == 'configuracoes.php' ? 'class="active"' : '' ?>><i class="fas fa-cog"></i> Configurações</a></li>
                     <li><a href="logout.php"><i class="fas fa-sign-out-alt"></i> Sair</a></li>
