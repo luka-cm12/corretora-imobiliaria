@@ -8,7 +8,7 @@ $error = '';
 $success = '';
 
 // Buscar proprietários para o select
-$proprietarios = db_query("SELECT id_proprietario as id, nome FROM proprietarios ORDER BY nome ASC");
+//$proprietarios = db_query("SELECT id_proprietario as id, nome FROM proprietarios ORDER BY nome ASC");
 
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -95,7 +95,9 @@ include __DIR__ . '/../includes/admin-header.php';
                 </option>
                 <?php endforeach; ?>
             </select>
+            <a href="proprietario-cadastrar.php" class="btn btn-small">+ Novo Proprietário</a>
         </div>
+
 
         <div class="form-group">
             <label for="titulo">Título *</label>
