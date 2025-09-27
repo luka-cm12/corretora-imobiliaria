@@ -90,7 +90,7 @@ include __DIR__ . '/../includes/admin-header.php';
             <select id="id_proprietario" name="id_proprietario" required>
                 <option value="">Selecione o proprietário</option>
                 <?php foreach ($proprietarios as $prop): ?>
-                <option value="<?= $prop['id'] ?>" <?= ($_POST['id_proprietario'] ?? '') == $prop['id'] ? 'selected' : '' ?>>
+                <option value="<?= $prop['id_proprietario'] ?>" <?= ($_POST['id_proprietario'] ?? '') == $prop['id_proprietario'] ? 'selected' : '' ?>>
                     <?= htmlspecialchars($prop['nome']) ?>
                 </option>
                 <?php endforeach; ?>

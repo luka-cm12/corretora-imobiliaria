@@ -201,8 +201,10 @@ include 'private/includes/header.php';
         <?php else: ?>
             <div class="properties-grid">
                 <?php foreach ($imoveis as $imovel): 
-                    $imagens = explode(',', $imovel['imagens']);
-                    $firstImage = !empty($imagens) ? 'uploads/' . $imagens[0] : 'assets/images/default-property.jpg';
+                    //$imagens = explode(',', $imovel['imagens']);
+                    $imagens = array_filter(explode(',', $imovel['imagens']));
+                    $firstImage = !empty($imagens) ? '/uploads/' . reset($imagens) : '/assets/images/default-property.jpg';
+
                     $preco_formatado = formatar_preco($imovel['preco']);
                 ?>
                     <div class="property-card">
