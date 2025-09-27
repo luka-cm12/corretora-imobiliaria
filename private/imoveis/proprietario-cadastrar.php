@@ -1,75 +1,65 @@
 <?php
-require_once(__DIR__ . '/../includes/auth.php');
 require_once(__DIR__ . '/../includes/db.php');
-require_once(__DIR__ . '/../includes/functions.php');
-require_once(__DIR__ . '/../config/config.php');
-
 $error = '';
 $success = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    try {
-        $nome = trim($_POST['nome'] ?? '');
-        $cpf = trim($_POST['cpf'] ?? '');
-        $telefone = trim($_POST['telefone'] ?? '');
-        $email = trim($_POST['email'] ?? '');
+    $nome = trim($_POST['nome'] ?? '');
+    $cpf = trim($_POST['cpf'] ?? '');
+    $telefone = trim($_POST['telefone'] ?? '');
+    $email = trim($_POST['email'] ?? '');
+    $endereco = trim($_POST['endereco'] ?? '');
 
-        if (empty($nome)) {
-            throw new Exception('O nome do proprietário é obrigatório.');
-        }
+    if (empty($nome) || empty($cpf)) {
+        $error = "Nome e CPF são obrigatórios.";
+    } else {
+        $sql = "INSERT INTO proprietarios (nome, cpf, telefone, email, endereco) VALUES (?, ?, ?, ?, ?)";
+        $result = db_query($sql, [$nome, $cpf, $telefone, $email, $endereco]);
 
-        $sql = "INSERT INTO proprietarios (nome, cpf ,telefone, email) VALUES (?, ?, ?, ?)";
-        $result = db_query($sql, [$nome, $cpf, $telefone, $email]);
-
-        if ($result) {
-            $success = 'Proprietário cadastrado com sucesso!';
-            $_POST = [];
+        if ($result > 0) {
+            $success = "Proprietário cadastrado com sucesso!";
+            $_POST = []; // limpa form
         } else {
-            throw new Exception('Erro ao cadastrar proprietário no banco de dados.');
+            $error = "Erro ao cadastrar proprietário.";
         }
-
-    } catch (Exception $e) {
-        $error = $e->getMessage();
     }
 }
 
 include __DIR__ . '/../includes/admin-header.php';
 ?>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Cadastrar Proprietário</title>
+</head>
+<body>
+  <h1>Cadastrar Proprietário</h1>
+  
+  <?php if ($error): ?><div style="color:red;"><?= $error ?></div><?php endif; ?>
+  <?php if ($success): ?><div style="color:green;"><?= $success ?></div><?php endif; ?>
 
-<div class="admin-content">
-    <h1>Cadastrar Proprietário</h1>
+  <form method="POST">
+    <label>Nome *</label><br>
+    <input type="text" name="nome" value="<?= htmlspecialchars($_POST['nome'] ?? '') ?>" required><br><br>
 
-    <?php if ($error): ?>
-        <div class="alert alert-danger"><?= $error ?></div>
-    <?php endif; ?>
+    <label>CPF *</label><br>
+    <input type="text" name="cpf" value="<?= htmlspecialchars($_POST['cpf'] ?? '') ?>" required><br><br>
 
-    <?php if ($success): ?>
-        <div class="alert alert-success"><?= $success ?></div>
-    <?php endif; ?>
+    <label>Telefone</label><br>
+    <input type="text" name="telefone" value="<?= htmlspecialchars($_POST['telefone'] ?? '') ?>"><br><br>
 
-    <form action="" method="post" class="form-proprietario">
-        <div class="form-group">
-            <label for="nome">Nome *</label>
-            <input type="text" id="nome" name="nome" value="<?= htmlspecialchars($_POST['nome'] ?? '') ?>" required>
-        </div>
+    <label>Email</label><br>
+    <input type="email" name="email" value="<?= htmlspecialchars($_POST['email'] ?? '') ?>"><br><br>
 
-        <div class="form-group">
-            <label for="cpf">CPF *</label>
-            <input type="text" id="cpf" name="cpf" value="<?= htmlspecialchars($_POST['cpf'] ?? '') ?>" required>
-        </div>
+    <label>Endereço</label><br>
+    <textarea name="endereco"><?= htmlspecialchars($_POST['endereco'] ?? '') ?></textarea><br><br>
 
-        <div class="form-group">
-            <label for="telefone">Telefone</label>
-            <input type="text" id="telefone" name="telefone" value="<?= htmlspecialchars($_POST['telefone'] ?? '') ?>">
-        </div>
+    <button type="submit">Salvar Proprietário</button>
+  </form>
 
-        <div class="form-group">
-            <label for="email">E-mail</label>
-            <input type="email" id="email" name="email" value="<?= htmlspecialchars($_POST['email'] ?? '') ?>">
-        </div>
-
-        <button type="submit" class="btn">Salvar Proprietário</button>
-    </form>
-</div>
+  <a href="adicionar.php">Voltar para cadastro de imóveis</a>
+</body>
+</html>
 
 <?php include __DIR__ . '/../includes/admin-footer.php'; ?>

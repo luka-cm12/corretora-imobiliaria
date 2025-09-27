@@ -20,12 +20,12 @@ if (!function_exists('verificaPermissao')) {
 // Verifica se o usuário é administrador
 require_once(__DIR__ . "/../includes/funcoes_login.php");
  // ajuste o nome do arquivo conforme necessário
-verificaLogin();
-verificaPermissao('admin');
+//verificaLogin();
+//verificaPermissao('admin');
 
 // Conexão com o banco de dados
-require_once 'conexao.php';
-require_once 'funcoes_log.php'; // ajuste o nome do arquivo conforme necessário
+require_once __DIR__ . '/../includes/db.php';
+require_once __DIR__ . '/../includes/funcoes_log.php'; // ajuste o nome do arquivo conforme necessário
 
 // Variáveis para controle da interface
 $pagina_atual = 'configuracoes';

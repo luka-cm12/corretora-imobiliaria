@@ -65,19 +65,35 @@ $sql .= " ORDER BY created_at DESC";
 
 // Executar a consulta
 $stmt = $conn->prepare($sql);
+
 if (!empty($params)) {
-    $stmt->bind_param($types, ...$params);
+    // Bind de parâmetros no PDO
+    foreach ($params as $key => $value) {
+        // ':param1', ':param2', ... ou '?', dependendo do seu SQL
+        $stmt->bindValue($key + 1, $value); // se usar ? no SQL
+    }
 }
+
 $stmt->execute();
-$result = $stmt->get_result();
-$imoveis = $result->fetch_all(MYSQLI_ASSOC);
+
+// Pega todos os resultados como array associativo
+$imoveis = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
 
 // Obter opções para filtros
-$tipos = $conn->query("SELECT DISTINCT tipo FROM imoveis ORDER BY tipo")->fetch_all(MYSQLI_ASSOC);
-$cidades = $conn->query("SELECT DISTINCT cidade FROM imoveis ORDER BY cidade")->fetch_all(MYSQLI_ASSOC);
-$bairros = !empty($filtros['cidade']) ? 
-    $conn->query("SELECT DISTINCT bairro FROM imoveis WHERE cidade = '{$filtros['cidade']}' ORDER BY bairro")->fetch_all(MYSQLI_ASSOC) : 
-    [];
+$tipos = $conn->query("SELECT DISTINCT tipo FROM imoveis ORDER BY tipo")
+              ->fetchAll(PDO::FETCH_ASSOC);
+
+$cidades = $conn->query("SELECT DISTINCT cidade FROM imoveis ORDER BY cidade")
+                ->fetchAll(PDO::FETCH_ASSOC);
+
+$bairros = [];
+if (!empty($filtros['cidade'])) {
+    $stmt = $conn->prepare("SELECT DISTINCT bairro FROM imoveis WHERE cidade = :cidade ORDER BY bairro");
+    $stmt->execute([':cidade' => $filtros['cidade']]);
+    $bairros = $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
 
 
 include 'private/includes/header.php';

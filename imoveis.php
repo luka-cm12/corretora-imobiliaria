@@ -78,12 +78,14 @@ $sql .= " ORDER BY created_at DESC";
 
 // Executar a consulta
 $stmt = $conn->prepare($sql);
+
 if (!empty($params)) {
-    $stmt->bind_param($types, ...$params);
+    // Bind de parâmetros no PDO
+    foreach ($params as $key => $value) {
+        // ':param1', ':param2', ... ou '?', dependendo do seu SQL
+        $stmt->bindValue($key + 1, $value); // se usar ? no SQL
+    }
 }
-$stmt->execute();
-$result = $stmt->get_result();
-$imoveis = $result->fetch_all(MYSQLI_ASSOC);
 
 // Obter opções para filtros
 $tipos = db_query("SELECT DISTINCT tipo FROM imoveis ORDER BY tipo");

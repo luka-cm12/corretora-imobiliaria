@@ -8,7 +8,7 @@ $error = '';
 $success = '';
 
 // Buscar proprietários para o select
-//$proprietarios = db_query("SELECT id_proprietario as id, nome FROM proprietarios ORDER BY nome ASC");
+$proprietarios = db_query("SELECT id_proprietario, nome FROM proprietarios ORDER BY nome ASC");
 
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
