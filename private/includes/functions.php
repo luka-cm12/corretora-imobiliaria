@@ -28,8 +28,13 @@ function formatar_preco($preco) {
 function upload_imagem($imagem, $pasta, $largura = null, $altura = null) {
     if ($imagem['error'] !== UPLOAD_ERR_OK) return false;
 
-    $tipos_permitidos = ['image/jpeg', 'image/png', 'image/gif'];
-    if (!in_array($imagem['type'], $tipos_permitidos)) return false;
+    // Detectar MIME real do arquivo
+    $finfo = function_exists('finfo_open') ? finfo_open(FILEINFO_MIME_TYPE) : null;
+    $mime_real = $finfo ? finfo_file($finfo, $imagem['tmp_name']) : ($imagem['type'] ?? '');
+    if ($finfo) { finfo_close($finfo); }
+
+    $tipos_permitidos = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+    if (!in_array(strtolower($mime_real), $tipos_permitidos)) return false;
 
     $extensao = pathinfo($imagem['name'], PATHINFO_EXTENSION);
     $nome_arquivo = uniqid() . '.' . strtolower($extensao);
@@ -47,8 +52,8 @@ function upload_imagem($imagem, $pasta, $largura = null, $altura = null) {
         redimensionar_imagem($caminho_completo, $largura, $altura);
     }
 
-    // Retorna URL relativa
-    return 'http://localhost/corretora-imobiliaria/' . trim($pasta, '/') . '/' . $nome_arquivo;
+    // Retorna apenas o nome do arquivo (sem caminho) para consistência com o restante do sistema
+    return $nome_arquivo;
 }
 
 /**

@@ -13,18 +13,18 @@ if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
 $imovel_id = intval($_GET['id']);
 
 // Buscar os dados do imóvel
-$imovel = db_query(
-    "SELECT * FROM imoveis WHERE id = ?", 
+$imovel_result = db_query(
+    "SELECT * FROM imoveis WHERE id = ?",
     [$imovel_id]
 );
 
-if (!$imovel || $imovel->num_rows === 0) {
+if (!is_array($imovel_result) || count($imovel_result) === 0) {
     header('Location: listar.php');
     exit;
 }
 
-$imovel = $imovel->fetch_assoc();
-$imovel['imagens'] = explode(',', $imovel['imagens']);
+$imovel = $imovel_result[0];
+$imovel['imagens'] = array_values(array_filter(explode(',', $imovel['imagens'])));
 
 // Processar formulário de edição
 $error = '';
@@ -52,7 +52,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         
         // Processar upload de novas imagens
-        $uploadDir = 'public/uploads/';
+    $uploadDir = 'public/uploads/';
         $novas_imagens = [];
         $imagens_para_manter = $_POST['imagens_existentes'] ?? [];
         $imagens_removidas = [];
@@ -121,7 +121,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             
             // Excluir imagens removidas
             foreach ($imagens_removidas as $imagem_removida) {
-                @unlink($uploadDir . $imagem_removida);
+                @unlink(__DIR__ . '/../../public/uploads/' . $imagem_removida);
             }
             
             // Atualizar dados do imóvel para exibição
@@ -147,7 +147,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Excluir novas imagens que foram enviadas em caso de erro
         if (!empty($novas_imagens)) {
             foreach ($novas_imagens as $imagem) {
-                @unlink($uploadDir . $imagem);
+                @unlink(__DIR__ . '/../../public/uploads/' . $imagem);
             }
         }
     }

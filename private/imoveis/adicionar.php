@@ -31,8 +31,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             throw new Exception('Preencha todos os campos obrigatórios corretamente.');
         }
 
-        $imagens = [];
-        $uploadDir = '../public/uploads';
+    $imagens = [];
+    // Caminho relativo a partir de private/imoveis até a raiz: usar 'public/uploads'
+    $uploadDir = 'public/uploads';
 
         if (!empty($_FILES['imagens']['name'][0])) {
             foreach ($_FILES['imagens']['tmp_name'] as $key => $tmp_name) {
@@ -65,7 +66,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } catch (Exception $e) {
         $error = $e->getMessage();
         if (!empty($imagens)) {
-            foreach ($imagens as $img) @unlink($uploadDir . '/' . $img);
+            foreach ($imagens as $img) @unlink(__DIR__ . '/../../public/uploads/' . $img);
         }
     }
 }

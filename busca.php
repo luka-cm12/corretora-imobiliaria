@@ -99,17 +99,6 @@ if (!empty($filtros['cidade'])) {
 include 'private/includes/header.php';
 ?>
 
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Resultados da Busca | Corretora Base</title>
-    <link rel="stylesheet" href="public/assets/css/style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-</head>
-<body>
-
 
     <!-- Page Header -->
     <section class="page-header">
@@ -213,8 +202,8 @@ include 'private/includes/header.php';
             <?php else: ?>
                 <div class="properties-grid">
                     <?php foreach ($imoveis as $imovel): 
-                        $imagens = explode(',', $imovel['imagens']);
-                        $firstImage = !empty($imagens) ? 'uploads/' . $imagens[0] : 'assets/images/default-property.jpg';
+                        $imagens = array_filter(explode(',', $imovel['imagens']));
+                        $firstImage = !empty($imagens) ? 'public/uploads/' . $imagens[0] : 'public/assets/images/default-property.jpg';
                         $preco_formatado = 'R$ ' . number_format($imovel['preco'], 2, ',', '.');
                     ?>
                         <div class="property-card">
@@ -264,7 +253,6 @@ include 'private/includes/header.php';
         // Incluir o footer
         include 'private/includes/footer.php';
     ?>
-    <script src="public/assets/js/main.js"></script>
     <script>
         // Atualizar dinamicamente os bairros quando a cidade muda
         document.getElementById('cidade').addEventListener('change', function() {
@@ -278,7 +266,7 @@ include 'private/includes/header.php';
             }
             
             // Fazer requisição AJAX para obter bairros
-            fetch(`api/bairros.php?cidade=${encodeURIComponent(cidade)}`)
+            fetch(`private/includes/api/bairros.php?cidade=${encodeURIComponent(cidade)}`)
                 .then(response => response.json())
                 .then(bairros => {
                     let options = '<option value="">Todos</option>';
@@ -296,5 +284,3 @@ include 'private/includes/header.php';
             document.getElementById('cidade').dispatchEvent(new Event('change'));
         <?php endif; ?>
     </script>
-</body>
-</html>

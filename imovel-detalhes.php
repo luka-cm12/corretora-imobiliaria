@@ -25,7 +25,14 @@ if (!is_array($imovel_result) || count($imovel_result) === 0) {
 
 // Pega o primeiro resultado
 $imovel = $imovel_result[0];
-$imagens = explode(',', $imovel['imagens']);
+$imagens = array_values(array_filter(explode(',', $imovel['imagens'])));
+// Base de imagens para a galeria (uploads por padrão, fallback para imagem padrão)
+if (empty($imagens)) {
+    $imagens = ['default-property.jpg'];
+    $gallery_base = 'public/assets/images/';
+} else {
+    $gallery_base = 'public/uploads/';
+}
 
 
 // Formatar preço
@@ -96,17 +103,28 @@ include 'private/includes/header.php';
             <!-- Gallery -->
             <div class="property-gallery">
                 <div class="main-image">
-                    <a href="uploads/<?= htmlspecialchars($imagens[0]) ?>" data-lightbox="property-images">
-                        <img src="uploads/<?= htmlspecialchars($imagens[0]) ?>" alt="<?= htmlspecialchars($imovel['titulo']) ?>">
+                    <?php if (count($imagens) > 1): ?>
+                    <button class="gallery-nav prev" type="button" aria-label="Imagem anterior">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <?php endif; ?>
+
+                    <a id="mainLightboxLink" href="<?= $gallery_base . htmlspecialchars($imagens[0]) ?>" data-lightbox="property-images">
+                        <img id="mainImage" src="<?= $gallery_base . htmlspecialchars($imagens[0]) ?>" alt="<?= htmlspecialchars($imovel['titulo']) ?>">
                     </a>
+                    <?php if (count($imagens) > 1): ?>
+                    <button class="gallery-nav next" type="button" aria-label="Próxima imagem">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                    <?php endif; ?>
                 </div>
                 
                 <?php if (count($imagens) > 1): ?>
                     <div class="thumbnail-grid">
-                        <?php foreach (array_slice($imagens, 1) as $imagem): ?>
-                            <div class="thumbnail">
-                                <a href="uploads/<?= htmlspecialchars($imagem) ?>" data-lightbox="property-images">
-                                    <img src="uploads/<?= htmlspecialchars($imagem) ?>" alt="<?= htmlspecialchars($imovel['titulo']) ?>">
+                        <?php foreach ($imagens as $idx => $imagem): ?>
+                            <div class="thumbnail <?= $idx === 0 ? 'active' : '' ?>" data-index="<?= $idx ?>">
+                                <a href="<?= $gallery_base . htmlspecialchars($imagem) ?>" data-lightbox="property-images">
+                                    <img src="<?= $gallery_base . htmlspecialchars($imagem) ?>" alt="<?= htmlspecialchars($imovel['titulo']) ?>">
                                 </a>
                             </div>
                         <?php endforeach; ?>
@@ -172,6 +190,12 @@ include 'private/includes/header.php';
                     <form action="processa-contato.php" method="post" class="property-contact-form">
                         <input type="hidden" name="imovel_id" value="<?= $imovel_id ?>">
                         <input type="hidden" name="imovel_titulo" value="<?= htmlspecialchars($imovel['titulo']) ?>">
+                        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token'] ?? '') ?>">
+                        <!-- Honeypot: campo invisível para bots -->
+                        <div style="position:absolute;left:-9999px;">
+                            <label for="website">Não preencha este campo</label>
+                            <input type="text" id="website" name="website" autocomplete="off">
+                        </div>
                         
                         <div class="form-row">
                             <div class="form-group">
@@ -190,11 +214,11 @@ include 'private/includes/header.php';
                                 <input type="tel" id="telefone" name="telefone" required>
                             </div>
                             <div class="form-group">
-                                <label for="interesse">Interesse</label>
-                                <select id="interesse" name="interesse">
-                                    <option value="visita">Agendar visita</option>
-                                    <option value="informacoes">Mais informações</option>
-                                    <option value="financiamento">Financiamento</option>
+                                <label for="assunto">Assunto</label>
+                                <select id="assunto" name="assunto">
+                                    <option value="Visita">Agendar visita</option>
+                                    <option value="Informações">Mais informações</option>
+                                    <option value="Financiamento">Financiamento</option>
                                 </select>
                             </div>
                         </div>
@@ -223,7 +247,12 @@ include 'private/includes/header.php';
                     $similar_preco = 'R$ ' . number_format($similar['preco'], 2, ',', '.');
                 ?>
                     <div class="property-card">
-                        <img src="uploads/<?= htmlspecialchars($similar_imagens[0]) ?>" alt="<?= htmlspecialchars($similar['titulo']) ?>">
+                        <?php
+                            $similar_imagens = array_values(array_filter($similar_imagens));
+                            $similar_base = !empty($similar_imagens) ? 'public/uploads/' : 'public/assets/images/';
+                            $similar_first = !empty($similar_imagens) ? $similar_imagens[0] : 'default-property.jpg';
+                        ?>
+                        <img src="<?= $similar_base . htmlspecialchars($similar_first) ?>" alt="<?= htmlspecialchars($similar['titulo']) ?>">
                         
                         <div class="property-info">
                             <h3><?= htmlspecialchars($similar['titulo']) ?></h3>
@@ -245,19 +274,84 @@ include 'private/includes/footer.php';
     <!-- Scripts -->
     <script src="public/assets/js/lightbox-plus-jquery.min.js"></script>
     <script src="public/assets/js/main.js"></script>
+    <style>
+        .property-gallery { position: relative; }
+        .property-gallery .main-image { position: relative; }
+        .gallery-nav { position:absolute; top:50%; transform:translateY(-50%); background:rgba(0,0,0,.5); color:#fff; border:none; width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; z-index:2; }
+        .gallery-nav.prev { left:10px; }
+        .gallery-nav.next { right:10px; }
+        .thumbnail-grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); gap:10px; margin-top:12px; }
+        .thumbnail { border:2px solid transparent; border-radius:6px; overflow:hidden; cursor:pointer; }
+        .thumbnail.active { border-color:#0aa; }
+        .thumbnail img { width:100%; height:70px; object-fit:cover; display:block; }
+    </style>
     <script>
-        // Inicializar lightbox
-        lightbox.option({
-            'resizeDuration': 200,
-            'wrapAround': true,
-            'showImageNumberLabel': true
-        });
+        // Inicializar lightbox (opcional)
+        if (window.lightbox && typeof lightbox.option === 'function') {
+            lightbox.option({
+                'resizeDuration': 200,
+                'wrapAround': true,
+                'showImageNumberLabel': true
+            });
+        }
 
         // Máscara para telefone
         document.getElementById('telefone').addEventListener('input', function (e) {
             var x = e.target.value.replace(/\D/g, '').match(/(\d{0,2})(\d{0,5})(\d{0,4})/);
             e.target.value = !x[2] ? x[1] : '(' + x[1] + ') ' + x[2] + (x[3] ? '-' + x[3] : '');
         });
+
+        // Carousel simples com setas, cliques em thumbnails, teclado e swipe
+        (function(){
+            const images = <?= json_encode($imagens) ?>;
+            const base = <?= json_encode($gallery_base) ?>;
+            if (!images || images.length === 0) return;
+
+            let current = 0;
+            const mainImg = document.getElementById('mainImage');
+            const mainLink = document.getElementById('mainLightboxLink');
+            const thumbs = Array.from(document.querySelectorAll('.thumbnail'));
+            const prevBtn = document.querySelector('.gallery-nav.prev');
+            const nextBtn = document.querySelector('.gallery-nav.next');
+
+            function setActive(index){
+                current = (index + images.length) % images.length;
+                const src = base + images[current];
+                mainImg.src = src;
+                mainLink.href = src;
+                thumbs.forEach((t,i)=> t.classList.toggle('active', i===current));
+            }
+
+            thumbs.forEach(t => {
+                t.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const idx = parseInt(t.getAttribute('data-index'), 10);
+                    setActive(idx);
+                });
+            });
+
+            if (prevBtn) prevBtn.addEventListener('click', ()=> setActive(current-1));
+            if (nextBtn) nextBtn.addEventListener('click', ()=> setActive(current+1));
+
+            // Teclado
+            document.addEventListener('keydown', (e)=>{
+                if (e.key === 'ArrowLeft') setActive(current-1);
+                if (e.key === 'ArrowRight') setActive(current+1);
+            });
+
+            // Swipe (touch)
+            let startX = 0;
+            mainImg.addEventListener('touchstart', (e)=>{ startX = e.changedTouches[0].clientX; }, {passive:true});
+            mainImg.addEventListener('touchend', (e)=>{
+                const dx = e.changedTouches[0].clientX - startX;
+                if (Math.abs(dx) > 30) {
+                    if (dx > 0) setActive(current-1); else setActive(current+1);
+                }
+            }, {passive:true});
+        })();
+    
+        // Inicializa estado
+        // setActive(0) já é estado inicial via markup
     </script>
 </body>
 </html>

@@ -628,19 +628,41 @@ img {
 
 /* Contact CTA */
 .contact-cta {
-    padding: 60px 0;
+    position: relative;
+    padding: 80px 0;
     text-align: center;
-    background: var(--primary-color);
     color: var(--white);
+    background: url('../images/contato.png') center/cover no-repeat fixed;
+    min-height: 320px;
+}
+
+.contact-cta::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+}
+
+.contact-cta .container {
+    position: relative;
+    z-index: 1;
 }
 
 .contact-cta h2 {
-    margin-bottom: 20px;
+    margin-bottom: 15px;
+    font-size: 2rem;
 }
 
 .contact-cta p {
-    margin-bottom: 30px;
-    font-size: 1.2rem;
+    margin-bottom: 25px;
+    font-size: 1.05rem;
+}
+
+@media (max-width: 768px) {
+    .contact-cta {
+        background-attachment: scroll; /* melhora desempenho e compatibilidade em mobile */
+        padding: 60px 0;
+    }
 }
 
 /* Footer */

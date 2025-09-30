@@ -76,22 +76,14 @@ if (!empty($where)) {
 }
 $sql .= " ORDER BY created_at DESC";
 
-// Executar a consulta
-$stmt = $conn->prepare($sql);
-
-if (!empty($params)) {
-    // Bind de parâmetros no PDO
-    foreach ($params as $key => $value) {
-        // ':param1', ':param2', ... ou '?', dependendo do seu SQL
-        $stmt->bindValue($key + 1, $value); // se usar ? no SQL
-    }
-}
+// Executar a consulta e obter resultados
+$imoveis = db_query($sql, $params);
 
 // Obter opções para filtros
 $tipos = db_query("SELECT DISTINCT tipo FROM imoveis ORDER BY tipo");
 $cidades = db_query("SELECT DISTINCT cidade FROM imoveis ORDER BY cidade");
 $bairros = !empty($filtros['cidade']) ? 
-    db_query("SELECT DISTINCT bairro FROM imoveis WHERE cidade = ?", [$filtros['cidade']], 's') 
+    db_query("SELECT DISTINCT bairro FROM imoveis WHERE cidade = ?", [$filtros['cidade']]) 
     : [];
 
 
@@ -203,7 +195,7 @@ include 'private/includes/header.php';
                 <?php foreach ($imoveis as $imovel): 
                     //$imagens = explode(',', $imovel['imagens']);
                     $imagens = array_filter(explode(',', $imovel['imagens']));
-                    $firstImage = !empty($imagens) ? '/uploads/' . reset($imagens) : '/assets/images/default-property.jpg';
+                    $firstImage = !empty($imagens) ? 'public/uploads/' . reset($imagens) : 'public/assets/images/default-property.jpg';
 
                     $preco_formatado = formatar_preco($imovel['preco']);
                 ?>

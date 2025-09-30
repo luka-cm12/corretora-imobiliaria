@@ -38,12 +38,15 @@ body {
     margin-left: 280px;
     background: #f5f7fa;
     transition: margin-left var(--transition);
+    padding: 20px; /* espaço interno padrão do conteúdo */
 }
 
 /* ==============================
    Sidebar
 ============================== */
-.admin-sidebar {
+/* Sidebar (compatível com dois padrões de markup: .admin-sidebar e .sidebar) */
+.admin-sidebar,
+.sidebar {
     width: 280px;
     min-height: 100vh;
     background: var(--admin-primary);
@@ -332,6 +335,156 @@ body {
     box-shadow: 0 2px 10px rgba(0,0,0,0.05);
 }
 
+/* Área genérica de conteúdo dentro do main (quando presente) */
+.content {
+    padding: 10px 0;
+}
+
+/* ==============================
+   List page helpers
+============================== */
+.toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 20px 0;
+    gap: 10px;
+}
+
+.toolbar .search-form {
+    display: flex;
+    gap: 8px;
+}
+
+.toolbar input[type="text"] {
+    padding: 10px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    min-width: 260px;
+}
+
+.toolbar .btn {
+    background: var(--admin-secondary);
+    color: #fff;
+    border: none;
+    padding: 10px 14px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.responsive-table {
+    background: #fff;
+    border-radius: 6px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    overflow-x: auto;
+}
+
+.responsive-table table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.responsive-table thead th {
+    background: #f1f3f5;
+    text-align: left;
+    padding: 12px 14px;
+    color: #495057;
+    font-weight: 600;
+}
+
+.responsive-table tbody td {
+    padding: 12px 14px;
+    border-top: 1px solid #eee;
+    vertical-align: middle;
+}
+
+.thumbnail {
+    width: 70px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 4px;
+    border: 1px solid #e9ecef;
+}
+
+/* Garanta que imagens na tabela de listagem não expandam */
+.responsive-table td img {
+    max-width: 120px;
+    height: auto;
+}
+
+.responsive-table td img.thumbnail {
+    width: 80px !important;
+    height: 60px !important;
+    object-fit: cover;
+}
+
+.badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 12px;
+    background: #e9ecef;
+    color: #495057;
+    font-size: 12px;
+}
+
+.badge.success {
+    background: #d3f9d8;
+    color: #2b8a3e;
+}
+
+.actions {
+    display: flex;
+    gap: 8px;
+}
+
+.btn-edit,
+.btn-delete {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 4px;
+    color: #fff;
+}
+
+.btn-edit { background: #228be6; }
+.btn-delete { background: #fa5252; }
+
+.no-results {
+    background: #fff;
+    border-radius: 6px;
+    padding: 30px;
+    text-align: center;
+    color: #6c757d;
+    display: grid;
+    justify-items: center;
+    gap: 10px;
+}
+
+.pagination {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 20px 0;
+}
+
+.page-item {
+    padding: 8px 12px;
+    background: #fff;
+    border: 1px solid #dee2e6;
+    color: #495057;
+    text-decoration: none;
+    border-radius: 4px;
+}
+
+.page-item.active,
+.page-item:hover {
+    background: var(--admin-secondary);
+    color: #fff;
+    border-color: var(--admin-secondary);
+}
+
 .form-row {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -523,6 +676,8 @@ body {
     padding: 30px 0;
     margin-top: 30px;
     border-top: 4px solid var(--admin-secondary);
+    /* Alinhar footer à área útil quando sidebar é fixa */
+    margin-left: 280px;
 }
 
 .admin-footer h5 {
@@ -554,14 +709,16 @@ body {
    Responsividade
 ============================== */
 @media (max-width: 992px) {
-    .admin-sidebar {
+    .admin-sidebar,
+    .sidebar {
         transform: translateX(-100%);
     }
-    
-    .admin-sidebar.active {
+
+    .admin-sidebar.active,
+    .sidebar.active {
         transform: translateX(0);
     }
-    
+
     .sidebar-overlay.active {
         display: block;
     }
@@ -569,15 +726,19 @@ body {
     .recent-activity {
         grid-template-columns: 1fr;
     }
+
+    /* Quando a sidebar estiver oculta no mobile/tablet, o conteúdo ocupa toda a largura */
+    .main-content,
+    .admin-footer {
+        margin-left: 0;
+    }
 }
 
 @media (max-width: 768px) {
-    .main-content {
-        margin-left: 200px;
-    }
-
+    /* Sidebar mais estreita quando aberta manualmente em telas médias */
+    .admin-sidebar,
     .sidebar {
-        width: 200px;
+        width: 220px;
     }
 
     .form-row {
@@ -594,10 +755,15 @@ body {
         margin-left: 0;
     }
 
+    .admin-sidebar,
     .sidebar {
         width: 100%;
         position: relative;
         height: auto;
+    }
+
+    .admin-footer {
+        margin-left: 0;
     }
 
     .stats-grid {

@@ -16,7 +16,8 @@ if (!isset($page_title)) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= htmlspecialchars($page_title) ?> | Admin | Corretora Claudia</title>
-    <link rel="stylesheet" href="../../public/assets/css/admin.css">
+    <?php require_once __DIR__ . '/../config/config.php'; ?>
+    <link rel="stylesheet" href="<?= BASE_URL ?>public/assets/css/admin.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
@@ -28,13 +29,14 @@ if (!isset($page_title)) {
             </div>
             <nav class="admin-nav">
                 <ul>
-                    <li><a href="dashboard.php" <?= basename($_SERVER['PHP_SELF']) == 'dashboard.php' ? 'class="active"' : '' ?>><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                    <li><a href="../admin/dashboard.php" <?= basename($_SERVER['PHP_SELF']) == 'dashboard.php' ? 'class="active"' : '' ?>><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
                     <li><a href="../imoveis/listar.php" <?= basename($_SERVER['PHP_SELF']) == 'listar.php' ? 'class="active"' : '' ?>><i class="fas fa-home"></i> Imóveis</a></li>
                     <li><a href="../imoveis/adicionar.php" <?= basename($_SERVER['PHP_SELF']) == 'adicionar.php' ? 'class="active"' : '' ?>><i class="fas fa-plus-circle"></i> Adicionar Imóvel</a></li>
-                    <li><a href="../imoveis/proprietario-cadastrar.php" <?= basename($_SERVER['PHP_SELF']) == 'proprietarios.php' ? 'class="active"' : '' ?>><i class="fas fa-user-tie"></i> Proprietários</a></li>
-                    <li><a href="usuarios.php" <?= basename($_SERVER['PHP_SELF']) == 'usuarios.php' ? 'class="active"' : '' ?>><i class="fas fa-users"></i> Usuários</a></li>
-                    <li><a href="configuracoes.php" <?= basename($_SERVER['PHP_SELF']) == 'configuracoes.php' ? 'class="active"' : '' ?>><i class="fas fa-cog"></i> Configurações</a></li>
-                    <li><a href="logout.php"><i class="fas fa-sign-out-alt"></i> Sair</a></li>
+                    <li><a href="../admin/lista_clientes.php" <?= basename($_SERVER['PHP_SELF']) == 'lista_clientes.php' ? 'class="active"' : '' ?>><i class="fas fa-users"></i> Leads (Clientes)</a></li>
+                    <li><a href="../imoveis/proprietario-cadastrar.php" <?= in_array(basename($_SERVER['PHP_SELF']), ['proprietario-cadastrar.php','proprietarios.php']) ? 'class="active"' : '' ?>><i class="fas fa-user-tie"></i> Proprietários</a></li>
+                    <li><a href="../admin/usuarios.php" <?= basename($_SERVER['PHP_SELF']) == 'usuarios.php' ? 'class="active"' : '' ?>><i class="fas fa-users"></i> Usuários</a></li>
+                    <li><a href="../admin/configuracoes.php" <?= basename($_SERVER['PHP_SELF']) == 'configuracoes.php' ? 'class="active"' : '' ?>><i class="fas fa-cog"></i> Configurações</a></li>
+                    <li><a href="../admin/logout.php"><i class="fas fa-sign-out-alt"></i> Sair</a></li>
                 </ul>
             </nav>
         </div>

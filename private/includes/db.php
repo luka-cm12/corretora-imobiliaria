@@ -73,14 +73,5 @@ function db_last_id() {
     return $conn->lastInsertId();
 }
 
-
-// Exemplo de uso da função db_query para inserção
-$titulo = $_POST['titulo'] ?? '';
-$cidade = $_POST['cidade'] ?? '';
-$sql = "INSERT INTO imoveis (titulo, cidade) VALUES (?, ?)";
-db_query($sql, [$titulo, $cidade]);
-
-$imoveis = db_query("SELECT * FROM imoveis WHERE cidade = ?", [$cidade]);
-foreach ($imoveis as $imovel) {
-    // ...
-}
+// Importante: este arquivo NÃO deve executar consultas automaticamente.
+// Qualquer exemplo de uso deve permanecer apenas em documentação/comentários.

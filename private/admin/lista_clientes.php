@@ -1,87 +1,87 @@
 <?php
 require_once(__DIR__ . '/../includes/db.php');
+require_once(__DIR__ . '/../includes/functions.php');
 
-// Puxar os contatos do banco
-$contatos = db_query("SELECT * FROM contatos ORDER BY id DESC");
+// Filtros simples
+$busca = trim($_GET['busca'] ?? '');
+$params = [];
+$where = '';
+if ($busca !== '') {
+    $where = " WHERE (nome LIKE ? OR email LIKE ? OR telefone LIKE ? OR assunto LIKE ? OR mensagem LIKE ?)";
+    $like = "%$busca%";
+    $params = [$like, $like, $like, $like, $like];
+}
+
+$sql = "SELECT id, imovel_id, imovel_titulo, nome, email, telefone, assunto, mensagem, created_at FROM contatos" . $where . " ORDER BY id DESC";
+$contatos = db_query($sql, $params);
+
+$page_title = 'Leads (Clientes)';
 include __DIR__ . '/../includes/admin-header.php';
 ?>
 
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <title>Lista de Clientes | Corretora Base</title>
-    <link rel="stylesheet" href="public/assets/css/style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <style>
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 30px 0;
-            font-size: 15px;
-        }
-        table th, table td {
-            padding: 12px 15px;
-            border: 1px solid #ddd;
-            text-align: left;
-        }
-        table th {
-            background: #333;
-            color: #fff;
-        }
-        table tr:nth-child(even) {
-            background: #f9f9f9;
-        }
-        .container {
-            padding: 30px;
-        }
-    </style>
-</head>
-<body>
-    <section class="page-header">
-        <div class="container">
-            <h1><i class="fas fa-users"></i> Lista de Clientes</h1>
-            <p>Aqui estão todos os contatos recebidos pelo site</p>
-        </div>
-    </section>
+<div class="toolbar">
+    <form method="get" class="search-form">
+        <input type="text" name="busca" placeholder="Buscar por nome, email, telefone..." value="<?= htmlspecialchars($busca) ?>">
+        <button type="submit"><i class="fas fa-search"></i></button>
+    </form>
+</div>
 
-    <section class="container">
-        <table>
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th>Nome</th>
-                    <th>Email</th>
-                    <th>Telefone</th>
-                    <th>Assunto</th>
-                    <th>Imóvel de Interesse</th>
-                    <th>Mensagem</th>
-                    <th>Data</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php if ($contatos && count($contatos) > 0): ?>
-                    <?php foreach ($contatos as $c): ?>
-                        <tr>
-                            <td><?= htmlspecialchars($c['id']) ?></td>
-                            <td><?= htmlspecialchars($c['nome']) ?></td>
-                            <td><?= htmlspecialchars($c['email']) ?></td>
-                            <td><?= htmlspecialchars($c['telefone']) ?></td>
-                            <td><?= htmlspecialchars($c['assunto']) ?></td>
-                            <td><?= htmlspecialchars($c['imovel_interesse']) ?></td>
-                            <td><?= htmlspecialchars($c['mensagem']) ?></td>
-                            <td><?= isset($c['created_at']) ? htmlspecialchars($c['created_at']) : '-' ?></td>
-                        </tr>
-                    <?php endforeach; ?>
-                <?php else: ?>
+<div class="responsive-table">
+    <table>
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Nome</th>
+                <th>Email</th>
+                <th>Telefone</th>
+                <th>Assunto</th>
+                <th>Imóvel</th>
+                <th>Mensagem</th>
+                <th>Data</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php if (!empty($contatos)): ?>
+                <?php foreach ($contatos as $c): ?>
                     <tr>
-                        <td colspan="8">Nenhum cliente encontrado.</td>
+                        <td><?= htmlspecialchars($c['id']) ?></td>
+                        <td><?= htmlspecialchars($c['nome'] ?? '-') ?></td>
+                        <td><a href="mailto:<?= htmlspecialchars($c['email'] ?? '') ?>"><?= htmlspecialchars($c['email'] ?? '-') ?></a></td>
+                        <td><?= htmlspecialchars($c['telefone'] ?? '-') ?></td>
+                        <td><?= htmlspecialchars($c['assunto'] ?? '-') ?></td>
+                        <td>
+                            <?php if (!empty($c['imovel_id'])): ?>
+                                <a href="../imovel-detalhes.php?id=<?= urlencode($c['imovel_id']) ?>" target="_blank">
+                                    <?= htmlspecialchars($c['imovel_titulo'] ?? 'Ver imóvel') ?>
+                                </a>
+                            <?php else: ?>
+                                -
+                            <?php endif; ?>
+                        </td>
+                        <td><?= nl2br(htmlspecialchars($c['mensagem'] ?? '-')) ?></td>
+                        <td><?= htmlspecialchars($c['created_at'] ?? '-') ?></td>
+                        <td class="actions">
+                            <?php
+                                $tel = preg_replace('/\D+/', '', $c['telefone'] ?? '');
+                                $wa = $tel ? 'https://wa.me/' . $tel . '?text=' . urlencode('Olá ' . ($c['nome'] ?? '') . ', tudo bem?') : '';
+                            ?>
+                            <?php if ($wa): ?>
+                                <a href="<?= $wa ?>" target="_blank" title="Chamar no WhatsApp" class="btn-edit"><i class="fab fa-whatsapp"></i></a>
+                            <?php endif; ?>
+                            <?php if (!empty($c['email'])): ?>
+                                <a href="mailto:<?= htmlspecialchars($c['email']) ?>" title="Enviar e-mail" class="btn-delete" style="background:#6c63ff"><i class="fas fa-envelope"></i></a>
+                            <?php endif; ?>
+                        </td>
                     </tr>
-                <?php endif; ?>
-            </tbody>
-        </table>
-    </section>
+                <?php endforeach; ?>
+            <?php else: ?>
+                <tr>
+                    <td colspan="9">Nenhum cliente encontrado.</td>
+                </tr>
+            <?php endif; ?>
+        </tbody>
+    </table>
+    </div>
 
-<?php include __DIR__ . '/../includes/admin-footer.php';  ?>
-</body>
-</html>
+<?php include __DIR__ . '/../includes/admin-footer.php'; ?>

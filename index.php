@@ -37,8 +37,9 @@ include 'private/includes/header.php';
                         <?php if ($carousel_imoveis && count($carousel_imoveis) > 0): ?>
                             <?php $slide_index = 0; ?>
                             <?php foreach ($carousel_imoveis as $imovel): 
-                                $imagens = explode(',', $imovel['imagens']);
-                                $firstImage = !empty($imagens) ? 'public/uploads/' . $imagens[0] : 'public/assets/images/68c74fbd67525.jpg';
+                                // Garante a primeira imagem não vazia; fallback para uma imagem pública existente
+                                $imagens = array_values(array_filter(array_map('trim', explode(',', (string)$imovel['imagens']))));
+                                $firstImage = !empty($imagens) ? 'public/uploads/' . $imagens[0] : 'public/assets/images/about.jpg';
                             ?>
                                 <div class="slick-slide STARTED slick-animate-in" data-slick-index="<?= $slide_index ?>" aria-hidden="true" tabindex="-1" role="tabpanel">
                                     <a href="imovel-detalhes.php?id=<?= $imovel['id'] ?>" class="slick-main__banner" style="background-image: url('<?= $firstImage ?>');">
@@ -75,7 +76,7 @@ include 'private/includes/header.php';
                         <?php else: ?>
                             <!-- Slide padrão caso não haja imóveis -->
                             <div class="slick-slide STARTED slick-animate-in slick-current slick-active" data-slick-index="0" aria-hidden="false" tabindex="-1" role="tabpanel">
-                                <div class="slick-main__banner" style="background-image: url('public/assets/images/68c74fbd67525.jpg');">
+                                <div class="slick-main__banner" style="background-image: url('public/assets/images/about.jpg');">
                                     <div class="slick-main__text">
                                         <div class="slick-main__container">
                                             <div class="slick-main__flex-group">
@@ -106,7 +107,8 @@ include 'private/includes/header.php';
                 <!-- Indicadores do carrossel -->
                 <ul class="slick-dots" role="tablist">
                     <?php 
-                    $totalSlides = is_array($carousel_imoveis) ? count($carousel_imoveis) : ($carousel_imoveis && $carousel_imoveis->num_rows ? $carousel_imoveis->num_rows : 1);
+                    // Como db_query retorna array, contamos diretamente; se vazio, usamos 1 para o slide padrão
+                    $totalSlides = (is_array($carousel_imoveis) && count($carousel_imoveis) > 0) ? count($carousel_imoveis) : 1;
                     for ($i = 0; $i < $totalSlides; $i++): ?>
                         <li role="presentation" class="<?= $i === 0 ? 'slick-active' : '' ?>">
                             <button type="button" role="tab" aria-controls="slick-slide-control<?= $i ?>" aria-label="<?= $i + 1 ?> of <?= $totalSlides ?>" tabindex="<?= $i === 0 ? '0' : '-1' ?>">
@@ -323,7 +325,26 @@ include 'private/includes/header.php';
 </section>
 
 <!-- Contact CTA -->
-<section class="contact-cta">
+<?php
+// Define a imagem da faixa de contato: preferimos um nome sem espaços (cta-bg.jpg).
+$__cta_candidates = [
+    'public/assets/images/contato.jpg',
+    'public/assets/images/contato.jpg',
+    'public/assets/images/contato.jpg',
+];
+$__cta_img_url = 'public/assets/images/contato.jpg';
+foreach ($__cta_candidates as $__candidate) {
+    if (file_exists($__candidate)) { $__cta_img_url = str_replace(' ', '%20', $__candidate); break; }
+}
+?>
+<section class="contact-cta" style="
+    min-height:320px;
+    background-image: linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45)), url('<?= $__cta_img_url ?>');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+">
     <div class="container">
         <h2>Pronto para encontrar seu imóvel ideal?</h2>
         <p>Entre em contato conosco e agende uma visita</p>
