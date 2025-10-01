@@ -59,6 +59,62 @@ body {
     box-shadow: 2px 0 10px rgba(0,0,0,0.1);
     display: flex;
     flex-direction: column;
+    border-right: 1px solid rgba(255,255,255,0.06);
+}
+
+/* Compatibilidade com o markup atual: logo + admin-nav */
+.sidebar .logo {
+    padding: 20px;
+    background: var(--admin-dark);
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+.sidebar .logo h1 {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--admin-light);
+}
+.sidebar .logo h1 span {
+    color: var(--admin-secondary);
+}
+
+.admin-nav ul {
+    list-style: none;
+    padding: 14px 10px 14px 10px;
+    margin: 0;
+}
+.admin-nav ul li { margin: 4px 0; }
+.admin-nav ul li a {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 14px;
+    margin: 0 4px;
+    color: #e3edf2;
+    text-decoration: none;
+    transition: var(--transition);
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 14.5px;
+}
+.admin-nav ul li a:link,
+.admin-nav ul li a:visited { color: #e3edf2; }
+.admin-nav ul li a:hover {
+    color: #ffffff;
+    background: rgba(255,255,255,0.12);
+    transform: translateX(2px);
+}
+.admin-nav ul li a.active {
+    color: #ffffff;
+    background: linear-gradient(90deg, var(--admin-secondary), #3fb5ff);
+    box-shadow: 0 2px 8px rgba(63,181,255,0.25);
+}
+.admin-nav ul li a i {
+    margin-right: 2px;
+    width: 20px;
+    min-width: 20px;
+    text-align: center;
+    color: #c7e6ff;
+    opacity: 0.95;
 }
 
 .sidebar-header {
@@ -90,20 +146,29 @@ body {
 .sidebar-menu a {
     display: flex;
     align-items: center;
-    padding: 12px 20px;
-    color: #bdc3c7;
+    gap: 10px;
+    padding: 12px 14px;
+    margin: 4px 4px;
+    color: #e3edf2;
     text-decoration: none;
     transition: var(--transition);
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 14.5px;
 }
+.sidebar-menu a:link,
+.sidebar-menu a:visited { color: #e3edf2; }
 
 .sidebar-menu a:hover {
-    color: var(--admin-light);
-    background: rgba(255,255,255,0.1);
+    color: #ffffff;
+    background: rgba(255,255,255,0.12);
+    transform: translateX(2px);
 }
 
 .sidebar-menu a.active {
-    color: var(--admin-light);
-    background: var(--admin-secondary);
+    color: #ffffff;
+    background: linear-gradient(90deg, var(--admin-secondary), #3fb5ff);
+    box-shadow: 0 2px 8px rgba(63,181,255,0.25);
 }
 
 .sidebar-menu a i {
@@ -136,6 +201,15 @@ body {
     background: var(--admin-dark);
     border-top: 1px solid rgba(255,255,255,0.1);
 }
+
+/* Regras defensivas para qualquer link dentro da sidebar */
+.sidebar a,
+.sidebar a:link,
+.sidebar a:visited { color: #e3edf2 !important; text-decoration: none; }
+.sidebar a:hover,
+.sidebar a:focus { color: #ffffff !important; background: rgba(255,255,255,0.1); }
+.sidebar a.active { color: #ffffff !important; background: var(--admin-secondary); }
+.sidebar a:focus-visible { outline: 2px solid #ffffff; outline-offset: 2px; }
 
 .user-panel {
     display: flex;
@@ -370,6 +444,20 @@ body {
     padding: 10px 14px;
     border-radius: 4px;
     cursor: pointer;
+}
+
+/* Garante estilo também para o botão simples do formulário de busca */
+.toolbar button[type="submit"] {
+    background: var(--admin-secondary);
+    color: #fff;
+    border: none;
+    padding: 10px 14px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+.toolbar button[type="submit"]:hover,
+.toolbar .btn:hover {
+    filter: brightness(0.95);
 }
 
 .responsive-table {
@@ -679,6 +767,11 @@ body {
     /* Alinhar footer à área útil quando sidebar é fixa */
     margin-left: 280px;
 }
+
+/* Layout responsivo básico para o footer (sem depender do Bootstrap) */
+.admin-footer .container-fluid { padding: 0 20px; }
+.admin-footer .row { display: flex; flex-wrap: wrap; gap: 20px; }
+.admin-footer .col-md-4 { flex: 1 1 260px; min-width: 240px; }
 
 .admin-footer h5 {
     color: var(--admin-secondary);

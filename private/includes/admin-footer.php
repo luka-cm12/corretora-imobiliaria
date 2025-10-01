@@ -11,6 +11,10 @@
 require_once __DIR__ . '/../config/config.php';
 ?>
 
+        </div><!-- /.content -->
+    </div><!-- /.main-content -->
+</div><!-- /.admin-container -->
+
 <footer class="admin-footer">
     <div class="container-fluid">
         <div class="row">
@@ -28,10 +32,10 @@ require_once __DIR__ . '/../config/config.php';
             <div class="col-md-4">
                 <h5>Links Rápidos</h5>
                 <ul class="list-unstyled">
-                    <li><a href="<?php echo BASE_URL; ?>admin/dashboard.php">Dashboard</a></li>
-                    <li><a href="<?php echo BASE_URL; ?>admin/lista_imoveis.php">Gerenciar Imóveis</a></li>
-                    <li><a href="<?php echo BASE_URL; ?>admin/lista_clientes.php">Gerenciar Clientes</a></li>
-                    <li><a href="<?php echo BASE_URL; ?>admin/relatorios.php">Relatórios</a></li>
+                    <li><a href="<?php echo BASE_URL; ?>private/admin/dashboard.php">Dashboard</a></li>
+                    <li><a href="<?php echo BASE_URL; ?>private/imoveis/listar.php">Gerenciar Imóveis</a></li>
+                    <li><a href="<?php echo BASE_URL; ?>private/admin/lista_clientes.php">Gerenciar Clientes</a></li>
+                    <li><a href="<?php echo BASE_URL; ?>private/admin/configuracoes.php">Configurações</a></li>
                 </ul>
             </div>
             
@@ -46,9 +50,9 @@ require_once __DIR__ . '/../config/config.php';
 </footer>
 
 <!-- Scripts essenciais -->
-<script src="<?php echo BASE_URL; ?>assets/js/jquery-3.6.0.min.js"></script>
-<script src="<?php echo BASE_URL; ?>assets/js/bootstrap.bundle.min.js"></script>
-<script src="<?php echo BASE_URL; ?>assets/js/admin-scripts.js"></script>
+<script src="<?php echo BASE_URL; ?>public/assets/js/jquery-3.6.0.min.js"></script>
+<script src="<?php echo BASE_URL; ?>public/assets/js/bootstrap.bundle.min.js"></script>
+<script src="<?php echo BASE_URL; ?>public/assets/js/admin-scripts.js"></script>
 
 <!-- Modal de logout -->
 <div class="modal fade" id="logoutModal" tabindex="-1" aria-hidden="true">

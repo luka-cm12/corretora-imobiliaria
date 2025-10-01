@@ -27,103 +27,134 @@ $load_slick = true; // Para carregar o Slick Carousel
 include 'private/includes/header.php';
 ?>
 
+<?php
+// Carrossel: preferir imagens estáticas da pasta /public/assets/images/carrosel
+$carousel_folder = 'public/assets/images/carrosel';
+$carousel_static_images = [];
+if (is_dir($carousel_folder)) {
+    $paths = glob($carousel_folder . '/*.{jpg,jpeg,png,webp,JPG,JPEG,PNG,WEBP}', GLOB_BRACE) ?: [];
+    foreach ($paths as $p) {
+        if (is_file($p)) {
+            // Normaliza separadores para URL e codifica espaços
+            $p_url = str_replace('\\', '/', $p);
+            $carousel_static_images[] = str_replace(' ', '%20', $p_url);
+        }
+    }
+}
+?>
+
 <!-- Carrossel no estilo Attuale -->
 <section class="home-slider">
     <div class="container-full">
         <div class="slick-custom-wrapper">
-            <div class="slick-main slick-initialized slick-slider slick-dotted">
-                <div class="slick-list draggable">
-                    <div class="slick-track">
-                        <?php if ($carousel_imoveis && count($carousel_imoveis) > 0): ?>
-                            <?php $slide_index = 0; ?>
-                            <?php foreach ($carousel_imoveis as $imovel): 
-                                // Garante a primeira imagem não vazia; fallback para uma imagem pública existente
-                                $imagens = array_values(array_filter(array_map('trim', explode(',', (string)$imovel['imagens']))));
-                                $firstImage = !empty($imagens) ? 'public/uploads/' . $imagens[0] : 'public/assets/images/about.jpg';
-                            ?>
-                                <div class="slick-slide STARTED slick-animate-in" data-slick-index="<?= $slide_index ?>" aria-hidden="true" tabindex="-1" role="tabpanel">
-                                    <a href="imovel-detalhes.php?id=<?= $imovel['id'] ?>" class="slick-main__banner" style="background-image: url('<?= $firstImage ?>');">
-                                        <div class="slick-main__text">
-                                            <div class="slick-main__opacity"></div>
-                                            <div class="slick-main__container">
-                                                <div class="slick-main__flex-group">
-                                                    <?php if (!empty($imovel['titulo'])): ?>
-                                                        <h2 class="slick-main__title"><?= htmlspecialchars($imovel['titulo']) ?></h2>
-                                                    <?php endif; ?>
-                                                    <?php if (!empty($imovel['bairro'])): ?>
-                                                        <span class="slick-main__simple-text"><?= htmlspecialchars($imovel['bairro']) ?></span>
-                                                    <?php endif; ?>
-                                                </div>
-                                                <span class="btn-custom btn-custom--dark">
-                                                    <div class="btn-custom__grey">
-                                                        <span class="btn-custom__grey-line btn-custom__grey-line--top-bottom"></span>
-                                                        <span class="btn-custom__grey-line btn-custom__grey-line--left"></span>
-                                                        <span class="btn-custom__grey-line btn-custom__grey-line--right"></span>
-                                                    </div>
-                                                    <div class="btn-custom__grey btn-custom__grey--green">
-                                                        <span class="btn-custom__grey-line btn-custom__grey-line--top-bottom"></span>
-                                                        <span class="btn-custom__grey-line btn-custom__grey-line--left"></span>
-                                                        <span class="btn-custom__grey-line btn-custom__grey-line--right"></span>
-                                                    </div>
-                                                    Saiba Mais
-                                                </span>
-                                            </div>
+            <div class="slick-main">
+                <?php if (!empty($carousel_static_images)): ?>
+                    <?php foreach ($carousel_static_images as $imgUrl): ?>
+                        <div>
+                            <a href="imoveis.php" class="slick-main__banner" style="
+                                display:block; min-height:420px;
+                                background-image:url('<?= $imgUrl ?>');
+                                background-size:cover; background-position:center; background-repeat:no-repeat;">
+                                <div class="slick-main__text">
+                                    <div class="slick-main__opacity"></div>
+                                    <div class="slick-main__container">
+                                        <div class="slick-main__flex-group">
+                                            <h2 class="slick-main__title">Encontre o imóvel ideal</h2>
                                         </div>
-                                    </a>
-                                </div>
-                                <?php $slide_index++; ?>
-                            <?php endforeach; ?>
-                        <?php else: ?>
-                            <!-- Slide padrão caso não haja imóveis -->
-                            <div class="slick-slide STARTED slick-animate-in slick-current slick-active" data-slick-index="0" aria-hidden="false" tabindex="-1" role="tabpanel">
-                                <div class="slick-main__banner" style="background-image: url('public/assets/images/about.jpg');">
-                                    <div class="slick-main__text">
-                                        <div class="slick-main__container">
-                                            <div class="slick-main__flex-group">
-                                                <h2 class="slick-main__title">Encontre o imóvel dos seus sonhos</h2>
-                                                <span class="slick-main__simple-text">Oferecemos as melhores opções para você e sua família</span>
+                                        <span class="btn-custom btn-custom--dark">
+                                            <div class="btn-custom__grey">
+                                                <span class="btn-custom__grey-line btn-custom__grey-line--top-bottom"></span>
+                                                <span class="btn-custom__grey-line btn-custom__grey-line--left"></span>
+                                                <span class="btn-custom__grey-line btn-custom__grey-line--right"></span>
                                             </div>
-                                            <a href="imoveis.php" class="btn-custom btn-custom--dark">
-                                                <div class="btn-custom__grey">
-                                                    <span class="btn-custom__grey-line btn-custom__grey-line--top-bottom"></span>
-                                                    <span class="btn-custom__grey-line btn-custom__grey-line--left"></span>
-                                                    <span class="btn-custom__grey-line btn-custom__grey-line--right"></span>
-                                                </div>
-                                                <div class="btn-custom__grey btn-custom__grey--green">
-                                                    <span class="btn-custom__grey-line btn-custom__grey-line--top-bottom"></span>
-                                                    <span class="btn-custom__grey-line btn-custom__grey-line--left"></span>
-                                                    <span class="btn-custom__grey-line btn-custom__grey-line--right"></span>
-                                                </div>
-                                                Ver Imóveis
-                                            </a>
-                                        </div>
+                                            <div class="btn-custom__grey btn-custom__grey--green">
+                                                <span class="btn-custom__grey-line btn-custom__grey-line--top-bottom"></span>
+                                                <span class="btn-custom__grey-line btn-custom__grey-line--left"></span>
+                                                <span class="btn-custom__grey-line btn-custom__grey-line--right"></span>
+                                            </div>
+                                            Ver Imóveis
+                                        </span>
                                     </div>
                                 </div>
+                            </a>
+                        </div>
+                    <?php endforeach; ?>
+                <?php elseif ($carousel_imoveis && count($carousel_imoveis) > 0): ?>
+                    <?php foreach ($carousel_imoveis as $imovel): 
+                        $imagens = array_values(array_filter(array_map('trim', explode(',', (string)$imovel['imagens']))));
+                        $firstImage = !empty($imagens) ? 'public/uploads/' . $imagens[0] : 'public/assets/images/about.jpg';
+                    ?>
+                        <div>
+                            <a href="imovel-detalhes.php?id=<?= $imovel['id'] ?>" class="slick-main__banner" style="
+                                display:block; min-height:420px;
+                                background-image:url('<?= $firstImage ?>');
+                                background-size:cover; background-position:center; background-repeat:no-repeat;">
+                                <div class="slick-main__text">
+                                    <div class="slick-main__opacity"></div>
+                                    <div class="slick-main__container">
+                                        <div class="slick-main__flex-group">
+                                            <?php if (!empty($imovel['titulo'])): ?>
+                                                <h2 class="slick-main__title"><?= htmlspecialchars($imovel['titulo']) ?></h2>
+                                            <?php endif; ?>
+                                            <?php if (!empty($imovel['bairro'])): ?>
+                                                <span class="slick-main__simple-text"><?= htmlspecialchars($imovel['bairro']) ?></span>
+                                            <?php endif; ?>
+                                        </div>
+                                        <span class="btn-custom btn-custom--dark">
+                                            <div class="btn-custom__grey">
+                                                <span class="btn-custom__grey-line btn-custom__grey-line--top-bottom"></span>
+                                                <span class="btn-custom__grey-line btn-custom__grey-line--left"></span>
+                                                <span class="btn-custom__grey-line btn-custom__grey-line--right"></span>
+                                            </div>
+                                            <div class="btn-custom__grey btn-custom__grey--green">
+                                                <span class="btn-custom__grey-line btn-custom__grey-line--top-bottom"></span>
+                                                <span class="btn-custom__grey-line btn-custom__grey-line--left"></span>
+                                                <span class="btn-custom__grey-line btn-custom__grey-line--right"></span>
+                                            </div>
+                                            Saiba Mais
+                                        </span>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <div>
+                        <div class="slick-main__banner" style="
+                            display:block; min-height:420px;
+                            background-image:url('public/assets/images/about.jpg');
+                            background-size:cover; background-position:center; background-repeat:no-repeat;">
+                            <div class="slick-main__text">
+                                <div class="slick-main__container">
+                                    <div class="slick-main__flex-group">
+                                        <h2 class="slick-main__title">Encontre o imóvel dos seus sonhos</h2>
+                                        <span class="slick-main__simple-text">Oferecemos as melhores opções para você e sua família</span>
+                                    </div>
+                                    <a href="imoveis.php" class="btn-custom btn-custom--dark">
+                                        <div class="btn-custom__grey">
+                                            <span class="btn-custom__grey-line btn-custom__grey-line--top-bottom"></span>
+                                            <span class="btn-custom__grey-line btn-custom__grey-line--left"></span>
+                                            <span class="btn-custom__grey-line btn-custom__grey-line--right"></span>
+                                        </div>
+                                        <div class="btn-custom__grey btn-custom__grey--green">
+                                            <span class="btn-custom__grey-line btn-custom__grey-line--top-bottom"></span>
+                                            <span class="btn-custom__grey-line btn-custom__grey-line--left"></span>
+                                            <span class="btn-custom__grey-line btn-custom__grey-line--right"></span>
+                                        </div>
+                                        Ver Imóveis
+                                    </a>
+                                </div>
                             </div>
-                        <?php endif; ?>
+                        </div>
                     </div>
-                </div>
-
-                <!-- Indicadores do carrossel -->
-                <ul class="slick-dots" role="tablist">
-                    <?php 
-                    // Como db_query retorna array, contamos diretamente; se vazio, usamos 1 para o slide padrão
-                    $totalSlides = (is_array($carousel_imoveis) && count($carousel_imoveis) > 0) ? count($carousel_imoveis) : 1;
-                    for ($i = 0; $i < $totalSlides; $i++): ?>
-                        <li role="presentation" class="<?= $i === 0 ? 'slick-active' : '' ?>">
-                            <button type="button" role="tab" aria-controls="slick-slide-control<?= $i ?>" aria-label="<?= $i + 1 ?> of <?= $totalSlides ?>" tabindex="<?= $i === 0 ? '0' : '-1' ?>">
-                                <?= $i + 1 ?>
-                            </button>
-                        </li>
-                    <?php endfor; ?>
-                </ul>
+                <?php endif; ?>
             </div>
             
-            <!-- Botões de navegação -->
-            <button class="custom-arrows custom-arrows--prev slick-arrow" aria-disabled="false">
+            <!-- Botões de navegação (ligados ao Slick via prevArrow/nextArrow) -->
+            <button class="custom-arrows custom-arrows--prev" aria-disabled="false">
                 <img src="public/assets/images/arrows/seta-esquerda.png" alt="Anterior" class="custom-arrows__img force-img-white">
             </button>
-            <button class="custom-arrows custom-arrows--next slick-arrow" aria-disabled="false">
+            <button class="custom-arrows custom-arrows--next" aria-disabled="false">
                 <img src="public/assets/images/arrows/seta-direita.png" alt="Próximo" class="custom-arrows__img force-img-white">
             </button>
         </div>
@@ -366,9 +397,15 @@ include 'private/includes/footer.php';
 <script>
 // Inicialização do Slick Carousel
 $(document).ready(function(){
-    $('.slick-main').slick({
+    var $slider = $('.slick-main');
+    if ($slider.hasClass('slick-initialized')) {
+        $slider.slick('unslick');
+    }
+    $slider.slick({
         dots: true,
         arrows: true,
+        prevArrow: $('.custom-arrows--prev'),
+        nextArrow: $('.custom-arrows--next'),
         infinite: true,
         speed: 900,
         slidesToShow: 1,

@@ -48,7 +48,7 @@ if (!isset($page_title)) {
                     <h2><?= htmlspecialchars($page_title) ?></h2>
                 </div>
                 <div class="header-right">
-                    <span class="welcome">Bem-vindo, <?= htmlspecialchars($_SESSION['admin_username']) ?></span>
+                    <span class="welcome">Bem-vindo, <?= htmlspecialchars($_SESSION['nome'] ?? $_SESSION['email'] ?? 'Administrador') ?></span>
                 </div>
             </header>
             
