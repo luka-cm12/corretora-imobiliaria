@@ -25,7 +25,10 @@ if (!isset($page_title)) {
         <!-- Sidebar -->
         <div class="sidebar">
             <div class="logo">
-                <h1>Corretora<span>Claudia</span></h1>
+                <a href="<?= BASE_URL ?>private/admin/dashboard.php" class="sidebar-logo-link" title="Dashboard">
+                    <img src="<?= BASE_URL ?>public/assets/images/logo/logo-dark.png" alt="Claudia Colombo - Corretora" class="sidebar-logo-img">
+                </a>
+                <div class="sidebar-logo-creci">CRECI 61839F</div>
             </div>
             <nav class="admin-nav">
                 <ul>

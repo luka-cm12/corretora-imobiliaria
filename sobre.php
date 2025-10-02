@@ -186,48 +186,6 @@ include 'private/includes/header.php';
         </div>
     </section>
 
-    <!-- Testimonials Section -->
-    <section class="testimonials-section">
-        <div class="container">
-            <h2 class="section-title">O Que Nossos Clientes Dizem</h2>
-            
-            <div class="testimonials-slider">
-                <div class="testimonial">
-                    <div class="testimonial-content">
-                        <i class="fas fa-quote-left"></i>
-                        <p>A Corretora Claudia Colombo foi fundamental para eu encontrar meu apartamento dos sonhos. Profissionais extremamente competentes e atenciosos.</p>
-                    </div>
-                    <div class="client-info">
-                        <h4>Ana Paula Mendes</h4>
-                        <p>Compradora de Apartamento</p>
-                    </div>
-                </div>
-                
-                <div class="testimonial">
-                    <div class="testimonial-content">
-                        <i class="fas fa-quote-left"></i>
-                        <p>Vendi meu imóvel em tempo recorde e com ótimo valor de mercado. Recomendo a todos que buscam seriedade e resultados.</p>
-                    </div>
-                    <div class="client-info">
-                        <h4>Roberto Almeida</h4>
-                        <p>Vendedor de Casa</p>
-                    </div>
-                </div>
-                
-                <div class="testimonial">
-                    <div class="testimonial-content">
-                        <i class="fas fa-quote-left"></i>
-                        <p>Atendimento personalizado e focado nas minhas necessidades. Encontraram exatamente o que eu procurava dentro do meu orçamento.</p>
-                    </div>
-                    <div class="client-info">
-                        <h4>Fernanda Costa</h4>
-                        <p>Locatária</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
     <!-- CTA Section -->
     <?php
     // Define imagem do CTA com prioridade para nome sem espaços e fallback seguro

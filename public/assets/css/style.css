@@ -132,14 +132,13 @@ img {
     align-items: center;
 }
 
-.logo h1 {
-    font-size: 1.8rem;
-    color: var(--primary-color);
-}
-
-.logo h1 span {
-    color: var(--primary-color);
-}
+/* Ajustes de logo */
+#logo.catalogo-logo { display:flex; align-items:center; gap:12px; }
+.logo__bg { display:none; }
+.logo-dark { height: 80px !important; width:auto !important; display:block; object-fit: contain; }
+.logo-creci { margin-left: 6px; margin-top: 2px; font-size: 0.9rem; font-weight: 700; color: #2d2d2d; letter-spacing: 0.6px; opacity: 0.95; }
+.logo h1 { font-size: 1.8rem; color: var(--primary-color); }
+.logo h1 span { color: var(--primary-color); }
 
 .main-nav ul {
     display: flex;
@@ -2052,4 +2051,10 @@ text
 .team-grid {
     grid-template-columns: 1fr;
 }
+}
+
+/* Ajuste responsivo adicional para o logo no mobile */
+@media (max-width: 576px) {
+    .logo-dark { height: 48px !important; }
+    .logo-creci { font-size: 0.8rem; }
 }

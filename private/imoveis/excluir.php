@@ -6,8 +6,8 @@ require_once(__DIR__ . '/../includes/db.php');
 require_once(__DIR__ . '/../includes/auth.php');
 require_once(__DIR__ . '/../includes/functions.php');
 
-// Opcional: exigir login/admin (descomente se necessário)
-// require_login();
+// Exige login
+require_login();
 // if (($_SESSION['usuario_tipo'] ?? '') !== 'admin') { header('Location: ../admin/login.php'); exit; }
 
 // Garante token CSRF

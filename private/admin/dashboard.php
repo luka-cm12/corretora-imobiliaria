@@ -2,7 +2,7 @@
 require_once(__DIR__ . '/../includes/db.php');
 require_once(__DIR__ . '/../includes/auth.php');
 
-//require_login();
+require_login();
 
 if (session_status() == PHP_SESSION_NONE) {
     session_start();

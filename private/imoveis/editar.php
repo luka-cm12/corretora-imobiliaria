@@ -2,7 +2,8 @@
 require_once(__DIR__ . '/../includes/auth.php');
 require_once(__DIR__ . '/../includes/db.php');
 require_once(__DIR__ . '/../includes/functions.php');
-//require_login();
+require_once(__DIR__ . '/../config/config.php');
+require_login();
 
 // Verificar se o ID do imóvel foi passado
 if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
@@ -52,7 +53,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         
         // Processar upload de novas imagens
-    $uploadDir = 'public/uploads/';
+    // Usar diretório de uploads existente na raiz do projeto
+    $uploadDir = 'uploads/';
         $novas_imagens = [];
         $imagens_para_manter = $_POST['imagens_existentes'] ?? [];
         $imagens_removidas = [];
@@ -121,7 +123,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             
             // Excluir imagens removidas
             foreach ($imagens_removidas as $imagem_removida) {
-                @unlink(__DIR__ . '/../../public/uploads/' . $imagem_removida);
+                @unlink(__DIR__ . '/../../uploads/' . $imagem_removida);
             }
             
             // Atualizar dados do imóvel para exibição
@@ -160,7 +162,7 @@ include __DIR__ . '/../includes/admin-header.php';
 <div class="admin-content">
     <h1>Editar Imóvel</h1>
     <p class="breadcrumb">
-        <a href="private/admin/dashboard.php">Dashboard</a> /
+    <a href="<?= BASE_URL ?>private/admin/dashboard.php">Dashboard</a> /
         <a href="listar.php">Imóveis</a> /
         <span>Editar</span>
     </p>
@@ -250,7 +252,7 @@ include __DIR__ . '/../includes/admin-header.php';
             <div class="imagens-grid">
                 <?php foreach ($imovel['imagens'] as $index => $imagem): ?>
                     <div class="imagem-item">
-                        <img src="public/uploads/<?= htmlspecialchars($imagem) ?>" alt="Imagem <?= $index + 1 ?> do imóvel">
+                        <img src="<?= BASE_URL ?>uploads/<?= htmlspecialchars($imagem) ?>" alt="Imagem <?= $index + 1 ?> do imóvel">
                         <label class="checkbox-container">
                             <input type="checkbox" name="imagens_existentes[]" value="<?= htmlspecialchars($imagem) ?>" checked>
                             <span class="checkmark"></span>

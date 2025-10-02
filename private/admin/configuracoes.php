@@ -20,8 +20,8 @@ if (!function_exists('verificaPermissao')) {
 // Verifica se o usuário é administrador
 require_once(__DIR__ . "/../includes/funcoes_login.php");
  // ajuste o nome do arquivo conforme necessário
-//verificaLogin();
-//verificaPermissao('admin');
+require_once(__DIR__ . '/../includes/auth.php');
+require_login();
 
 // Conexão com o banco de dados
 require_once __DIR__ . '/../includes/db.php';

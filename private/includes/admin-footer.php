@@ -54,25 +54,6 @@ require_once __DIR__ . '/../config/config.php';
 <script src="<?php echo BASE_URL; ?>public/assets/js/bootstrap.bundle.min.js"></script>
 <script src="<?php echo BASE_URL; ?>public/assets/js/admin-scripts.js"></script>
 
-<!-- Modal de logout -->
-<div class="modal fade" id="logoutModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Confirmar Logout</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <p>Tem certeza que deseja sair do sistema?</p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <a href="<?php echo BASE_URL; ?>admin/logout.php" class="btn btn-primary">Sair</a>
-            </div>
-        </div>
-    </div>
-</div>
-
 <?php
 // Exibe mensagens de sessão (sucesso/erro)
 if (isset($_SESSION['mensagem'])) {
