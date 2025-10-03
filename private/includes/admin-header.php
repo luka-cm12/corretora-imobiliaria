@@ -17,8 +17,16 @@ if (!isset($page_title)) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= htmlspecialchars($page_title) ?> | Admin | Corretora Claudia</title>
     <?php require_once __DIR__ . '/../config/config.php'; ?>
-    <link rel="stylesheet" href="<?= BASE_URL ?>public/assets/css/admin.css">
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/dataTables.bootstrap5.min.css">
+    <!-- Toastr CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Admin custom CSS -->
+    <link rel="stylesheet" href="<?= BASE_URL ?>public/assets/css/admin.css">
 </head>
 <body>
     <div class="admin-container">

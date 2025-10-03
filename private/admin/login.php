@@ -39,7 +39,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <div class="login-container">
         <div class="login-box">
             <div class="logo">
-                <img src="../../public/assets/images/logo/logo-dark.png" alt="Claudia Colombo - Corretora" style="height:64px; width:auto; display:block; margin:0 auto 6px;">
+                <img src="../../public/assets/images/logo/logo.png" alt="Claudia Colombo - Corretora" style="height:64px; width:auto; display:block; margin:0 auto 6px;">
                 <p style="margin:0 0 8px; font-weight:600; letter-spacing:0.5px;">CRECI 61839F</p>
                 <p>Área Administrativa</p>
             </div>

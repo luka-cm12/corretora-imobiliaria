@@ -25,7 +25,7 @@ require_login();
 
 // Conexão com o banco de dados
 require_once __DIR__ . '/../includes/db.php';
-require_once __DIR__ . '/../includes/funcoes_log.php'; // ajuste o nome do arquivo conforme necessário
+require_once __DIR__ . '/../includes/log_acoes.php';
 
 // Variáveis para controle da interface
 $pagina_atual = 'configuracoes';
@@ -49,6 +49,15 @@ $configuracoes = [];
 $stmt = $conn->query("SELECT chave, valor, grupo FROM configuracoes");
 while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
     $configuracoes[$row['grupo']][$row['chave']] = $row['valor'];
+}
+
+// Garante token CSRF para o formulário
+if (function_exists('ensureCsrfToken')) {
+    ensureCsrfToken();
+} else {
+    if (empty($_SESSION['csrf_token'])) {
+        $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+    }
 }
 
 // Processamento do formulário
@@ -93,8 +102,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $configuracoes[$row['grupo']][$row['chave']] = $row['valor'];
         }
         
-        $mensagem = "Configurações atualizadas com sucesso!";
-        registrarLog($_SESSION['usuario_id'], 'configuracoes', 'Atualizou as configurações do sistema');
+    $mensagem = "Configurações atualizadas com sucesso!";
+    registrarLog($conn, $_SESSION['usuario_id'], 'configuracoes', 'Atualizou as configurações do sistema');
         
     } catch (PDOException $e) {
         $conn->rollBack();
@@ -103,7 +112,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 // Inclui o cabeçalho
-include 'private/includes/admin-header.php';
+include __DIR__ . '/../includes/admin-header.php';
 ?>
 
 <div class="container-fluid">
@@ -404,7 +413,7 @@ include 'private/includes/admin-header.php';
     </div>
 </div>
 
-<?php include 'private/includes/admin-footer.php'; ?>
+<?php include __DIR__ . '/../includes/admin-footer.php'; ?>
 
 <!-- Scripts específicos para esta página -->
 <script>

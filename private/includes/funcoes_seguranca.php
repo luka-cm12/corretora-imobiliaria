@@ -1,4 +1,9 @@
 <?php
+// Garante sessão ativa para uso de CSRF e outras verificações
+if (session_status() !== PHP_SESSION_ACTIVE) {
+    session_start();
+}
+
 // conexao segura com MySQL usando PDO
 function getConnection() {
     $host = "localhost";
@@ -45,5 +50,51 @@ function inserirUsuario($nome, $email, $senha) {
         ':senha' => hash_password($senha)
     ]);
     return $pdo->lastInsertId();
+}
+
+/**
+ * Sanitiza entrada básica (fallback simples)
+ */
+if (!function_exists('sanitize_input')) {
+    function sanitize_input($data) {
+        if (is_string($data)) {
+            return trim(filter_var($data, FILTER_SANITIZE_STRING, FILTER_FLAG_NO_ENCODE_QUOTES));
+        }
+        return $data;
+    }
+}
+
+/**
+ * Hash de senha usando algoritmo padrão
+ */
+if (!function_exists('hash_password')) {
+    function hash_password($senha) {
+        return password_hash((string)$senha, PASSWORD_DEFAULT);
+    }
+}
+
+/**
+ * Gera token CSRF se não existir
+ */
+if (!function_exists('ensureCsrfToken')) {
+    function ensureCsrfToken() {
+        if (empty($_SESSION['csrf_token'])) {
+            $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+        }
+        return $_SESSION['csrf_token'];
+    }
+}
+
+/**
+ * Verifica o token CSRF presente em POST/GET
+ */
+if (!function_exists('verificaCsrfToken')) {
+    function verificaCsrfToken() {
+        $token = $_POST['csrf_token'] ?? $_GET['csrf_token'] ?? null;
+        if (!$token || !isset($_SESSION['csrf_token']) || !hash_equals($_SESSION['csrf_token'], $token)) {
+            header('Location: acesso-negado.php');
+            exit;
+        }
+    }
 }
 ?>

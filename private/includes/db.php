@@ -1,30 +1,32 @@
 <?php
 // Defina como true em desenvolvimento e false em produção
-define('DEV_ENVIRONMENT', true);
+if (!defined('DEV_ENVIRONMENT')) define('DEV_ENVIRONMENT', true);
 
-// Configurações do banco de dados
-define('DB_HOST', '127.0.0.1');
-define('DB_USER', 'admin');
-define('DB_PASS', 'senha_admin');
-define('DB_NAME', 'corretora_base');
+// Configurações do banco de dados (somente define se ainda não definido)
+if (!defined('DB_HOST')) define('DB_HOST', '127.0.0.1');
+if (!defined('DB_USER')) define('DB_USER', 'admin');
+if (!defined('DB_PASS')) define('DB_PASS', 'senha_admin');
+if (!defined('DB_NAME')) define('DB_NAME', 'corretora_base');
 
-try {
-    // Conexão PDO
-    $conn = new PDO(
-        "mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=utf8mb4",
-        DB_USER,
-        DB_PASS,
-        [
-            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION, // Lança exceções em erros
-            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC, // Retorna array associativo por padrão
-            PDO::ATTR_EMULATE_PREPARES => false, // Usa prepared statements nativos
-        ]
-    );
-} catch (PDOException $e) {
-    if (DEV_ENVIRONMENT) {
-        die("<h2>Erro de conexão com o banco de dados</h2><p>{$e->getMessage()}</p>");
-    } else {
-        die("<h2>Erro temporário do sistema</h2><p>Estamos enfrentando problemas técnicos. Por favor, tente novamente mais tarde.</p>");
+if (!isset($conn) || !($conn instanceof PDO)) {
+    try {
+        // Conexão PDO
+        $conn = new PDO(
+            "mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=utf8mb4",
+            DB_USER,
+            DB_PASS,
+            [
+                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION, // Lança exceções em erros
+                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC, // Retorna array associativo por padrão
+                PDO::ATTR_EMULATE_PREPARES => false, // Usa prepared statements nativos
+            ]
+        );
+    } catch (PDOException $e) {
+        if (DEV_ENVIRONMENT) {
+            die("<h2>Erro de conexão com o banco de dados</h2><p>{$e->getMessage()}</p>");
+        } else {
+            die("<h2>Erro temporário do sistema</h2><p>Estamos enfrentando problemas técnicos. Por favor, tente novamente mais tarde.</p>");
+        }
     }
 }
 

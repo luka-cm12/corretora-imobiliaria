@@ -50,8 +50,13 @@ require_once __DIR__ . '/../config/config.php';
 </footer>
 
 <!-- Scripts essenciais -->
-<script src="<?php echo BASE_URL; ?>public/assets/js/jquery-3.6.0.min.js"></script>
-<script src="<?php echo BASE_URL; ?>public/assets/js/bootstrap.bundle.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.8/js/dataTables.bootstrap5.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
+<!-- Script customizado do admin (se existir localmente) -->
 <script src="<?php echo BASE_URL; ?>public/assets/js/admin-scripts.js"></script>
 
 <?php
