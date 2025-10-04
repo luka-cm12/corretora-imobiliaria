@@ -18,7 +18,10 @@ function is_logged_in() {
 function require_login() {
     if (!is_logged_in()) {
         // Usa BASE_URL quando disponível para redirecionamento absoluto
-        $base = defined('BASE_URL') ? BASE_URL : (isset($_SERVER['HTTP_HOST']) ? ('http://' . $_SERVER['HTTP_HOST'] . '/corretora-imobiliaria/') : '/corretora-imobiliaria/');
+    $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+    $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+    $dir = isset($_SERVER['SCRIPT_NAME']) ? rtrim(dirname($_SERVER['SCRIPT_NAME']), '/\\') : '';
+    $base = defined('BASE_URL') ? BASE_URL : ($scheme . '://' . $host . ($dir ? $dir . '/' : '/'));
         header('Location: ' . rtrim($base, '/') . '/private/admin/login.php');
         exit;
     }
@@ -141,7 +144,10 @@ function logout() {
     session_destroy();
 
     // Redireciona respeitando BASE_URL
-    $base = defined('BASE_URL') ? BASE_URL : (isset($_SERVER['HTTP_HOST']) ? ('http://' . $_SERVER['HTTP_HOST'] . '/corretora-imobiliaria/') : '/corretora-imobiliaria/');
+    $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+    $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+    $dir = isset($_SERVER['SCRIPT_NAME']) ? rtrim(dirname($_SERVER['SCRIPT_NAME']), '/\\') : '';
+    $base = defined('BASE_URL') ? BASE_URL : ($scheme . '://' . $host . ($dir ? $dir . '/' : '/'));
     header('Location: ' . rtrim($base, '/') . '/private/admin/login.php');
     exit;
 }

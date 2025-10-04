@@ -1,0 +1,5 @@
+# Block direct web access to PHP files in includes (independent of mod_rewrite)
+Options -Indexes
+<FilesMatch "\.(php|phtml|phar)$">
+	Require all denied
+</FilesMatch>

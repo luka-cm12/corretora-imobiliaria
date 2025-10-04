@@ -1,18 +1,24 @@
 <?php
-// Defina como true em desenvolvimento e false em produção
-if (!defined('DEV_ENVIRONMENT')) define('DEV_ENVIRONMENT', true);
+// Carrega configuração central (BASE_URL, DB_*, $conn compartilhado)
+require_once __DIR__ . '/../config/config.php';
 
-// Configurações do banco de dados (somente define se ainda não definido)
+// Define ambiente com base no host, caso não tenha vindo da config
+if (!defined('DEV_ENVIRONMENT')) {
+    $host = $_SERVER['SERVER_NAME'] ?? 'localhost';
+    define('DEV_ENVIRONMENT', in_array($host, ['localhost', '127.0.0.1']));
+}
+
+// Configurações do banco de dados (apenas se não estiverem definidas pela config)
 if (!defined('DB_HOST')) define('DB_HOST', '127.0.0.1');
-if (!defined('DB_USER')) define('DB_USER', 'admin');
-if (!defined('DB_PASS')) define('DB_PASS', 'senha_admin');
+if (!defined('DB_USER')) define('DB_USER', 'root');
+if (!defined('DB_PASS')) define('DB_PASS', '');
 if (!defined('DB_NAME')) define('DB_NAME', 'corretora_base');
 
 if (!isset($conn) || !($conn instanceof PDO)) {
     try {
         // Conexão PDO
         $conn = new PDO(
-            "mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=utf8mb4",
+            'mysql:host=' . DB_HOST . ';dbname=' . DB_NAME . ';charset=utf8mb4',
             DB_USER,
             DB_PASS,
             [

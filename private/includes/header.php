@@ -11,6 +11,9 @@ if (empty($_SESSION['csrf_token'])) {
     }
 }
 
+// Carrega BASE_URL e demais configs
+require_once __DIR__ . '/../config/config.php';
+
 // Definir título da página dinamicamente
 $page_title = isset($page_title) ? $page_title : 'Corretora Claudia Colombo | Imóveis de Qualidade';
 ?>
@@ -22,8 +25,8 @@ $page_title = isset($page_title) ? $page_title : 'Corretora Claudia Colombo | Im
     <title><?= htmlspecialchars($page_title) ?></title>
     <meta name="description" content="<?= isset($meta_description) ? htmlspecialchars($meta_description) : 'Encontre o imóvel dos seus sonhos com a Corretora Base. Oferecemos as melhores opções para você e sua família.' ?>">
     
-    <!-- Base URL simples para assets públicos (ajuste se sua pasta mudar) -->
-    <?php $BASE_PATH = '/corretora-imobiliaria/'; ?>
+    <!-- BASE_URL vindo da config (dinâmico) -->
+    <?php $BASE_PATH = rtrim(BASE_URL, '/') . '/'; ?>
 
     <!-- Favicon -->
     <link rel="icon" href="<?= $BASE_PATH ?>public/assets/images/logo/logo.png" type="image/png">

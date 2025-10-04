@@ -1,0 +1,2 @@
+# Allow web access to admin area; protect sensitive subfolders via their own .htaccess
+Options -Indexes

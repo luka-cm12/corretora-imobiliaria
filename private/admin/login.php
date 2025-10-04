@@ -1,5 +1,6 @@
 <?php
 require_once(__DIR__ . '/../includes/auth.php');
+require_once(__DIR__ . '/../config/config.php');
 
 // Se já estiver logado, vai pro dashboard
 if (is_logged_in()) {
@@ -32,14 +33,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login | Área Administrativa</title>
-    <link rel="stylesheet" href="../../public/assets/css/admin.css">
+    <link rel="stylesheet" href="<?= rtrim(BASE_URL,'/') ?>/public/assets/css/admin.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
     <div class="login-container">
         <div class="login-box">
             <div class="logo">
-                <img src="../../public/assets/images/logo/logo.png" alt="Claudia Colombo - Corretora" style="height:64px; width:auto; display:block; margin:0 auto 6px;">
+                <img src="<?= rtrim(BASE_URL,'/') ?>/public/assets/images/logo/logo.png" alt="Claudia Colombo - Corretora" style="height:64px; width:auto; display:block; margin:0 auto 6px;">
                 <p style="margin:0 0 8px; font-weight:600; letter-spacing:0.5px;">CRECI 61839F</p>
                 <p>Área Administrativa</p>
             </div>
