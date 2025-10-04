@@ -54,6 +54,46 @@ $tipos = [
     'comercial' => 'Comercial'
 ];
 
+// Características principais: mapa de chave => [rótulo, ícone FontAwesome]
+$caracteristicas_lista = [
+    'ar_condicionado'   => ['Ar condicionado', 'fa-snowflake'],
+    'armarios_embutidos'=> ['Armários embutidos', 'fa-warehouse'],
+    'churrasqueira'     => ['Churrasqueira', 'fa-fire'],
+    'varanda'           => ['Varanda', 'fa-building'],
+    'sacada'            => ['Sacada', 'fa-stairs'],
+    'piscina'           => ['Piscina', 'fa-water-ladder'],
+    'academia'          => ['Academia', 'fa-dumbbell'],
+    'area_gourmet'      => ['Área gourmet', 'fa-utensils'],
+    'portaria_24h'      => ['Portaria 24h', 'fa-shield-halved'],
+    'elevador'          => ['Elevador', 'fa-elevator'],
+    'mobiliado'         => ['Mobiliado', 'fa-couch'],
+    'pet_friendly'      => ['Pet friendly', 'fa-paw'],
+    'quintal'           => ['Quintal', 'fa-tree'],
+    'lavanderia'        => ['Lavanderia', 'fa-soap'],
+    'lareira'           => ['Lareira', 'fa-fire-flame-curved'],
+];
+
+// Decodifica características salvas (JSON) se existirem
+$caracteristicas_selecionadas = [];
+if (isset($imovel['caracteristicas']) && $imovel['caracteristicas'] !== null && $imovel['caracteristicas'] !== '') {
+    $raw = $imovel['caracteristicas'];
+    $decoded = json_decode($raw, true);
+    if (is_array($decoded)) {
+        $caracteristicas_selecionadas = $decoded;
+    } else if (is_string($decoded) && strlen($decoded) > 0) {
+        // JSON duplamente codificado (string contendo JSON)
+        $decoded2 = json_decode($decoded, true);
+        if (is_array($decoded2)) {
+            $caracteristicas_selecionadas = $decoded2;
+        }
+    }
+    if (empty($caracteristicas_selecionadas)) {
+        // Fallback: tratar como lista separada por vírgulas
+        $parts = array_filter(array_map('trim', explode(',', (string)$raw)));
+        $caracteristicas_selecionadas = $parts;
+    }
+}
+
 // Incluir o header
 include 'private/includes/header.php';
 ?>
@@ -89,9 +129,12 @@ include 'private/includes/header.php';
                 <h1><?= htmlspecialchars($imovel['titulo']) ?></h1>
                 <p class="property-address">
                     <i class="fas fa-map-marker-alt"></i> 
-                    <?= htmlspecialchars($imovel['endereco']) ?>, 
+                    <?= htmlspecialchars($imovel['endereco']) ?><?= !empty($imovel['endereco']) ? ',' : '' ?> 
                     <?= htmlspecialchars($imovel['bairro']) ?> - 
                     <?= htmlspecialchars($imovel['cidade']) ?>
+                    <?php if (!empty($imovel['cep'])): ?>
+                        <span style="margin-left:6px; color:#666;">CEP: <?= htmlspecialchars(preg_replace('/(\d{5})(\d{3})/','$1-$2', preg_replace('/\D+/','',$imovel['cep']))) ?></span>
+                    <?php endif; ?>
                 </p>
                 <p class="property-price"><?= $preco_formatado ?></p>
                 
@@ -183,6 +226,22 @@ include 'private/includes/header.php';
                     <h2>Descrição</h2>
                     <p><?= nl2br(htmlspecialchars($imovel['descricao'])) ?></p>
                 </div>
+
+                <?php if (!empty($caracteristicas_selecionadas)): ?>
+                <div class="features-section">
+                    <h2>Características</h2>
+                    <ul class="features-list">
+                        <?php foreach ($caracteristicas_selecionadas as $key): 
+                            $keyStr = (string)$key;
+                            $info = $caracteristicas_lista[$keyStr] ?? null;
+                            $label = $info[0] ?? ucfirst(str_replace(['_', '-'], ' ', $keyStr));
+                            $icon  = $info[1] ?? 'fa-circle-check';
+                        ?>
+                            <li><i class="fas <?= htmlspecialchars($icon) ?>"></i> <?= htmlspecialchars($label) ?></li>
+                        <?php endforeach; ?>
+                    </ul>
+                </div>
+                <?php endif; ?>
 
                 <!-- Contact Form -->
                 <div class="contact-section">
@@ -284,6 +343,10 @@ include 'private/includes/footer.php';
         .thumbnail { border:2px solid transparent; border-radius:6px; overflow:hidden; cursor:pointer; }
         .thumbnail.active { border-color:#0aa; }
         .thumbnail img { width:100%; height:70px; object-fit:cover; display:block; }
+        .features-section { margin-top: 24px; }
+        .features-list { list-style: none; padding: 0; margin: 8px 0 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 8px 16px; }
+        .features-list li { display: flex; align-items: center; gap: 8px; color: #444; }
+        .features-list i { color: #0aa; width: 18px; text-align: center; }
     </style>
     <script>
         // Inicializar lightbox (opcional)

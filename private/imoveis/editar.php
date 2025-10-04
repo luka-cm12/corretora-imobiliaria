@@ -36,6 +36,43 @@ if (!is_array($imovel_result) || count($imovel_result) === 0) {
 $imovel = $imovel_result[0];
 $imovel['imagens'] = array_values(array_filter(explode(',', $imovel['imagens'])));
 
+// Garante colunas necessárias (executa ALTER TABLE se ausentes)
+if (function_exists('ensure_table_column')) {
+    // Características: usa JSON quando disponível; aqui adotamos TEXT por compatibilidade ampla.
+    ensure_table_column('imoveis', 'caracteristicas', 'TEXT NULL');
+    // CEP: apenas dígitos; usamos CHAR(8) NULL
+    ensure_table_column('imoveis', 'cep', 'CHAR(8) NULL');
+}
+
+// Lista padrão de características principais (mesma do adicionar.php)
+$lista_caracteristicas = [
+    'ar_condicionado' => 'Ar condicionado',
+    'armarios_embutidos' => 'Armários embutidos',
+    'churrasqueira' => 'Churrasqueira',
+    'varanda' => 'Varanda',
+    'sacada' => 'Sacada',
+    'piscina' => 'Piscina',
+    'academia' => 'Academia',
+    'area_gourmet' => 'Área gourmet',
+    'portaria_24h' => 'Portaria 24h',
+    'elevador' => 'Elevador',
+    'mobiliado' => 'Mobiliado',
+    'pet_friendly' => 'Pet friendly',
+    'quintal' => 'Quintal',
+    'lavanderia' => 'Lavanderia',
+    'lareira' => 'Lareira'
+];
+
+// Carrega características atuais do imóvel (se existir a coluna caracteristicas)
+$caracCol = db_query("SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'imoveis' AND COLUMN_NAME = 'caracteristicas'");
+$caracteristicas_atual = [];
+if (is_array($caracCol) && count($caracCol) > 0) {
+    if (!empty($imovel['caracteristicas'])) {
+        $decoded = json_decode($imovel['caracteristicas'], true);
+        if (is_array($decoded)) $caracteristicas_atual = $decoded;
+    }
+}
+
 // Processar formulário de edição
 $error = '';
 $success = '';
@@ -53,12 +90,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $cidade = trim($_POST['cidade'] ?? '');
         $bairro = trim($_POST['bairro'] ?? '');
         $endereco = trim($_POST['endereco'] ?? '');
-        $preco = (float) str_replace(['.', ','], ['', '.'], $_POST['preco'] ?? '0');
+    $preco = (float) str_replace(['.', ','], ['', '.'], $_POST['preco'] ?? '0');
         $area = (float) str_replace(',', '.', $_POST['area'] ?? '0');
         $quartos = (int) ($_POST['quartos'] ?? 0);
         $banheiros = (int) ($_POST['banheiros'] ?? 0);
         $garagem = (int) ($_POST['garagem'] ?? 0);
         $destaque = isset($_POST['destaque']) ? 1 : 0;
+    // CEP (opcional)
+    $cep = preg_replace('/\D+/', '', $_POST['cep'] ?? '');
+        // Características principais (opcional)
+        $caracteristicas_post = isset($_POST['caracteristicas']) && is_array($_POST['caracteristicas'])
+            ? array_values(array_intersect(array_keys($lista_caracteristicas), $_POST['caracteristicas']))
+            : [];
+        $caracteristicas_json = json_encode($caracteristicas_post, JSON_UNESCAPED_UNICODE);
         
         // Validações básicas
         if (empty($titulo) || empty($descricao) || empty($tipo) || empty($cidade) || empty($bairro) || $preco <= 0) {
@@ -143,31 +187,50 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             throw new Exception('Pelo menos uma imagem é obrigatória');
         }
         
-        $imagens_str = implode(',', $todas_imagens);
+    $imagens_str = implode(',', $todas_imagens);
         
         // Atualizar no banco de dados
-        $result = db_query(
-            "UPDATE imoveis SET 
+        // Atualizar no banco de dados (condicionalmente inclui CEP se existir a coluna)
+        $cepCol = db_query("SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'imoveis' AND COLUMN_NAME = 'cep'");
+        $sqlUpdate = "UPDATE imoveis SET 
                 titulo = ?, 
                 descricao = ?, 
                 tipo = ?, 
                 cidade = ?, 
                 bairro = ?, 
                 endereco = ?, 
+                %CEP%
                 preco = ?, 
                 area = ?, 
                 quartos = ?, 
                 banheiros = ?, 
                 garagem = ?, 
                 imagens = ?, 
-                destaque = ? 
-             WHERE id = ?",
-            [
-                $titulo, $descricao, $tipo, $cidade, $bairro, $endereco, 
-                $preco, $area, $quartos, $banheiros, $garagem, 
-                $imagens_str, $destaque, $imovel_id
-            ]
-        );
+                destaque = ?
+                %CARAC% 
+             WHERE id = ?";
+
+        $params = [$titulo, $descricao, $tipo, $cidade, $bairro, $endereco];
+        $tail = [$preco, $area, $quartos, $banheiros, $garagem, $imagens_str, $destaque];
+
+        // CEP condicional
+        if (is_array($cepCol) && count($cepCol) > 0) {
+            $sqlUpdate = str_replace('%CEP%', 'cep = ?, ', $sqlUpdate);
+            $params[] = $cep;
+        } else {
+            $sqlUpdate = str_replace('%CEP%', '', $sqlUpdate);
+        }
+
+        // Características condicional
+        if (is_array($caracCol) && count($caracCol) > 0) {
+            $sqlUpdate = str_replace('%CARAC%', ', caracteristicas = ?', $sqlUpdate);
+            $tail[] = $caracteristicas_json;
+        } else {
+            $sqlUpdate = str_replace('%CARAC%', '', $sqlUpdate);
+        }
+
+        $params = array_merge($params, $tail, [$imovel_id]);
+        $result = db_query($sqlUpdate, $params);
         
         if ($result) {
             $success = 'Imóvel atualizado com sucesso!';
@@ -187,6 +250,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $imovel['cidade'] = $cidade;
             $imovel['bairro'] = $bairro;
             $imovel['endereco'] = $endereco;
+            if (!empty($cep)) { $imovel['cep'] = $cep; }
             $imovel['preco'] = $preco;
             $imovel['area'] = $area;
             $imovel['quartos'] = $quartos;
@@ -194,6 +258,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $imovel['garagem'] = $garagem;
             $imovel['destaque'] = $destaque;
             $imovel['imagens'] = $todas_imagens;
+            if (isset($caracteristicas_post)) $caracteristicas_atual = $caracteristicas_post;
         } else {
             throw new Exception('Erro ao atualizar imóvel no banco de dados');
         }
@@ -269,8 +334,27 @@ include __DIR__ . '/../includes/admin-header.php';
             <label for="descricao">Descrição *</label>
             <textarea id="descricao" name="descricao" rows="5" required><?= htmlspecialchars($imovel['descricao']) ?></textarea>
         </div>
+
+        <?php if (is_array($caracCol) && count($caracCol) > 0): ?>
+        <div class="form-group">
+            <label>Características principais</label>
+            <div class="caracteristicas-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;">
+                <?php foreach ($lista_caracteristicas as $key => $rotulo): ?>
+                    <label style="display:flex;gap:8px;align-items:center;">
+                        <input type="checkbox" name="caracteristicas[]" value="<?= $key ?>" <?= in_array($key, $caracteristicas_atual) ? 'checked' : '' ?>>
+                        <span><?= htmlspecialchars($rotulo) ?></span>
+                    </label>
+                <?php endforeach; ?>
+            </div>
+            <small class="form-text">Atualize as características que se aplicam ao imóvel.</small>
+        </div>
+        <?php endif; ?>
         
         <div class="form-row">
+            <div class="form-group">
+                <label for="cep">CEP</label>
+                <input type="text" id="cep" name="cep" value="<?= htmlspecialchars($imovel['cep'] ?? '') ?>" placeholder="00000-000">
+            </div>
             <div class="form-group">
                 <label for="cidade">Cidade *</label>
                 <input type="text" id="cidade" name="cidade" value="<?= htmlspecialchars($imovel['cidade']) ?>" required>
@@ -358,3 +442,58 @@ include __DIR__ . '/../includes/admin-header.php';
 // Incluir footer administrativo
 include __DIR__ . '/../includes/admin-footer.php';
 ?>
+
+<script>
+// Máscara de CEP simples (se jQuery Mask já carregado no admin-footer)
+if (window.jQuery && $.fn.mask) {
+    $('#cep').mask('00000-000');
+}
+
+// Busca ViaCEP ao sair do campo CEP
+document.addEventListener('DOMContentLoaded', () => {
+    const cepInput = document.getElementById('cep');
+    if (!cepInput) return;
+
+    const cidade = document.getElementById('cidade');
+    const bairro = document.getElementById('bairro');
+    const endereco = document.getElementById('endereco');
+
+    function showToast(msg, tipo = 'error') {
+        if (window.toastr) {
+            toastr.options.timeOut = 4000;
+            toastr[tipo](msg);
+        } else {
+            alert(msg);
+        }
+    }
+
+    function limpaCampos() {
+        if (endereco) endereco.value = '';
+        if (bairro) bairro.value = '';
+        if (cidade) cidade.value = '';
+    }
+
+    async function buscarCEP(cepLimpo) {
+        try {
+            const resp = await fetch(`https://viacep.com.br/ws/${cepLimpo}/json/`);
+            if (!resp.ok) throw new Error('Falha ao consultar o ViaCEP');
+            const data = await resp.json();
+            if (data.erro) {
+                limpaCampos();
+                showToast('CEP não encontrado. Verifique e tente novamente.');
+                return;
+            }
+            if (endereco) endereco.value = [data.logradouro, data.complemento].filter(Boolean).join(' ');
+            if (bairro) bairro.value = data.bairro || '';
+            if (cidade) cidade.value = data.localidade || '';
+        } catch (e) {
+            showToast('Não foi possível buscar o CEP agora.');
+        }
+    }
+
+    cepInput.addEventListener('blur', () => {
+        const cep = cepInput.value.replace(/\D+/g, '');
+        if (cep.length === 8) buscarCEP(cep);
+    });
+});
+</script>

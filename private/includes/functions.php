@@ -145,3 +145,33 @@ function enviar_email($para, $assunto, $mensagem, $de_nome = 'Corretora Base', $
         }
     }
 }
+
+/**
+ * Garante que uma coluna exista na tabela, criando-a se estiver ausente.
+ * ATENÇÃO: Executa ALTER TABLE. Use com parcimônia.
+ *
+ * @param string $tabela Nome da tabela
+ * @param string $coluna Nome da coluna a garantir
+ * @param string $definicao Definição SQL da coluna (ex: 'TEXT NULL', 'CHAR(8) NULL')
+ * @return bool true se a coluna existe/criada; false em falha (silenciosa em produção)
+ */
+function ensure_table_column($tabela, $coluna, $definicao) {
+    try {
+        $exists = db_query(
+            "SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? AND COLUMN_NAME = ?",
+            [$tabela, $coluna]
+        );
+        if (is_array($exists) && count($exists) > 0) return true;
+
+        // Cria coluna
+        $sql = "ALTER TABLE `{$tabela}` ADD COLUMN `{$coluna}` {$definicao}";
+        $res = db_query($sql);
+        return $res !== false;
+    } catch (Throwable $e) {
+        // Evita quebrar a aplicação caso o ambiente não permita ALTER TABLE
+        if (defined('DEV_ENVIRONMENT') && DEV_ENVIRONMENT) {
+            error_log('ensure_table_column falhou: ' . $e->getMessage());
+        }
+        return false;
+    }
+}
