@@ -97,10 +97,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Atualização de usuário existente
             if ($alterar_senha) {
                 $senha_hash = password_hash($_POST['senha'], PASSWORD_DEFAULT);
-                $stmt = $conn->prepare("UPDATE usuarios SET nome = ?, email = ?, perfil = ?, senha = ?, status = ?, atualizado_em = NOW() WHERE id = ?");
+                $stmt = $conn->prepare("UPDATE usuarios SET nome = ?, email = ?, perfil = ?, senha = ?, status = ? WHERE id = ?");
                 $stmt->execute([$nome, $email, $perfil, $senha_hash, $status, $id]);
             } else {
-                $stmt = $conn->prepare("UPDATE usuarios SET nome = ?, email = ?, perfil = ?, status = ?, atualizado_em = NOW() WHERE id = ?");
+                $stmt = $conn->prepare("UPDATE usuarios SET nome = ?, email = ?, perfil = ?, status = ? WHERE id = ?");
                 $stmt->execute([$nome, $email, $perfil, $status, $id]);
             }
             
