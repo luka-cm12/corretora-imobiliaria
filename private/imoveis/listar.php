@@ -23,13 +23,16 @@ if (isset($_GET['busca']) && !empty($_GET['busca'])) {
 }
 
 // Total de imóveis
-$total_query = "SELECT COUNT(*) as total FROM imoveis" . $filtro;
+$total_query = "SELECT COUNT(*) as total FROM imoveis i 
+                LEFT JOIN proprietarios p ON i.id_proprietario = p.id_proprietario" . $filtro;
 $stmt = db_query($total_query, $params);
 $total_imoveis = $stmt[0]['total'] ?? 0; // pega o primeiro elemento do array
 $total_paginas = ceil($total_imoveis / $por_pagina);
 
-// Obter imóveis
-$query = "SELECT * FROM imoveis" . $filtro . " ORDER BY created_at DESC LIMIT " . (int)$por_pagina . " OFFSET " . (int)$offset;
+// Obter imóveis com proprietários
+$query = "SELECT i.*, p.nome as proprietario_nome FROM imoveis i 
+          LEFT JOIN proprietarios p ON i.id_proprietario = p.id_proprietario" 
+          . $filtro . " ORDER BY i.created_at DESC LIMIT " . (int)$por_pagina . " OFFSET " . (int)$offset;
 
 $imoveis = db_query($query, $params); // já é array
 
@@ -58,6 +61,7 @@ include __DIR__ . '/../includes/admin-header.php';
                                 <th>ID</th>
                                 <th>Imagem</th>
                                 <th>Título</th>
+                                <th>Proprietário</th>
                                 <th>Localização</th>
                                 <th>Preço</th>
                                 <th>Destaque</th>
@@ -82,6 +86,13 @@ include __DIR__ . '/../includes/admin-header.php';
                                          style="max-width:120px;height:auto;object-fit:cover;border-radius:4px;border:1px solid #e9ecef;">
                                 </td>
                                 <td><?= htmlspecialchars($imovel['titulo'] ?? '') ?></td>
+                                <td>
+                                    <?php if (!empty($imovel['proprietario_nome'])): ?>
+                                        <?= htmlspecialchars($imovel['proprietario_nome']) ?>
+                                    <?php else: ?>
+                                        <span class="text-muted">Não informado</span>
+                                    <?php endif; ?>
+                                </td>
                                 <td><?= htmlspecialchars($imovel['bairro'] ?? '') ?>, <?= htmlspecialchars($imovel['cidade'] ?? '') ?></td>
                                 <td><?= $preco_formatado ?></td>
                                 <td>

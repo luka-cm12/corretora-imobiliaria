@@ -326,7 +326,7 @@ if (is_dir($carousel_folder)) {
             <a href="sobre.php" class="btn">Saiba Mais</a>
         </div>
         <div class="about-image">
-            <img src="public/assets/images/about.jpg" alt="Sobre nós">
+            <img src="public/assets/images/claudia/claudiaCO.jpeg" alt="Claudia Colombo - Corretora">
         </div>
     </div>
 </section>
@@ -370,11 +370,11 @@ foreach ($__cta_candidates as $__candidate) {
 ?>
 <section class="contact-cta" style="
     min-height:320px;
-    background-image: linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45)), url('<?= $__cta_img_url ?>');
+    background: linear-gradient(135deg, #2c3e50 0%, #34495e 50%, #2c3e50 100%);
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    background-attachment: fixed;
+    position: relative;
 ">
     <div class="container">
         <h2>Pronto para encontrar seu imóvel ideal?</h2>

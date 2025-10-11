@@ -11,29 +11,6 @@ $sobre_nos = [
 ];
 
 // Buscar equipe (exemplo com dados estáticos, pode ser adaptado para BD)
-$equipe = [
-    [
-        'nome' => 'João Silva',
-        'cargo' => 'Corretor Associado',
-        'foto' => 'public/assets/images/team1.jpg',
-        'telefone' => '(XX) XXXX-XXXX',
-        'email' => 'joao@corretorabase.com.br'
-    ],
-    [
-        'nome' => 'Maria Santos',
-        'cargo' => 'Corretora Sênior',
-        'foto' => 'public/assets/images/team2.jpg',
-        'telefone' => '(XX) XXXX-XXXX',
-        'email' => 'maria@corretorabase.com.br'
-    ],
-    [
-        'nome' => 'Carlos Oliveira',
-        'cargo' => 'Gerente Comercial',
-        'foto' => 'public/assets/images/team3.jpg',
-        'telefone' => '(XX) XXXX-XXXX',
-        'email' => 'carlos@corretorabase.com.br'
-    ]
-];
 
 // Buscar estatísticas (pode ser substituído por dados reais do BD)
 $estatisticas = [
@@ -104,7 +81,7 @@ include 'private/includes/header.php';
             </div>
             
             <div class="about-image">
-                <img src="public/assets/images/about.jpg" alt="Sobre a Corretora Base">
+                <img src="public/assets/images/claudia/claudiaCO.jpeg" alt="Claudia Colombo - Corretora">
             </div>
         </div>
     </section>
@@ -154,37 +131,7 @@ include 'private/includes/header.php';
     </section>
 
     <!-- Team Section -->
-    <section class="team-section">
-        <div class="container">
-            <h2 class="section-title">Nossa Equipe</h2>
-            <p class="section-subtitle">Profissionais qualificados para te atender</p>
-            
-            <div class="team-grid">
-                <?php foreach ($equipe as $membro): ?>
-                    <?php
-                        $fotoCand = $membro['foto'];
-                        $foto = file_exists($fotoCand) ? str_replace(' ', '%20', $fotoCand) : 'public/assets/images/about.jpg';
-                        $telHref = 'tel:' . preg_replace('/\D+/', '', $membro['telefone']);
-                        $waHref = 'https://wa.me/' . preg_replace('/\D+/', '', $membro['telefone']);
-                    ?>
-                    <div class="team-member">
-                        <div class="member-image">
-                            <img src="<?= $foto ?>" alt="<?= htmlspecialchars($membro['nome']) ?>">
-                            <div class="member-social">
-                                <a href="<?= $telHref ?>" aria-label="Ligar para <?= htmlspecialchars($membro['nome']) ?>"><i class="fas fa-phone"></i></a>
-                                <a href="mailto:<?= htmlspecialchars($membro['email']) ?>" aria-label="Enviar e-mail"><i class="fas fa-envelope"></i></a>
-                                <a href="<?= $waHref ?>" target="_blank" rel="noopener" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
-                            </div>
-                        </div>
-                        <div class="member-info">
-                            <h3><?= htmlspecialchars($membro['nome']) ?></h3>
-                            <p><?= htmlspecialchars($membro['cargo']) ?></p>
-                        </div>
-                    </div>
-                <?php endforeach; ?>
-            </div>
-        </div>
-    </section>
+    
 
     <!-- CTA Section -->
     <?php
@@ -201,11 +148,11 @@ include 'private/includes/header.php';
     ?>
     <section class="contact-cta" style="
         min-height:320px;
-        background-image: linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45)), url('<?= $__cta_img_url ?>');
+        background: linear-gradient(135deg, #2c3e50 0%, #34495e 50%, #2c3e50 100%);
         background-size: cover;
         background-position: center;
         background-repeat: no-repeat;
-        background-attachment: fixed;
+        position: relative;
     ">
         <div class="container">
             <h2 style="color:#fff;">Pronto para encontrar seu imóvel ideal?</h2>
