@@ -57,7 +57,7 @@ $page_title = isset($page_title) ? $page_title : 'Corretora Claudia Colombo | Im
             <nav class="main-nav">
                 <ul>
                     <li><a href="<?= $BASE_PATH ?>index.php" <?= basename($_SERVER['PHP_SELF']) == 'index.php' ? 'class="active"' : '' ?>>Home</a></li>
-                    <li><a href="<?= $BASE_PATH ?>sobre.php" <?= basename($_SERVER['PHP_SELF']) == 'sobre.php' ? 'class="active"' : '' ?>>Sobre</a></li>
+                   <!-- <li><a href="<?= $BASE_PATH ?>sobre.php" <?= basename($_SERVER['PHP_SELF']) == 'sobre.php' ? 'class="active"' : '' ?>>Sobre</a></li> -->
                     <li><a href="<?= $BASE_PATH ?>imoveis.php" <?= basename($_SERVER['PHP_SELF']) == 'imoveis.php' ? 'class="active"' : '' ?>>Imóveis</a></li>
                     <li><a href="<?= $BASE_PATH ?>contato.php" <?= basename($_SERVER['PHP_SELF']) == 'contato.php' ? 'class="active"' : '' ?>>Contato</a></li>
                 </ul>

@@ -52,10 +52,16 @@ if (!isset($page_title)) {
             </nav>
         </div>
         
+        <!-- Mobile sidebar overlay -->
+        <div class="mobile-sidebar-overlay d-lg-none" id="mobileSidebarOverlay"></div>
+        
         <!-- Main Content -->
         <div class="main-content">
             <header class="admin-header">
                 <div class="header-left">
+                    <button class="mobile-sidebar-toggle d-lg-none" id="mobileSidebarToggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
                     <h2><?= htmlspecialchars($page_title) ?></h2>
                 </div>
                 <div class="header-right">

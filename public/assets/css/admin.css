@@ -42,9 +42,30 @@ body {
 }
 
 /* ==============================
-   Sidebar
+   Mobile-First Admin Improvements
 ============================== */
-/* Sidebar (compatível com dois padrões de markup: .admin-sidebar e .sidebar) */
+
+/* Hamburger Menu Button */
+.mobile-menu-toggle {
+    display: none;
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    z-index: 1001;
+    background: var(--admin-primary);
+    color: #fff;
+    border: none;
+    padding: 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+}
+
+.mobile-menu-toggle i {
+    font-size: 1.2rem;
+}
+
+/* Improved Mobile Sidebar */
 .admin-sidebar,
 .sidebar {
     width: 280px;
@@ -60,6 +81,7 @@ body {
     display: flex;
     flex-direction: column;
     border-right: 1px solid rgba(255,255,255,0.06);
+    transform: translateX(0); /* Visible by default on desktop */
 }
 
 /* Compatibilidade com o markup atual: logo + admin-nav */
@@ -404,13 +426,123 @@ body {
 }
 
 /* ==============================
-   Forms
+   Forms - Mobile Optimized
 ============================== */
 .imovel-form {
     background: #fff;
-    padding: 20px;
+    padding: 15px;
     border-radius: 5px;
     box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    margin: 0 auto;
+    max-width: 100%;
+}
+
+/* Mobile-first form layout */
+.form-row {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.form-group {
+    width: 100%;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: var(--admin-primary);
+    font-size: 0.95rem;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 1rem;
+    box-sizing: border-box;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+}
+
+/* Larger touch targets for mobile */
+.form-group input[type="checkbox"],
+.form-group input[type="radio"] {
+    width: auto;
+    transform: scale(1.2);
+    margin-right: 8px;
+}
+
+.form-group textarea {
+    min-height: 120px;
+    resize: vertical;
+}
+
+/* File upload improvements */
+.form-group input[type="file"] {
+    padding: 8px;
+    border: 2px dashed #ddd;
+    background: #f8f9fa;
+}
+
+.form-group input[type="file"]:focus {
+    border-color: var(--admin-secondary);
+    background: #fff;
+}
+
+/* Button improvements for mobile */
+.form-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
+}
+
+.btn {
+    background: var(--admin-secondary);
+    color: #fff;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: var(--transition);
+    display: inline-block;
+    text-align: center;
+    font-size: 1rem;
+    min-height: 44px; /* iOS recommended touch target */
+    box-sizing: border-box;
+}
+
+.btn:hover,
+.btn:focus {
+    filter: brightness(0.95);
+    outline: 2px solid var(--admin-secondary);
+    outline-offset: 2px;
+}
+
+.btn-primary {
+    background: var(--admin-secondary);
+    width: 100%;
+}
+
+.btn-cancel {
+    background: var(--admin-light);
+    color: var(--admin-dark);
+    border: 1px solid #ddd;
+    width: 100%;
+}
+
+.btn-cancel:hover {
+    background: #ddd;
 }
 
 /* Área genérica de conteúdo dentro do main (quando presente) */
@@ -821,11 +953,43 @@ body {
 }
 
 /* ==============================
-   Responsividade
+   Mobile Responsividade Melhorada
 ============================== */
-@media (max-width: 992px) {
+
+/* Tablets */
+@media (max-width: 1024px) {
+    .main-content {
+        margin-left: 0;
+        padding: 15px;
+    }
+    
     .admin-sidebar,
     .sidebar {
+        transform: translateX(-100%);
+    }
+    
+    .mobile-menu-toggle {
+        display: block;
+    }
+    
+    .admin-footer {
+        margin-left: 0;
+    }
+    
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+    .mobile-menu-toggle {
+        display: block;
+    }
+    
+    .admin-sidebar,
+    .sidebar {
+        width: 280px;
         transform: translateX(-100%);
     }
 
@@ -838,67 +1002,494 @@ body {
         display: block;
     }
 
+    .main-content {
+        margin-left: 0;
+        padding: 60px 15px 15px; /* Top padding for menu button */
+    }
+
     .recent-activity {
         grid-template-columns: 1fr;
     }
 
-    /* Quando a sidebar estiver oculta no mobile/tablet, o conteúdo ocupa toda a largura */
-    .main-content,
+    .stats-grid {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 15px;
+    }
+    
+    .stat-card {
+        padding: 15px;
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .stat-icon {
+        margin-right: 0;
+        margin-bottom: 10px;
+    }
+
+    /* Form improvements for mobile */
+    .form-row {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .toolbar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 15px;
+    }
+    
+    .toolbar .search-form {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .toolbar input[type="text"] {
+        min-width: auto;
+        width: 100%;
+    }
+    
+    .toolbar .btn,
+    .toolbar button[type="submit"] {
+        width: 100%;
+        padding: 12px;
+    }
+
+    /* Table improvements */
+    .responsive-table {
+        font-size: 0.9rem;
+    }
+    
+    .responsive-table thead th,
+    .responsive-table tbody td {
+        padding: 8px 6px;
+    }
+    
+    .thumbnail {
+        width: 50px;
+        height: 35px;
+    }
+    
+    .actions {
+        flex-direction: column;
+        gap: 5px;
+    }
+    
+    .btn-edit,
+    .btn-delete {
+        width: 100%;
+        height: auto;
+        padding: 8px;
+        font-size: 0.8rem;
+    }
+
     .admin-footer {
         margin-left: 0;
     }
-}
 
-@media (max-width: 768px) {
-    /* Sidebar mais estreita quando aberta manualmente em telas médias */
-    .admin-sidebar,
-    .sidebar {
-        width: 220px;
+    .admin-footer .row {
+        flex-direction: column;
     }
-
-    .form-row {
-        grid-template-columns: 1fr;
-    }
-
+    
     .admin-footer .col-md-4 {
         margin-bottom: 30px;
     }
 }
 
+/* Small Mobile */
 @media (max-width: 576px) {
     .main-content {
-        margin-left: 0;
+        padding: 70px 10px 10px;
     }
 
     .admin-sidebar,
     .sidebar {
         width: 100%;
-        position: relative;
-        height: auto;
-    }
-
-    .admin-footer {
-        margin-left: 0;
     }
 
     .stats-grid {
         grid-template-columns: 1fr;
     }
-
-    .form-actions {
-        flex-direction: column;
+    
+    .stat-card {
+        padding: 20px;
     }
 
-    .form-actions .btn {
+    .form-actions {
+        position: sticky;
+        bottom: 0;
+        background: #fff;
+        padding: 15px;
+        margin: 20px -15px -15px;
+        border-top: 2px solid #eee;
+        box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+    }
+
+    .btn {
+        padding: 14px 20px;
+        font-size: 1.1rem;
+    }
+    
+    /* Improved input sizes for mobile */
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        padding: 14px;
+        font-size: 1.1rem;
+    }
+    
+    .form-group label {
+        font-size: 1rem;
+        margin-bottom: 6px;
+    }
+
+    /* Better spacing for small screens */
+    .imovel-form {
+        padding: 10px;
+        margin: 0;
+        border-radius: 0;
+        box-shadow: none;
+    }
+    
+    .admin-header {
+        padding: 10px 15px;
+        margin: 0 -10px 15px;
+    }
+    
+    .admin-header h2 {
+        font-size: 1.2rem;
+    }
+
+    /* Pagination mobile */
+    .pagination {
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+    
+    .page-item {
+        padding: 10px 12px;
+        margin: 2px;
+        min-width: 44px;
+        text-align: center;
+    }
+
+    /* Activity items mobile */
+    .activity-item {
+        flex-direction: column;
+        padding: 15px 0;
+    }
+    
+    .activity-icon {
+        align-self: flex-start;
+        margin-bottom: 10px;
+    }
+    
+    .activity-details {
         width: 100%;
     }
 
-    .admin-nav ul {
-        display: flex;
-        flex-wrap: wrap;
+    /* No results mobile */
+    .no-results {
+        padding: 40px 20px;
     }
+    
+    .no-results i {
+        font-size: 3rem;
+        margin-bottom: 15px;
+    }
+}
 
-    .admin-nav ul li {
-        flex: 1 0 50%;
+/* ===== MOBILE SIDEBAR TOGGLE AND OVERLAY ===== */
+
+/* Mobile Sidebar Toggle Button */
+.mobile-sidebar-toggle {
+    background: none;
+    border: none;
+    color: #333;
+    font-size: 1.2rem;
+    padding: 0.5rem;
+    margin-right: 1rem;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.mobile-sidebar-toggle:hover {
+    background-color: #f8f9fa;
+    color: #007bff;
+}
+
+.mobile-sidebar-toggle:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+/* ===== MOBILE FORM OPTIMIZATIONS ===== */
+
+/* Mobile-specific form styles */
+@media (max-width: 991.98px) {
+    /* Form groups with better spacing */
+    .imovel-form .form-group,
+    .mobile-form .form-group {
+        margin-bottom: 1.5rem;
+    }
+    
+    /* Labels larger and more readable */
+    .form-group label {
+        font-size: 1rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        display: block;
+        color: #333;
+    }
+    
+    /* Input fields optimized for touch */
+    .form-group input[type="text"],
+    .form-group input[type="number"],
+    .form-group input[type="email"],
+    .form-group input[type="tel"],
+    .form-group select,
+    .form-group textarea {
+        font-size: 16px !important; /* Prevents zoom on iOS */
+        padding: 12px 16px;
+        border-radius: 8px;
+        border: 2px solid #e1e5e9;
+        width: 100%;
+        min-height: 48px; /* Touch-friendly minimum */
+        transition: all 0.3s ease;
+        -webkit-appearance: none;
+        appearance: none;
+    }
+    
+    /* Focus states for mobile */
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+        outline: none;
+    }
+    
+    /* Select dropdowns with better styling */
+    .form-group select {
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+        background-position: right 12px center;
+        background-repeat: no-repeat;
+        background-size: 16px;
+        padding-right: 40px;
+    }
+    
+    /* Textarea optimization */
+    .form-group textarea {
+        min-height: 120px;
+        resize: vertical;
+        line-height: 1.5;
+    }
+    
+    /* Form rows for mobile - stack vertically */
+    .form-row {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .form-row .form-group {
+        flex: 1;
+        margin-bottom: 1rem;
+    }
+    
+    /* Características grid for mobile */
+    .caracteristicas-grid {
+        display: grid !important;
+        grid-template-columns: 1fr !important;
+        gap: 0.5rem !important;
+        margin-top: 0.5rem;
+    }
+    
+    .caracteristicas-grid label {
+        display: flex !important;
+        align-items: center !important;
+        padding: 12px 16px !important;
+        background: #f8f9fa;
+        border-radius: 8px;
+        border: 2px solid transparent;
+        transition: all 0.3s ease;
+        font-size: 15px !important;
+        gap: 12px !important;
+        margin-bottom: 0 !important;
+        min-height: 48px;
+        cursor: pointer;
+    }
+    
+    .caracteristicas-grid label:hover {
+        background: #e9ecef;
+        border-color: #dee2e6;
+    }
+    
+    .caracteristicas-grid input[type="checkbox"] {
+        width: 20px !important;
+        height: 20px !important;
+        margin: 0 !important;
+        flex-shrink: 0;
+    }
+    
+    .caracteristicas-grid input[type="checkbox"]:checked + span {
+        font-weight: 600;
+        color: #007bff;
+    }
+    
+    /* File input optimization */
+    .form-group input[type="file"] {
+        padding: 16px;
+        background: #f8f9fa;
+        border: 2px dashed #dee2e6;
+        border-radius: 8px;
+        text-align: center;
+        cursor: pointer;
+        min-height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .form-group input[type="file"]:focus {
+        border-color: #007bff;
+        background: #e7f3ff;
+    }
+    
+    /* Buttons mobile optimization */
+    .btn, 
+    button[type="submit"] {
+        min-height: 48px !important;
+        padding: 12px 24px !important;
+        font-size: 16px !important;
+        border-radius: 8px !important;
+        font-weight: 600 !important;
+        width: 100% !important;
+        margin-top: 1rem !important;
+        text-align: center !important;
+        cursor: pointer !important;
+        transition: all 0.3s ease !important;
+    }
+    
+    .btn-small, 
+    .btn.btn-small {
+        min-height: 40px !important;
+        padding: 8px 16px !important;
+        font-size: 14px !important;
+        width: auto !important;
+        margin-top: 0.5rem !important;
+        display: inline-block !important;
+    }
+    
+    /* Form text helpers */
+    .form-text {
+        font-size: 13px !important;
+        color: #6c757d !important;
+        margin-top: 0.5rem !important;
+        line-height: 1.4 !important;
+    }
+    
+    /* Required field indicators */
+    .required-icon {
+        font-weight: bold;
+    }
+    
+    /* Mobile error messages */
+    .field-error.mobile-error {
+        animation: slideInError 0.3s ease;
+    }
+    
+    @keyframes slideInError {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    /* Upload info styling */
+    .upload-info {
+        margin-top: 0.5rem;
+    }
+    
+    /* Form section headers for better organization */
+    .form-section-header {
+        background: #f8f9fa;
+        padding: 12px 16px;
+        margin: 20px 0 15px 0;
+        border-left: 4px solid #007bff;
+        border-radius: 0 4px 4px 0;
+        font-weight: 600;
+        color: #333;
+    }
+    
+    .form-section-header i {
+        margin-right: 8px;
+        color: #007bff;
+    }
+    
+    /* Floating action button for save (bottom of screen) */
+    .mobile-save-btn {
+        position: fixed !important;
+        bottom: 20px !important;
+        left: 20px !important;
+        right: 20px !important;
+        z-index: 1000 !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+        border-radius: 12px !important;
+        padding: 16px !important;
+        font-size: 16px !important;
+        font-weight: 600 !important;
+        background: linear-gradient(135deg, #007bff 0%, #0056b3 100%) !important;
+        border: none !important;
+        color: white !important;
+        width: calc(100vw - 40px) !important;
+        margin: 0 !important;
+    }
+    
+    .mobile-save-btn:hover {
+        transform: translateY(-2px) !important;
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2) !important;
+    }
+    
+    /* Add padding to content to avoid overlap with floating button */
+    .content {
+        padding-bottom: 100px !important;
+    }
+}
+
+/* Mobile Sidebar Overlay */
+.mobile-sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 998;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.mobile-sidebar-overlay.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Adjust header layout for mobile toggle */
+@media (max-width: 991.98px) {
+    .admin-header .header-left {
+        display: flex;
+        align-items: center;
+    }
+    
+    .admin-header h2 {
+        margin: 0;
+        font-size: 1.25rem;
     }
 }

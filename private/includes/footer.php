@@ -15,7 +15,6 @@
                     <h3>Links Rápidos</h3>
                     <ul>
                         <li><a href="index.php">Home</a></li>
-                        <li><a href="sobre.php">Sobre</a></li>
                         <li><a href="imoveis.php">Imóveis</a></li>
                         <li><a href="contato.php">Contato</a></li>
                     </ul>
@@ -23,9 +22,9 @@
                 <div class="footer-col">
                     <h3>Contato</h3>
                     <ul class="contact-info">
-                        <li><i class="fas fa-map-marker-alt"></i> Rua Exemplo, 123 - Centro</li>
-                        <li><i class="fas fa-phone"></i> (XX) XXXX-XXXX</li>
-                        <li><i class="fas fa-envelope"></i> contato@corretorabase.com.br</li>
+                        <li><i class="fas fa-map-marker-alt"></i> Av. Ruben Bento Alves, 8434 - Cinquentenário, Caxias do Sul - RS, CEP: 95012-366</li>
+                        <li><i class="fas fa-phone"></i> (54) 99627-0304</li>
+                        <li><i class="fas fa-envelope"></i> claudiacolomboimoveis@gmail.com</li>
                     </ul>
                 </div>
             </div>

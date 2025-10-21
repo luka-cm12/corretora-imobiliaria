@@ -686,6 +686,8 @@ img {
 
 .footer-col p {
     margin-bottom: 20px;
+    color: #333; /* Cor mais escura para melhor legibilidade */
+    font-weight: 400;
 }
 
 .footer-social a {
@@ -711,23 +713,26 @@ img {
 }
 
 .footer-col ul li a {
-    color: var(--white);
+    color: #333; /* Cor mais escura para melhor legibilidade */
     transition: color 0.3s ease;
+    font-weight: 500;
 }
 
 .footer-col ul li a:hover {
-    color: var(--secondary-color);
+    color: var(--primary-color); /* Hover na cor primária (marrom) */
 }
 
 .contact-info li {
     margin-bottom: 15px;
     display: flex;
     align-items: center;
+    color: #333; /* Cor mais escura para melhor legibilidade */
+    font-weight: 500;
 }
 
 .contact-info i {
     margin-right: 10px;
-    color: var(--secondary-color);
+    color: var(--primary-color); /* Ícones na cor primária (marrom) */
 }
 
 .footer-bottom {

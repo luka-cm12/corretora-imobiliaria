@@ -18,7 +18,7 @@ require_once __DIR__ . '/../config/config.php';
 <footer class="admin-footer">
     <div class="container-fluid">
         <div class="row">
-            <div class="col-md-4">
+            <!--<div class="col-md-4">
                 <h5><?php echo NOME_CORRETORA; ?></h5>
                 <p>
                     <?php 
@@ -27,7 +27,7 @@ require_once __DIR__ . '/../config/config.php';
                 </p>
                 <p>Telefone: <?php echo isset($TELEFONE_CORRETORA) ? $TELEFONE_CORRETORA : (defined('TELEFONE_CORRETORA') ? constant('TELEFONE_CORRETORA') : 'Não definido'); ?></p>
                 <p>Email: <?php echo (defined('EMAIL_CORRETORA') ? constant('EMAIL_CORRETORA') : (isset($EMAIL_CORRETORA) ? $EMAIL_CORRETORA : 'Email não definido')); ?></p>
-            </div>
+            </div>-->
             
             <div class="col-md-4">
                 <h5>Links Rápidos</h5>
@@ -42,7 +42,7 @@ require_once __DIR__ . '/../config/config.php';
             <div class="col-md-4">
                 <h5>Suporte</h5>
                 <p>Em caso de problemas, entre em contato com o administrador do sistema.</p>
-                <p>Versão do Sistema: <?php echo (defined('VERSAO_SISTEMA') ? constant('VERSAO_SISTEMA') : 'Versão não definida'); ?></p>
+                <p>Versão do Sistema: <?php echo (defined('VERSAO_SISTEMA') ? constant('VERSAO_SISTEMA') : '5.20.10'); ?></p>
                 <p>&copy; <?php echo date('Y'); ?> <?php echo NOME_CORRETORA; ?>. Todos os direitos reservados.</p>
             </div>
         </div>
@@ -58,6 +58,8 @@ require_once __DIR__ . '/../config/config.php';
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
 <!-- Script customizado do admin (se existir localmente) -->
 <script src="<?php echo BASE_URL; ?>public/assets/js/admin-scripts.js"></script>
+<!-- Script mobile do admin -->
+<script src="<?php echo BASE_URL; ?>public/assets/js/admin-mobile.js"></script>
 
 <?php
 // Exibe mensagens de sessão (sucesso/erro)

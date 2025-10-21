@@ -321,9 +321,9 @@ if (is_dir($carousel_folder)) {
     <div class="container">
         <div class="about-content">
             <h2 class="section-title">Sobre a Corretora Claudia</h2>
-            <p>Somos uma corretora de imóveis comprometida em oferecer o melhor serviço para nossos clientes. Com anos de experiência no mercado, ajudamos você a encontrar o imóvel perfeito ou a vender seu patrimônio com segurança e tranquilidade.</p>
+            <p>Há 20 anos oferecendo consultoria imobiliária para seu melhor negócio. Com anos de experiência no mercado, ajudamos você a vender ou encontrar o imóvel ideal, com segurança, tranquilidade, transparência e comprometimento.</p>
             <p>Nossa equipe é formada por profissionais qualificados que entendem as necessidades de cada cliente e trabalham para superar expectativas.</p>
-            <a href="sobre.php" class="btn">Saiba Mais</a>
+            <!--<a href="sobre.php" class="btn">Saiba Mais</a> -->
         </div>
         <div class="about-image">
             <img src="public/assets/images/claudia/claudiaCO.jpeg" alt="Claudia Colombo - Corretora">

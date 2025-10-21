@@ -8,33 +8,7 @@ if (!defined('DEV_ENVIRONMENT')) {
     define('DEV_ENVIRONMENT', in_array($host, ['localhost', '127.0.0.1']));
 }
 
-// Configurações do banco de dados (apenas se não estiverem definidas pela config)
-if (!defined('DB_HOST')) define('DB_HOST', '127.0.0.1');
-if (!defined('DB_USER')) define('DB_USER', 'root');
-if (!defined('DB_PASS')) define('DB_PASS', '');
-if (!defined('DB_NAME')) define('DB_NAME', 'corretora_base');
-
-if (!isset($conn) || !($conn instanceof PDO)) {
-    try {
-        // Conexão PDO
-        $conn = new PDO(
-            'mysql:host=' . DB_HOST . ';dbname=' . DB_NAME . ';charset=utf8mb4',
-            DB_USER,
-            DB_PASS,
-            [
-                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION, // Lança exceções em erros
-                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC, // Retorna array associativo por padrão
-                PDO::ATTR_EMULATE_PREPARES => false, // Usa prepared statements nativos
-            ]
-        );
-    } catch (PDOException $e) {
-        if (DEV_ENVIRONMENT) {
-            die("<h2>Erro de conexão com o banco de dados</h2><p>{$e->getMessage()}</p>");
-        } else {
-            die("<h2>Erro temporário do sistema</h2><p>Estamos enfrentando problemas técnicos. Por favor, tente novamente mais tarde.</p>");
-        }
-    }
-}
+// A conexão $conn já foi criada no config.php
 
 /**
  * Executa uma consulta SQL usando PDO

@@ -1,0 +1,73 @@
+# Arquivo .htaccess para Corretora Claudia
+
+# Habilitar reescrita de URLs
+RewriteEngine On
+
+# Redirecionar para HTTPS (descomente se tiver SSL)
+# RewriteCond %{HTTPS} off
+# RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+# Proteger arquivos sensíveis
+<Files "config.local.php">
+    Order Deny,Allow
+    Deny from All
+</Files>
+
+<Files "*.sql">
+    Order Deny,Allow  
+    Deny from All
+</Files>
+
+# Proteger pasta private (EXCETO admin e imoveis)
+<IfModule mod_rewrite.c>
+    # Bloquear acesso a pastas sensíveis, mas permitir admin e imoveis
+    RewriteRule ^private/config/ - [F,L]
+    RewriteRule ^private/includes/ - [F,L]
+    # private/admin/ é permitido (não tem regra de bloqueio)
+    # private/imoveis/ é permitido (não tem regra de bloqueio)
+</IfModule>
+
+# Configurações de cache para arquivos estáticos
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType image/jpg "access plus 1 month"
+    ExpiresByType image/jpeg "access plus 1 month"
+    ExpiresByType image/gif "access plus 1 month"
+    ExpiresByType image/png "access plus 1 month"
+    ExpiresByType text/css "access plus 1 month"
+    ExpiresByType application/pdf "access plus 1 month"
+    ExpiresByType application/javascript "access plus 1 month"
+    ExpiresByType application/x-javascript "access plus 1 month"
+    ExpiresByType application/x-shockwave-flash "access plus 1 month"
+    ExpiresByType image/x-icon "access plus 1 year"
+</IfModule>
+
+# Compressão GZIP
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/plain
+    AddOutputFilterByType DEFLATE text/html
+    AddOutputFilterByType DEFLATE text/xml
+    AddOutputFilterByType DEFLATE text/css
+    AddOutputFilterByType DEFLATE application/xml
+    AddOutputFilterByType DEFLATE application/xhtml+xml
+    AddOutputFilterByType DEFLATE application/rss+xml
+    AddOutputFilterByType DEFLATE application/javascript
+    AddOutputFilterByType DEFLATE application/x-javascript
+</IfModule>
+
+# Configurações de segurança
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options nosniff
+    Header always set X-Frame-Options SAMEORIGIN
+    Header always set X-XSS-Protection "1; mode=block"
+</IfModule>
+
+# Configuração de upload de arquivos
+php_value upload_max_filesize 10M
+php_value post_max_size 10M
+php_value max_execution_time 300
+php_value max_input_vars 3000
+
+# Página de erro personalizada (opcional)
+# ErrorDocument 404 /404.php
+# ErrorDocument 500 /500.php

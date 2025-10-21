@@ -179,8 +179,13 @@ include __DIR__ . '/../includes/admin-header.php';
         <div class="alert alert-success"><?= $success ?></div>
     <?php endif; ?>
 
-    <form action="" method="post" enctype="multipart/form-data" class="imovel-form">
+    <form action="" method="post" enctype="multipart/form-data" class="imovel-form mobile-optimized">
         <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token']) ?>">
+        
+        <!-- Seção 1: Informações Básicas -->
+        <div class="form-section-header">
+            <i class="fas fa-info-circle"></i>Informações Básicas
+        </div>
         <div class="form-group">
             <label for="id_proprietario">Proprietário *</label>
             <select id="id_proprietario" name="id_proprietario" required>
@@ -216,6 +221,11 @@ include __DIR__ . '/../includes/admin-header.php';
             <textarea id="descricao" name="descricao" rows="5" required><?= htmlspecialchars($_POST['descricao'] ?? '') ?></textarea>
         </div>
 
+        <!-- Seção 2: Características -->
+        <div class="form-section-header">
+            <i class="fas fa-star"></i>Características do Imóvel
+        </div>
+        
         <div class="form-group">
             <label>Características principais</label>
             <div class="caracteristicas-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;">
@@ -229,10 +239,15 @@ include __DIR__ . '/../includes/admin-header.php';
             <small class="form-text">Selecione as características que se aplicam ao imóvel.</small>
         </div>
 
+        <!-- Seção 3: Localização -->
+        <div class="form-section-header">
+            <i class="fas fa-map-marker-alt"></i>Localização
+        </div>
+        
         <div class="form-row">
             <div class="form-group">
                 <label for="cep">CEP</label>
-                <input type="text" id="cep" name="cep" value="<?= htmlspecialchars($_POST['cep'] ?? '') ?>" placeholder="00000-000">
+                <input type="text" id="cep" name="cep" value="<?= htmlspecialchars($_POST['cep'] ?? '') ?>" placeholder="00000-000" class="cep-mask">
                 <small class="form-text">Digite o CEP e saindo do campo buscaremos o endereço automaticamente.</small>
             </div>
             <div class="form-group">
@@ -250,10 +265,15 @@ include __DIR__ . '/../includes/admin-header.php';
             <input type="text" id="endereco" name="endereco" value="<?= htmlspecialchars($_POST['endereco'] ?? '') ?>">
         </div>
 
+        <!-- Seção 4: Detalhes do Imóvel -->
+        <div class="form-section-header">
+            <i class="fas fa-home"></i>Detalhes do Imóvel
+        </div>
+        
         <div class="form-row">
             <div class="form-group">
                 <label for="preco">Preço (R$) *</label>
-                <input type="text" id="preco" name="preco" value="<?= htmlspecialchars($_POST['preco'] ?? '') ?>" required>
+                <input type="text" id="preco" name="preco" value="<?= htmlspecialchars($_POST['preco'] ?? '') ?>" required class="money-mask">
             </div>
             <div class="form-group">
                 <label for="area">Área (m²)</label>
@@ -283,13 +303,29 @@ include __DIR__ . '/../includes/admin-header.php';
             </label>
         </div>
 
+        <!-- Seção 5: Imagens e Finalização -->
+        <div class="form-section-header">
+            <i class="fas fa-images"></i>Imagens do Imóvel
+        </div>
+        
         <div class="form-group">
-            <label for="imagens">Imagens *</label>
+            <label for="imagens">Selecionar Imagens *</label>
             <input type="file" id="imagens" name="imagens[]" multiple accept="image/*" required>
-            <small class="form-text">Selecione várias imagens (máx. 10, primeira imagem será a principal)</small>
+            <small class="form-text">
+                <i class="fas fa-info-circle"></i> 
+                Selecione várias imagens (máx. 10). A primeira será a imagem principal.
+            </small>
         </div>
 
-        <button type="submit" class="btn">Salvar Imóvel</button>
+        <!-- Botão flutuante para mobile -->
+        <button type="submit" class="btn mobile-save-btn d-lg-none">
+            <i class="fas fa-save me-2"></i>Salvar Imóvel
+        </button>
+        
+        <!-- Botão normal para desktop -->
+        <button type="submit" class="btn d-none d-lg-block">
+            <i class="fas fa-save me-2"></i>Salvar Imóvel
+        </button>
     </form>
 </div>
 

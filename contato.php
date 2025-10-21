@@ -123,7 +123,7 @@ include 'private/includes/header.php';
                         <i class="fas fa-map-marker-alt"></i>
                         <div>
                             <h3>Endereço</h3>
-                            <p>Rua Exemplo, 123 - Centro<br>Cidade - Estado</p>
+                            <p>Av. Ruben Bento Alves, 8434<br>Cinquentenário - Caxias do Sul - RS<br>CEP: 95012-366</p>
                         </div>
                     </div>
                     
@@ -131,8 +131,7 @@ include 'private/includes/header.php';
                         <i class="fas fa-phone"></i>
                         <div>
                             <h3>Telefone</h3>
-                            <p>(XX) XXXX-XXXX</p>
-                            <p>(XX) XXXX-XXXX</p>
+                            <p>(54) 99627-0304</p>
                         </div>
                     </div>
                     
@@ -140,8 +139,7 @@ include 'private/includes/header.php';
                         <i class="fas fa-envelope"></i>
                         <div>
                             <h3>Email</h3>
-                            <p>contato@corretorabase.com.br</p>
-                            <p>vendas@corretorabase.com.br</p>
+                            <p>claudiacolomboimoveis@gmail.com</p>
                         </div>
                     </div>
                     
@@ -235,12 +233,13 @@ include 'private/includes/header.php';
         <div class="container">
             <h2>Onde Estamos</h2>
             <div class="map-container">
-                <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d12345.678901234567!2d-46.12345678901234!3d-23.123456789012345!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMjPCsDA3JzI0LjQiUyA0NsKwMDcnMjQuNCJX!5e0!3m2!1spt-BR!2sbr!4v1234567890123!5m2!1spt-BR!2sbr" 
+                <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3483.691578787022!2d-51.21065928809246!3d-29.17375959134829!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x951ea31c5778b827%3A0xf087f6f8369b75b3!2sAv.%20Ruben%20Bento%20Alves%2C%208434%20-%20Cinquenten%C3%A1rio%2C%20Caxias%20do%20Sul%20-%20RS%2C%2095012-366!5e0!3m2!1spt-BR!2sbr!4v1760577226237!5m2!1spt-BR!2sbr" 
                         width="100%" 
                         height="450" 
                         style="border:0;" 
                         allowfullscreen="" 
-                        loading="lazy">
+                        loading="lazy" 
+                        referrerpolicy="no-referrer-when-downgrade">
                 </iframe>
             </div>
         </div>

@@ -1,5 +1,5 @@
-# Permitir acesso à gestão de imóveis
-# Este arquivo garante que os arquivos de CRUD de imóveis sejam acessíveis via web
+# Permitir acesso à área administrativa
+# Este arquivo garante que o admin seja acessível via web
 
 # Desabilitar listagem de diretórios por segurança
 Options -Indexes
@@ -10,8 +10,8 @@ Options -Indexes
     Allow from all
 </Files>
 
-# Redirecionar para listar se tentar acessar diretório sem arquivo
-DirectoryIndex listar.php
+# Redirecionar para login se tentar acessar diretório sem arquivo
+DirectoryIndex index.php login.php
 
 # Configurações de segurança
 <IfModule mod_headers.c>
