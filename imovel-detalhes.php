@@ -49,8 +49,14 @@ $similares = db_query(
 // Tipos de imóvel para exibição amigável
 $tipos = [
     'casa' => 'Casa',
+    'casa_condominio' => 'Casa em Condomínio',
     'apartamento' => 'Apartamento',
+    'apartamento_mobiliado' => 'Apartamento Mobiliado',
+    'sobrado' => 'Sobrado',
+    'chacara' => 'Chácara',
+    'semi_mobiliado' => 'Semi Mobiliado',
     'terreno' => 'Terreno',
+    'loft' => 'Loft',
     'comercial' => 'Comercial'
 ];
 

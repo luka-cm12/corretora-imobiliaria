@@ -12,7 +12,7 @@
 
 // Configurações de banco local (XAMPP)
 define('DB_HOST', '127.0.0.1');
-define('DB_NAME', 'corretor_base'); // Nome do banco no XAMPP local
+define('DB_NAME', 'corretora_base'); // Nome do banco no XAMPP local
 define('DB_USER', 'root');               // Usuário padrão do XAMPP
 define('DB_PASS', '');                   // Senha vazia no XAMPP por padrão
 

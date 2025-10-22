@@ -129,6 +129,24 @@ $tipos = $conn->query("SELECT DISTINCT tipo FROM imoveis ORDER BY tipo")
 $cidades = $conn->query("SELECT DISTINCT cidade FROM imoveis ORDER BY cidade")
                 ->fetchAll(PDO::FETCH_ASSOC);
 
+// Função para formatar tipo do imóvel
+function formatar_tipo_imovel($tipo) {
+    $tipos = [
+        'casa' => '🏠 Casa',
+        'casa_condominio' => '🏘️ Casa em Condomínio',
+        'apartamento' => '🏢 Apartamento',
+        'apartamento_mobiliado' => '🏢🛋️ Apartamento Mobiliado',
+        'sobrado' => '🏘️ Sobrado',
+        'chacara' => '🌾 Chácara',
+        'semi_mobiliado' => '🛋️ Semi Mobiliado',
+        'terreno' => '🌿 Terreno',
+        'loft' => '🏙️ Loft',
+        'comercial' => '🏪 Comercial'
+    ];
+    
+    return $tipos[$tipo] ?? ucfirst(str_replace('_', ' ', $tipo));
+}
+
 $bairros = [];
 if (!empty($filtros['cidade'])) {
     $stmt = $conn->prepare("SELECT DISTINCT bairro FROM imoveis WHERE cidade = :cidade ORDER BY bairro");
@@ -175,10 +193,10 @@ include 'private/includes/header.php';
                     <div class="filter-group">
                         <label for="tipo">Tipo</label>
                         <select id="tipo" name="tipo">
-                            <option value="">Todos</option>
+                            <option value="">Todos os tipos</option>
                             <?php foreach ($tipos as $tipo): ?>
                                 <option value="<?= $tipo['tipo'] ?>" <?= $filtros['tipo'] == $tipo['tipo'] ? 'selected' : '' ?>>
-                                    <?= ucfirst($tipo['tipo']) ?>
+                                    <?= formatar_tipo_imovel($tipo['tipo']) ?>
                                 </option>
                             <?php endforeach; ?>
                         </select>
@@ -228,7 +246,7 @@ include 'private/includes/header.php';
                     </div>
                     
                     <div class="filter-group">
-                        <label for="quartos">Mín. Quartos</label>
+                        <label for="quartos">Quartos</label>
                         <select id="quartos" name="quartos">
                             <option value="">Qualquer</option>
                             <option value="1" <?= $filtros['quartos'] == '1' ? 'selected' : '' ?>>1+</option>
@@ -239,7 +257,7 @@ include 'private/includes/header.php';
                     </div>
                     
                     <div class="filter-group">
-                        <label for="banheiros">Mín. Banheiros</label>
+                        <label for="banheiros">Banheiros</label>
                         <select id="banheiros" name="banheiros">
                             <option value="">Qualquer</option>
                             <option value="1" <?= $filtros['banheiros'] == '1' ? 'selected' : '' ?>>1+</option>
@@ -297,6 +315,11 @@ include 'private/includes/header.php';
                             
                             <div class="property-info">
                                 <h3><?= htmlspecialchars($imovel['titulo']) ?></h3>
+                                <div class="property-type" style="margin-bottom: 8px;">
+                                    <span style="background: #007bff; color: white; padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: 500;">
+                                        <?= formatar_tipo_imovel($imovel['tipo']) ?>
+                                    </span>
+                                </div>
                                 <p class="property-address"><i class="fas fa-map-marker-alt"></i> <?= htmlspecialchars($imovel['bairro']) ?>, <?= htmlspecialchars($imovel['cidade']) ?></p>
                                 
                                 <div class="property-details">

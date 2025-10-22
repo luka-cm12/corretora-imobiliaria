@@ -40,7 +40,7 @@ if (file_exists($__localOverride)) {
 
 // Configurações do banco de dados (permite variáveis de ambiente ou override)
 if (!defined('DB_HOST')) define('DB_HOST', getenv('DB_HOST') ?: ($__isLocal ? '127.0.0.1' : 'localhost'));
-if (!defined('DB_NAME')) define('DB_NAME', getenv('DB_NAME') ?: ($__isLocal ? 'corretor_corretora' : 'sh00066_corretor_corretora'));
+if (!defined('DB_NAME')) define('DB_NAME', getenv('DB_NAME') ?: ($__isLocal ? 'corretora_base' : 'sh00066_corretor_corretora'));
 if (!defined('DB_USER')) define('DB_USER', getenv('DB_USER') ?: ($__isLocal ? 'root' : 'sh00066_corretor_admin'));
 if (!defined('DB_PASS')) define('DB_PASS', getenv('DB_PASS') ?: ($__isLocal ? '' : ''));
 

@@ -162,7 +162,7 @@ include 'private/includes/header.php';
                 </div>
                 
                 <div class="filter-group">
-                    <label for="quartos">Mín. Quartos</label>
+                    <label for="quartos">Quartos</label>
                     <select id="quartos" name="quartos">
                         <option value="">Qualquer</option>
                         <option value="1" <?= isset($filtros['quartos']) && $filtros['quartos'] == '1' ? 'selected' : '' ?>>1+</option>
@@ -173,7 +173,7 @@ include 'private/includes/header.php';
                 </div>
                 
                 <div class="filter-group">
-                    <label for="banheiros">Mín. Banheiros</label>
+                    <label for="banheiros">Banheiros</label>
                     <select id="banheiros" name="banheiros">
                         <option value="">Qualquer</option>
                         <option value="1" <?= isset($filtros['banheiros']) && $filtros['banheiros'] == '1' ? 'selected' : '' ?>>1+</option>

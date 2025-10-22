@@ -168,10 +168,16 @@ if (is_dir($carousel_folder)) {
             <div class="form-group">
                 <select name="tipo">
                     <option value="">Todos os Tipos</option>
-                    <option value="casa">Casa</option>
-                    <option value="apartamento">Apartamento</option>
-                    <option value="terreno">Terreno</option>
-                    <option value="comercial">Comercial</option>
+                    <option value="casa">🏠 Casa</option>
+                    <option value="casa_condominio">🏘️ Casa em Condomínio</option>
+                    <option value="apartamento">🏢 Apartamento</option>
+                    <option value="apartamento_mobiliado">🏢🛋️ Apartamento Mobiliado</option>
+                    <option value="sobrado">🏘️ Sobrado</option>
+                    <option value="chacara">🌾 Chácara</option>
+                    <option value="semi_mobiliado">🛋️ Semi Mobiliado</option>
+                    <option value="terreno">🌿 Terreno</option>
+                    <option value="loft">🏙️ Loft</option>
+                    <option value="comercial">🏪 Comercial</option>
                 </select>
             </div>
             <div class="form-group">
