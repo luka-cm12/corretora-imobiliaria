@@ -52,6 +52,10 @@ $page_title = isset($page_title) ? $page_title : 'Corretora Claudia Colombo | Im
                 <a href="<?= $BASE_PATH ?>index.php" title="Home">
                     <img class="logo-dark" src="<?= $BASE_PATH ?>public/assets/images/logo/logo-dark.png" alt="Corretora Claudia Colombo">
                 </a>
+                <div class="logo-credentials">
+                    <span class="credential-badge">Avaliadora</span>
+                    <span class="credential-badge">Perita</span>
+                </div>
             </div>
             
             <nav class="main-nav">

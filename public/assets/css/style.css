@@ -140,6 +140,32 @@ img {
 .logo h1 { font-size: 1.8rem; color: var(--primary-color); }
 .logo h1 span { color: var(--primary-color); }
 
+/* Credenciais do logo */
+.logo-credentials {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-left: 8px;
+}
+
+.credential-badge {
+    background: linear-gradient(135deg, #3498db, #2980b9);
+    color: white;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: 0 2px 4px rgba(52, 152, 219, 0.3);
+    transition: all 0.3s ease;
+}
+
+.credential-badge:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(52, 152, 219, 0.4);
+}
+
 .main-nav ul {
     display: flex;
 }
@@ -2127,8 +2153,33 @@ text
 }
 }
 
+/* Ajuste responsivo para tablets */
+@media (max-width: 768px) {
+    .logo-credentials {
+        gap: 3px;
+        margin-left: 6px;
+    }
+    
+    .credential-badge {
+        font-size: 0.7rem;
+        padding: 2px 7px;
+        border-radius: 10px;
+    }
+}
+
 /* Ajuste responsivo adicional para o logo no mobile */
 @media (max-width: 576px) {
     .logo-dark { height: 48px !important; }
     .logo-creci { font-size: 0.8rem; }
+    
+    .logo-credentials {
+        gap: 2px;
+        margin-left: 4px;
+    }
+    
+    .credential-badge {
+        font-size: 0.65rem;
+        padding: 2px 6px;
+        border-radius: 8px;
+    }
 }

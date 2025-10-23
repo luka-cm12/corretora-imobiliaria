@@ -36,6 +36,26 @@ if (!is_array($imovel_result) || count($imovel_result) === 0) {
 $imovel = $imovel_result[0];
 $imovel['imagens'] = array_values(array_filter(explode(',', $imovel['imagens'])));
 
+// Debug: verificar valores carregados do banco
+error_log("DEBUG EDITAR - Valores carregados do banco para imóvel ID {$imovel_id}:");
+error_log("  Preço: " . ($imovel['preco'] ?? 'NULL'));
+error_log("  Condomínio: " . ($imovel['valor_condominio'] ?? 'NULL'));  
+error_log("  IPTU: " . ($imovel['valor_iptu'] ?? 'NULL'));
+error_log("  Todos os campos: " . json_encode(array_keys($imovel)));
+
+// Verificação de integridade dos valores
+if (isset($imovel['preco']) && isset($imovel['valor_condominio'])) {
+    if ($imovel['preco'] == $imovel['valor_condominio'] && $imovel['preco'] > 0) {
+        error_log("⚠️ ALERTA: Preço e condomínio têm o MESMO valor - possível problema!");
+    }
+}
+
+// Log do valor formatado que será exibido no HTML
+$preco_formatado = isset($imovel['preco']) && $imovel['preco'] > 0 ? number_format((float)$imovel['preco'], 2, ',', '.') : '';
+$condominio_formatado = isset($imovel['valor_condominio']) && $imovel['valor_condominio'] > 0 ? number_format($imovel['valor_condominio'], 2, ',', '.') : '';
+error_log("  Preço formatado para HTML: '$preco_formatado'");
+error_log("  Condomínio formatado para HTML: '$condominio_formatado'");
+
 // Garante colunas necessárias (executa ALTER TABLE se ausentes)
 if (function_exists('ensure_table_column')) {
     // Características: usa JSON quando disponível; aqui adotamos TEXT por compatibilidade ampla.
@@ -44,23 +64,64 @@ if (function_exists('ensure_table_column')) {
     ensure_table_column('imoveis', 'cep', 'CHAR(8) NULL');
 }
 
-// Lista padrão de características principais (mesma do adicionar.php)
+// Lista organizada de características por categorias/cômodos (mesma do adicionar.php)
 $lista_caracteristicas = [
-    'ar_condicionado' => 'Ar condicionado',
-    'armarios_embutidos' => 'Armários embutidos',
-    'churrasqueira' => 'Churrasqueira',
-    'varanda' => 'Varanda',
-    'sacada' => 'Sacada',
-    'piscina' => 'Piscina',
-    'academia' => 'Academia',
-    'area_gourmet' => 'Área gourmet',
-    'portaria_24h' => 'Portaria 24h',
-    'elevador' => 'Elevador',
-    'mobiliado' => 'Mobiliado',
-    'pet_friendly' => 'Pet friendly',
-    'quintal' => 'Quintal',
-    'lavanderia' => 'Lavanderia',
-    'lareira' => 'Lareira'
+    'Quartos e Suítes' => [
+        'suite' => 'Suíte',
+        'closet' => 'Closet',
+        'ar_condicionado' => 'Ar condicionado',
+        'armarios_embutidos' => 'Armários embutidos',
+        'suite_master' => 'Suíte master',
+        'varanda_suite' => 'Varanda na suíte'
+    ],
+    'Banheiros e Bem-estar' => [
+        'hidromassagem' => 'Hidromassagem',
+        'agua_aquecida' => 'Água aquecida',
+        'gas_central' => 'Gás central',
+        'banheira' => 'Banheira',
+        'box_blindex' => 'Box blindex',
+        'sauna' => 'Sauna'
+    ],
+    'Áreas Sociais' => [
+        'sala_de_estar' => 'Sala de estar',
+        'varanda' => 'Varanda',
+        'sacada' => 'Sacada',
+        'sacada_gourmet' => 'Sacada gourmet',
+        'area_gourmet' => 'Área gourmet',
+        'churrasqueira' => 'Churrasqueira',
+        'salao_de_festas' => 'Salão de festas',
+        'quiosque' => 'Quiosque',
+        'jardim' => 'Jardim',
+        'terraço' => 'Terraço'
+    ],
+    'Lazer e Recreação' => [
+        'piscina' => 'Piscina',
+        'academia' => 'Academia',
+        'quintal' => 'Quintal',
+        'playground' => 'Playground',
+        'quadra_esportiva' => 'Quadra esportiva',
+        'sala_jogos' => 'Sala de jogos'
+    ],
+    'Funcionalidades' => [
+        'elevador' => 'Elevador',
+        'portaria_24h' => 'Portaria',
+        'mobiliado' => 'Mobiliado',
+        'pet_friendly' => 'Pet friendly',
+        'lavanderia' => 'Lavanderia',
+        'lareira' => 'Lareira',
+        'interfone' => 'Interfone',
+        'alarme' => 'Sistema de alarme',
+        'garagem_coberta' => 'Garagem coberta'
+    ]
+];
+
+// Ícones para cada categoria
+$icones_categorias = [
+    'Quartos e Suítes' => '🛏️',
+    'Banheiros e Bem-estar' => '🛁',
+    'Áreas Sociais' => '🏡',
+    'Lazer e Recreação' => '🏊‍♂️',
+    'Funcionalidades' => '⚙️'
 ];
 
 // Lista de opções de posição solar
@@ -98,18 +159,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $cidade = trim($_POST['cidade'] ?? '');
         $bairro = trim($_POST['bairro'] ?? '');
         $endereco = trim($_POST['endereco'] ?? '');
-    $preco = (float) str_replace(['.', ','], ['', '.'], $_POST['preco'] ?? '0');
+        
+        // Processar preço - GARANTIR que seja o preço do imóvel, não do condomínio
+        $preco_raw = trim($_POST['preco'] ?? '0');
+        $preco = 0;
+        if (!empty($preco_raw)) {
+            // Remove R$, pontos (milhares) e espaços, converte vírgula em ponto
+            $preco_limpo = str_replace(['R$', '.', ' '], ['', '', ''], $preco_raw);
+            $preco_limpo = str_replace(',', '.', $preco_limpo);
+            $preco = (float) $preco_limpo;
+        }
+        
         $area = (float) str_replace(',', '.', $_POST['area'] ?? '0');
         
-        // Valores internos (condomínio e IPTU)
+        // Valores internos (condomínio e IPTU) - SEPARADOS do preço principal
         $valor_condominio = 0;
-        if (!empty($_POST['valor_condominio'])) {
-            $valor_condominio = (float) str_replace(['R$', '.', ',', ' '], ['', '', '.', ''], $_POST['valor_condominio']);
+        $condominio_raw = trim($_POST['valor_condominio'] ?? '');
+        if (!empty($condominio_raw)) {
+            $condominio_limpo = str_replace(['R$', '.', ' '], ['', '', ''], $condominio_raw);
+            $condominio_limpo = str_replace(',', '.', $condominio_limpo);
+            $valor_condominio = (float) $condominio_limpo;
         }
         
         $valor_iptu = 0;
-        if (!empty($_POST['valor_iptu'])) {
-            $valor_iptu = (float) str_replace(['R$', '.', ',', ' '], ['', '', '.', ''], $_POST['valor_iptu']);
+        $iptu_raw = trim($_POST['valor_iptu'] ?? '');
+        if (!empty($iptu_raw)) {
+            $iptu_limpo = str_replace(['R$', '.', ' '], ['', '', ''], $iptu_raw);
+            $iptu_limpo = str_replace(',', '.', $iptu_limpo);
+            $valor_iptu = (float) $iptu_limpo;
         }
         
         // Novos campos internos
@@ -141,9 +218,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $destaque = isset($_POST['destaque']) ? 1 : 0;
     // CEP (opcional)
     $cep = preg_replace('/\D+/', '', $_POST['cep'] ?? '');
-        // Características principais (opcional)
+        // Características principais (opcional) - adaptado para nova estrutura
+        $todas_caracteristicas = [];
+        foreach ($lista_caracteristicas as $categoria => $items) {
+            $todas_caracteristicas = array_merge($todas_caracteristicas, $items);
+        }
+        
         $caracteristicas_post = isset($_POST['caracteristicas']) && is_array($_POST['caracteristicas'])
-            ? array_values(array_intersect(array_keys($lista_caracteristicas), $_POST['caracteristicas']))
+            ? array_values(array_intersect(array_keys($todas_caracteristicas), $_POST['caracteristicas']))
             : [];
         $caracteristicas_json = json_encode($caracteristicas_post, JSON_UNESCAPED_UNICODE);
         
@@ -163,8 +245,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (empty($bairro)) {
             throw new Exception('O bairro é obrigatório.');
         }
+        // Debug COMPLETO dos valores processados
+        error_log("DEBUG EDITAR - VALORES PROCESSADOS:");
+        error_log("  Preço recebido: " . var_export($_POST['preco'] ?? 'VAZIO', true));
+        error_log("  Preço processado: " . $preco);
+        error_log("  Condomínio recebido: " . var_export($_POST['valor_condominio'] ?? 'VAZIO', true));
+        error_log("  Condomínio processado: " . $valor_condominio);
+        error_log("  IPTU recebido: " . var_export($_POST['valor_iptu'] ?? 'VAZIO', true));
+        error_log("  IPTU processado: " . $valor_iptu);
+        error_log("  Área recebida: " . var_export($_POST['area'] ?? 'VAZIO', true));
+        error_log("  Área processada: " . $area);
+        error_log("  Área privativa recebida: " . var_export($_POST['area_privativa'] ?? 'VAZIO', true));
+        error_log("  Área privativa processada: " . $area_privativa);
+        error_log("  Área comum recebida: " . var_export($_POST['area_comum'] ?? 'VAZIO', true));
+        error_log("  Área comum processada: " . $area_comum);
+        
         if ($preco <= 0) {
-            throw new Exception('O preço deve ser maior que zero.');
+            throw new Exception('O preço deve ser maior que zero. Valor recebido: ' . $preco);
         }
         
     // Diretório de uploads (upload_imagem usa caminho relativo à raiz do projeto)
@@ -297,18 +394,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 %CARAC% 
              WHERE id = ?";
 
-        $params = [$titulo, $descricao, $tipo, $cidade, $bairro, $endereco];
-        $tail = [$preco, $area, $quartos, $banheiros, $garagem, $imagens_str, $destaque];
-
-        // CEP condicional
+        // CORREÇÃO CRÍTICA: Construir parâmetros na ordem EXATA do SQL
+        $params = [];
+        
+        // Grupo 1: Campos básicos obrigatórios
+        $params[] = $titulo;
+        $params[] = $descricao; 
+        $params[] = $tipo;
+        $params[] = $cidade;
+        $params[] = $bairro;
+        $params[] = $endereco;
+        
+        // CEP condicional (vem logo após endereco no SQL)
         if (is_array($cepCol) && count($cepCol) > 0) {
             $sqlUpdate = str_replace('%CEP%', 'cep = ?, ', $sqlUpdate);
             $params[] = $cep;
         } else {
             $sqlUpdate = str_replace('%CEP%', '', $sqlUpdate);
         }
-
-        // Valor Condomínio condicional
+        
+        // PREÇO (obrigatório) - vem após CEP no SQL
+        $params[] = $preco;
+        
+        // Valores internos opcionais (na ordem do SQL)
         if (is_array($condominioCol) && count($condominioCol) > 0) {
             $sqlUpdate = str_replace('%CONDOMINIO%', 'valor_condominio = ?, ', $sqlUpdate);
             $params[] = $valor_condominio;
@@ -316,7 +424,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $sqlUpdate = str_replace('%CONDOMINIO%', '', $sqlUpdate);
         }
 
-        // Valor IPTU condicional
         if (is_array($iptuCol) && count($iptuCol) > 0) {
             $sqlUpdate = str_replace('%IPTU%', 'valor_iptu = ?, ', $sqlUpdate);
             $params[] = $valor_iptu;
@@ -324,7 +431,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $sqlUpdate = str_replace('%IPTU%', '', $sqlUpdate);
         }
 
-        // Parcelas IPTU condicional
         if (is_array($parcelasIptuCol) && count($parcelasIptuCol) > 0) {
             $sqlUpdate = str_replace('%PARCELAS_IPTU%', 'parcelas_iptu = ?, ', $sqlUpdate);
             $params[] = $parcelas_iptu;
@@ -332,7 +438,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $sqlUpdate = str_replace('%PARCELAS_IPTU%', '', $sqlUpdate);
         }
 
-        // Matrícula condicional
         if (is_array($matriculaCol) && count($matriculaCol) > 0) {
             $sqlUpdate = str_replace('%MATRICULA%', 'matricula = ?, ', $sqlUpdate);
             $params[] = $matricula;
@@ -340,7 +445,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $sqlUpdate = str_replace('%MATRICULA%', '', $sqlUpdate);
         }
 
-        // Exclusividade condicional
         if (is_array($exclusividadeCol) && count($exclusividadeCol) > 0) {
             $sqlUpdate = str_replace('%EXCLUSIVIDADE%', 'exclusividade = ?, ', $sqlUpdate);
             $params[] = $exclusividade;
@@ -348,7 +452,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $sqlUpdate = str_replace('%EXCLUSIVIDADE%', '', $sqlUpdate);
         }
 
-        // Taxa intermediação condicional
         if (is_array($taxaCol) && count($taxaCol) > 0) {
             $sqlUpdate = str_replace('%TAXA%', 'taxa_intermediacao = ?, ', $sqlUpdate);
             $params[] = $taxa_intermediacao;
@@ -356,7 +459,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $sqlUpdate = str_replace('%TAXA%', '', $sqlUpdate);
         }
 
-        // Chaves tipo condicional
         if (is_array($chavesTipoCol) && count($chavesTipoCol) > 0) {
             $sqlUpdate = str_replace('%CHAVES_TIPO%', 'chaves_tipo = ?, ', $sqlUpdate);
             $params[] = $chaves_tipo;
@@ -364,7 +466,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $sqlUpdate = str_replace('%CHAVES_TIPO%', '', $sqlUpdate);
         }
 
-        // Chaves cópias condicional
         if (is_array($chavesCopiasCol) && count($chavesCopiasCol) > 0) {
             $sqlUpdate = str_replace('%CHAVES_COPIAS%', 'chaves_copias = ?, ', $sqlUpdate);
             $params[] = $chaves_copias;
@@ -372,15 +473,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $sqlUpdate = str_replace('%CHAVES_COPIAS%', '', $sqlUpdate);
         }
 
-        // Observações chaves condicional
         if (is_array($observacoesChavesCol) && count($observacoesChavesCol) > 0) {
             $sqlUpdate = str_replace('%OBSERVACOES_CHAVES%', 'observacoes_chaves = ?, ', $sqlUpdate);
             $params[] = $observacoes_chaves;
         } else {
             $sqlUpdate = str_replace('%OBSERVACOES_CHAVES%', '', $sqlUpdate);
         }
-
-        // Área privativa condicional
+        
+        // ÁREA TOTAL (obrigatória) - vem após campos internos
+        $params[] = $area;
+        
+        // Áreas detalhadas opcionais
         if (is_array($areaPrivativaCol) && count($areaPrivativaCol) > 0) {
             $sqlUpdate = str_replace('%AREA_PRIVATIVA%', 'area_privativa = ?, ', $sqlUpdate);
             $params[] = $area_privativa;
@@ -388,31 +491,42 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $sqlUpdate = str_replace('%AREA_PRIVATIVA%', '', $sqlUpdate);
         }
 
-        // Área comum condicional
         if (is_array($areaComumCol) && count($areaComumCol) > 0) {
             $sqlUpdate = str_replace('%AREA_COMUM%', 'area_comum = ?, ', $sqlUpdate);
             $params[] = $area_comum;
         } else {
             $sqlUpdate = str_replace('%AREA_COMUM%', '', $sqlUpdate);
         }
-
-        // Posição solar condicional
+        
+        // Campos básicos finais (na ordem do SQL)
+        $params[] = $quartos;
+        $params[] = $banheiros;
+        $params[] = $garagem;
+        $params[] = $imagens_str;
+        $params[] = $destaque;
+        
+        // Campos opcionais finais
         if (is_array($posicaoSolarCol) && count($posicaoSolarCol) > 0) {
             $sqlUpdate = str_replace('%POSICAO_SOLAR%', ', posicao_solar = ?', $sqlUpdate);
-            $tail[] = $posicao_solar;
+            $params[] = $posicao_solar;
         } else {
             $sqlUpdate = str_replace('%POSICAO_SOLAR%', '', $sqlUpdate);
         }
 
-        // Características condicional
         if (is_array($caracCol) && count($caracCol) > 0) {
             $sqlUpdate = str_replace('%CARAC%', ', caracteristicas = ?', $sqlUpdate);
-            $tail[] = $caracteristicas_json;
+            $params[] = $caracteristicas_json;
         } else {
             $sqlUpdate = str_replace('%CARAC%', '', $sqlUpdate);
         }
-
-        $params = array_merge($params, $tail, [$imovel_id]);
+        
+        // ID do imóvel (WHERE clause)
+        $params[] = $imovel_id;
+        
+        // Debug: log da query final e parâmetros
+        error_log("DEBUG SQL FINAL:");
+        error_log("Query: " . $sqlUpdate);
+        error_log("Parâmetros (count=" . count($params) . "): " . json_encode($params));
         $result = db_query($sqlUpdate, $params);
         
         if ($result) {
@@ -426,22 +540,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 @unlink(__DIR__ . '/../../public/uploads/' . $imagem_removida);
             }
             
-            // Atualizar dados do imóvel para exibição
-            $imovel['titulo'] = $titulo;
-            $imovel['descricao'] = $descricao;
-            $imovel['tipo'] = $tipo;
-            $imovel['cidade'] = $cidade;
-            $imovel['bairro'] = $bairro;
-            $imovel['endereco'] = $endereco;
-            if (!empty($cep)) { $imovel['cep'] = $cep; }
-            $imovel['preco'] = $preco;
-            $imovel['area'] = $area;
-            $imovel['quartos'] = $quartos;
-            $imovel['banheiros'] = $banheiros;
-            $imovel['garagem'] = $garagem;
-            $imovel['destaque'] = $destaque;
-            $imovel['imagens'] = $todas_imagens;
-            if (isset($caracteristicas_post)) $caracteristicas_atual = $caracteristicas_post;
+            // IMPORTANTE: Recarregar dados atualizados do banco para garantir consistência
+            $imovel_atualizado = db_query(
+                "SELECT * FROM imoveis WHERE id = ?",
+                [$imovel_id]
+            );
+            
+            if (is_array($imovel_atualizado) && count($imovel_atualizado) > 0) {
+                $imovel = $imovel_atualizado[0];
+                $imovel['imagens'] = $todas_imagens; // Manter imagens atualizadas
+                
+                // Debug: verificar valores após atualização
+                error_log("DEBUG EDITAR - Valores após atualização no banco:");
+                error_log("  Preço: " . ($imovel['preco'] ?? 'NULL'));
+                error_log("  Condomínio: " . ($imovel['valor_condominio'] ?? 'NULL'));
+                error_log("  IPTU: " . ($imovel['valor_iptu'] ?? 'NULL'));
+                
+                // Recarregar características se disponível
+                if (is_array($caracCol) && count($caracCol) > 0 && !empty($imovel['caracteristicas'])) {
+                    $decoded = json_decode($imovel['caracteristicas'], true);
+                    if (is_array($decoded)) $caracteristicas_atual = $decoded;
+                }
+            } else {
+                error_log("ERRO: Não foi possível recarregar dados atualizados do imóvel");
+            }
         } else {
             throw new Exception('Erro ao atualizar imóvel no banco de dados');
         }
@@ -497,7 +619,7 @@ include __DIR__ . '/../includes/admin-header.php';
         <div class="alert alert-success"><?= $success ?></div>
     <?php endif; ?>
     
-    <form action="editar.php?id=<?= $imovel_id ?>" method="post" enctype="multipart/form-data" class="imovel-form">
+    <form action="editar.php?id=<?= $imovel_id ?>&t=<?= time() ?>" method="post" enctype="multipart/form-data" class="imovel-form">
         <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token']) ?>">
         <div class="form-row">
             <div class="form-group">
@@ -530,12 +652,22 @@ include __DIR__ . '/../includes/admin-header.php';
         <?php if (is_array($caracCol) && count($caracCol) > 0): ?>
         <div class="form-group">
             <label>Características principais</label>
-            <div class="caracteristicas-grid mobile-friendly" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;">
-                <?php foreach ($lista_caracteristicas as $key => $rotulo): ?>
-                    <label class="caracteristica-item" style="display:flex;gap:8px;align-items:center;padding:12px;background:#f8f9fa;border-radius:8px;border:2px solid transparent;cursor:pointer;transition:all 0.3s ease;">
-                        <input type="checkbox" name="caracteristicas[]" value="<?= $key ?>" <?= in_array($key, $caracteristicas_atual) ? 'checked' : '' ?> style="width:20px;height:20px;margin:0;">
-                        <span><?= htmlspecialchars($rotulo) ?></span>
-                    </label>
+            <div class="caracteristicas-container">
+                <?php foreach ($lista_caracteristicas as $categoria => $items): ?>
+                    <div class="categoria-caracteristicas">
+                        <h4 class="categoria-titulo">
+                            <span class="categoria-icone"><?= $icones_categorias[$categoria] ?? '📋' ?></span>
+                            <?= htmlspecialchars($categoria) ?>
+                        </h4>
+                        <div class="caracteristicas-grid mobile-friendly" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;margin-bottom:20px;">
+                            <?php foreach ($items as $key => $rotulo): ?>
+                                <label class="caracteristica-item" style="display:flex;gap:8px;align-items:center;padding:12px;background:#f8f9fa;border-radius:8px;border:2px solid transparent;cursor:pointer;transition:all 0.3s ease;">
+                                    <input type="checkbox" name="caracteristicas[]" value="<?= $key ?>" <?= in_array($key, $caracteristicas_atual) ? 'checked' : '' ?> style="width:20px;height:20px;margin:0;">
+                                    <span><?= htmlspecialchars($rotulo) ?></span>
+                                </label>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
                 <?php endforeach; ?>
             </div>
             <small class="form-text">Atualize as características que se aplicam ao imóvel.</small>
@@ -565,7 +697,8 @@ include __DIR__ . '/../includes/admin-header.php';
         <div class="form-row">
             <div class="form-group">
                 <label for="preco">Preço (R$) *</label>
-                <input type="text" id="preco" name="preco" value="<?= number_format($imovel['preco'], 2, ',', '.') ?>" required class="preco-input">
+                <!-- Debug: Preço do banco = <?= var_export($imovel['preco'] ?? 'NULL', true) ?> -->
+                <input type="text" id="preco" name="preco" value="<?= isset($imovel['preco']) && $imovel['preco'] > 0 ? number_format((float)$imovel['preco'], 2, ',', '.') : '' ?>" required class="money-mask" placeholder="R$ 0,00">
             </div>
             <div class="form-group">
                 <label for="area">Área Total (m²)</label>
@@ -611,6 +744,7 @@ include __DIR__ . '/../includes/admin-header.php';
             <div class="form-row">
                 <div class="form-group">
                     <label for="valor_condominio">Valor do condomínio</label>
+                    <!-- Debug: Condomínio do banco = <?= var_export($imovel['valor_condominio'] ?? 'NULL', true) ?> -->
                     <input type="text" 
                            id="valor_condominio" 
                            name="valor_condominio" 
@@ -640,6 +774,7 @@ include __DIR__ . '/../includes/admin-header.php';
             <div class="form-row">
                 <div class="form-group">
                     <label for="valor_iptu">Valor mensal do IPTU</label>
+                    <!-- Debug: IPTU do banco = <?= var_export($imovel['valor_iptu'] ?? 'NULL', true) ?> -->
                     <input type="text" 
                            id="valor_iptu" 
                            name="valor_iptu" 
@@ -840,74 +975,143 @@ include __DIR__ . '/../includes/admin-header.php';
 include __DIR__ . '/../includes/admin-footer.php';
 ?>
 
+<style>
+/* Estilos específicos para posição solar */
+.posicao-solar-item:hover {
+    border-color: #007bff !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15) !important;
+}
+
+.posicao-solar-item:has(input:checked) {
+    border-color: #007bff !important;
+    background-color: #e3f2fd !important;
+    box-shadow: 0 4px 12px rgba(0,123,255,0.3) !important;
+}
+
+/* Feedback visual para cliques */
+.posicao-solar-item:active {
+    transform: translateY(1px);
+}
+
+/* Garantir que radio buttons sejam visíveis */
+.posicao-solar-item input[type="radio"] {
+    appearance: auto !important;
+    -webkit-appearance: radio !important;
+}
+</style>
+
 <script>
-// Máscara de CEP simples (se jQuery Mask já carregado no admin-footer)
-if (window.jQuery && $.fn.mask) {
+// PROBLEMA DOS PARÂMETROS CORRIGIDO - Modo simples
+console.log('� PARÂMETROS SQL CORRIGIDOS - Testando formulário');
+
+if (window.jQuery) {
+    console.log('✅ jQuery disponível - modo simples sem máscaras automáticas');
+    
+    // Máscara de CEP 
     $('#cep').mask('00000-000');
     
     // Garantir que o campo matrícula aceite números e letras
     $('#matricula').off('input.mask').on('input', function() {
-        // Remove qualquer máscara que possa ter sido aplicada
         let value = $(this).val();
-        // Permite apenas letras, números, hífens e espaços
         value = value.replace(/[^a-zA-Z0-9\-\s]/g, '');
         $(this).val(value);
     });
     
-    // Máscara de preço livre para valores altos
-    $('#preco').mask('000.000.000.000,00', {
-        reverse: true
-    });
+    // PROTEÇÃO MÁXIMA: Apenas aplicar máscaras durante digitação ativa
+    console.log('💰 Configurando proteção de valores...');
     
-    // Adicionar R$ no placeholder e permitir valores livres
-    $('#preco').attr('placeholder', 'R$ 0,00');
+    // Armazenar valores originais para proteção
+    const valoresOriginais = {
+        preco: $('#preco').val(),
+        condominio: $('#valor_condominio').val(),
+        iptu: $('#valor_iptu').val()
+    };
     
-    // Função para formatar valores monetários
-    function formatMoney(input) {
-        let value = $(input).val();
-        // Remove tudo que não é dígito
-        value = value.replace(/\D/g, '');
-        
-        if (value.length > 0) {
-            // Converte para centavos
-            let numValue = parseInt(value);
-            // Divide por 100 para ter as casas decimais
-            numValue = (numValue / 100).toFixed(2);
-            // Formata com pontos e vírgula
-            numValue = numValue.replace('.', ',');
-            numValue = numValue.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-            // Define o valor formatado
-            $(input).val(numValue);
-        } else {
-            $(input).val('');
-        }
+    console.log('� Valores originais protegidos:', valoresOriginais);
+    
+    // Remover TODAS as máscaras automáticas
+    $('#preco, #valor_condominio, #valor_iptu').off('.mask');
+    
+    // Função CONSERVADORA para formatar apenas quando o usuário digita
+    function aplicarMascaraConservativa(input) {
+        $(input).on('keyup', function(e) {
+            // APENAS formatar durante digitação ativa
+            if (e.key && e.key.length === 1 && /[0-9]/.test(e.key)) {
+                let value = $(this).val().replace(/\D/g, '');
+                
+                if (value.length > 0) {
+                    let numValue = parseInt(value);
+                    numValue = (numValue / 100).toFixed(2);
+                    numValue = numValue.replace('.', ',');
+                    numValue = numValue.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+                    $(this).val(numValue);
+                }
+            }
+        });
     }
     
-    // Aplicar formatação monetária apenas para o preço (obrigatório)
-    $('#preco').off('input.mask').on('input', function() {
-        formatMoney(this);
-    });
+    // Aplicar APENAS ao preço (obrigatório)
+    aplicarMascaraConservativa($('#preco'));
     
-    // Para campos opcionais, aplicar formatação apenas quando há valor
-    $('#valor_condominio, #valor_iptu').off('input.mask').on('input', function() {
-        if ($(this).val().trim() !== '') {
-            formatMoney(this);
-        }
-    });
-    
-    // Permitir limpar os campos opcionais
-    $('#valor_condominio, #valor_iptu').on('keydown', function(e) {
-        if (e.key === 'Delete' || e.key === 'Backspace') {
-            if ($(this).val().length <= 1) {
-                $(this).val('');
-                e.preventDefault();
-            }
-        }
+    // Para campos opcionais, ser EXTREMAMENTE conservador
+    $('#valor_condominio, #valor_iptu').on('focus', function() {
+        console.log('📝 Campo focado:', this.id, 'Valor atual:', $(this).val());
     });
 }
 
 // Busca ViaCEP ao sair do campo CEP
 document.addEventListener('DOMContentLoaded', () => {
+    console.log('🚀 DOM carregado - Iniciando funcionalidades do formulário');
+    
+    // PRESERVAR e PROTEGER valores originais dos campos no carregamento da página
+    const precoField = document.getElementById('preco');
+    const condominioField = document.getElementById('valor_condominio');
+    const iptuField = document.getElementById('valor_iptu');
+    
+    const valoresOriginais = {
+        preco: precoField?.value || '',
+        condominio: condominioField?.value || '',
+        iptu: iptuField?.value || ''
+    };
+    
+    console.log('💰 Valores originais preservados:');
+    console.log('   Preço:', valoresOriginais.preco);
+    console.log('   Condomínio:', valoresOriginais.condominio);
+    console.log('   IPTU:', valoresOriginais.iptu);
+    
+    // PROTEÇÃO: Verificar se algum valor foi trocado incorretamente
+    function verificarValores() {
+        const precoAtual = precoField?.value || '';
+        const condominioAtual = condominioField?.value || '';
+        
+        // Se o preço está vazio MAS o condomínio tem valor, pode ter havido troca
+        if (precoAtual === '' && condominioAtual !== '' && valoresOriginais.preco !== '') {
+            console.warn('⚠️ POSSÍVEL PROBLEMA: Preço vazio mas condomínio preenchido');
+            console.warn('   Restaurando preço original:', valoresOriginais.preco);
+            if (precoField) precoField.value = valoresOriginais.preco;
+        }
+        
+        // Se o preço tem o valor do condomínio, corrigir
+        if (precoAtual === valoresOriginais.condominio && precoAtual !== valoresOriginais.preco) {
+            console.warn('⚠️ PROBLEMA DETECTADO: Preço contém valor do condomínio');
+            console.warn('   Corrigindo preço de:', precoAtual, 'para:', valoresOriginais.preco);
+            if (precoField) precoField.value = valoresOriginais.preco;
+        }
+    }
+    
+    // Verificar valores após um tempo (depois que jQuery Mask executar)
+    setTimeout(verificarValores, 500);
+    
+    // Debug: verificar se há valores pré-selecionados na posição solar
+    const posicaoSolarRadios = document.querySelectorAll('input[name="posicao_solar"]');
+    const posicaoSelecionada = Array.from(posicaoSolarRadios).find(r => r.checked);
+    if (posicaoSelecionada) {
+        console.log('📍 Posição solar pré-selecionada:', posicaoSelecionada.value);
+    } else {
+        console.log('📍 Nenhuma posição solar pré-selecionada');
+    }
+
     const cepInput = document.getElementById('cep');
     if (!cepInput) return;
 
@@ -1040,27 +1244,51 @@ document.addEventListener('DOMContentLoaded', () => {
     if (posicaoSolarGrid) {
         console.log('✅ Grid de posição solar encontrado!');
         
+        // Melhorar evento de clique para labels
         posicaoSolarGrid.addEventListener('click', function(e) {
-            const label = e.target.closest('.posicao-solar-item');
-            if (label && e.target.tagName !== 'INPUT') {
+            // Se clicou no label ou no span, procurar o radio button
+            let target = e.target;
+            let label = target.closest('.posicao-solar-item');
+            
+            if (label) {
                 const radio = label.querySelector('input[type="radio"]');
-                if (radio) {
+                if (radio && target.tagName !== 'INPUT') {
+                    // Desmarcar todos os outros radio buttons primeiro
+                    const allRadios = posicaoSolarGrid.querySelectorAll('input[type="radio"]');
+                    allRadios.forEach(r => r.checked = false);
+                    
+                    // Marcar apenas o selecionado
                     radio.checked = true;
-                    radio.dispatchEvent(new Event('change'));
+                    radio.dispatchEvent(new Event('change', { bubbles: true }));
                     console.log('🔄 Posição solar selecionada:', radio.value);
                 }
             }
         });
         
-        // Adicionar eventos de mudança nos radio buttons
+        // Adicionar eventos diretos nos radio buttons também
         const radios = posicaoSolarGrid.querySelectorAll('input[type="radio"]');
         console.log('📋 Radio buttons de posição solar encontrados:', radios.length);
         
         radios.forEach(radio => {
             radio.addEventListener('change', function() {
                 console.log('✨ Posição solar selecionada:', this.value);
+                // Atualizar visual de seleção
+                const allLabels = posicaoSolarGrid.querySelectorAll('.posicao-solar-item');
+                allLabels.forEach(l => l.style.backgroundColor = '');
+                
+                const selectedLabel = this.closest('.posicao-solar-item');
+                if (selectedLabel) {
+                    selectedLabel.style.backgroundColor = '#e3f2fd';
+                }
             });
+            
+            // Marcar o inicial se houver valor
+            if (radio.checked) {
+                radio.dispatchEvent(new Event('change'));
+            }
         });
+    } else {
+        console.error('❌ Grid de posição solar NÃO encontrado!');
     }
 
     // Validação do número máximo de imagens para novas imagens
@@ -1087,10 +1315,62 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
+// ===== DEBUG ADICIONAL =====
+console.log('🔍 EXECUTANDO DEBUG FINAL...');
+
+// Aguardar um tempo e verificar se valores mudaram
+setTimeout(function() {
+    console.log('⏰ VERIFICAÇÃO APÓS 2 SEGUNDOS:');
+    console.log('  Preço atual:', $('#preco').val());
+    console.log('  Condomínio atual:', $('#valor_condominio').val()); 
+    console.log('  IPTU atual:', $('#valor_iptu').val());
+    
+    // Verificar se há alguma intervenção do jQuery Mask
+    if (window.jQuery && $.fn.mask) {
+        console.log('⚠️ jQuery Mask está presente - pode estar interferindo');
+        
+        // Forçar remoção de máscaras
+        $('#preco, #valor_condominio, #valor_iptu').unmask();
+        console.log('🚫 Máscaras removidas forçadamente');
+    }
+}, 2000);
 </script>
 
 <style>
 /* Melhorar visibilidade das características */
+.caracteristicas-container {
+    margin: 15px 0;
+}
+
+.categoria-caracteristicas {
+    margin-bottom: 25px;
+    padding: 15px;
+    background: #ffffff;
+    border-radius: 12px;
+    border: 1px solid #e9ecef;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.categoria-titulo {
+    font-size: 16px;
+    font-weight: 600;
+    color: #495057;
+    margin: 0 0 12px 0;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #e9ecef;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.categoria-icone {
+    font-size: 20px;
+    display: inline-block;
+    width: 24px;
+    text-align: center;
+}
+
 .caracteristicas-grid {
     margin: 10px 0;
 }

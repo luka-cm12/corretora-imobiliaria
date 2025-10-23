@@ -20,23 +20,64 @@ if (function_exists('ensureCsrfToken')) {
 // Buscar proprietários para o select
 $proprietarios = db_query("SELECT id_proprietario, nome FROM proprietarios ORDER BY nome ASC");
 
-// Lista padrão de características principais
+// Lista organizada de características por categorias/cômodos
 $lista_caracteristicas = [
-    'ar_condicionado' => 'Ar condicionado',
-    'armarios_embutidos' => 'Armários embutidos',
-    'churrasqueira' => 'Churrasqueira',
-    'varanda' => 'Varanda',
-    'sacada' => 'Sacada',
-    'piscina' => 'Piscina',
-    'academia' => 'Academia',
-    'area_gourmet' => 'Área gourmet',
-    'portaria_24h' => 'Portaria 24h',
-    'elevador' => 'Elevador',
-    'mobiliado' => 'Mobiliado',
-    'pet_friendly' => 'Pet friendly',
-    'quintal' => 'Quintal',
-    'lavanderia' => 'Lavanderia',
-    'lareira' => 'Lareira'
+    'Quartos e Suítes' => [
+        'suite' => 'Suíte',
+        'closet' => 'Closet',
+        'ar_condicionado' => 'Ar condicionado',
+        'armarios_embutidos' => 'Armários embutidos',
+        'suite_master' => 'Suíte master',
+        'varanda_suite' => 'Varanda na suíte'
+    ],
+    'Banheiros e Bem-estar' => [
+        'hidromassagem' => 'Hidromassagem',
+        'agua_aquecida' => 'Água aquecida',
+        'gas_central' => 'Gás central',
+        'banheira' => 'Banheira',
+        'box_blindex' => 'Box blindex',
+        'sauna' => 'Sauna'
+    ],
+    'Áreas Sociais' => [
+        'sala_de_estar' => 'Sala de estar',
+        'varanda' => 'Varanda',
+        'sacada' => 'Sacada',
+        'sacada_gourmet' => 'Sacada gourmet',
+        'area_gourmet' => 'Área gourmet',
+        'churrasqueira' => 'Churrasqueira',
+        'salao_de_festas' => 'Salão de festas',
+        'quiosque' => 'Quiosque',
+        'jardim' => 'Jardim',
+        'terraço' => 'Terraço'
+    ],
+    'Lazer e Recreação' => [
+        'piscina' => 'Piscina',
+        'academia' => 'Academia',
+        'quintal' => 'Quintal',
+        'playground' => 'Playground',
+        'quadra_esportiva' => 'Quadra esportiva',
+        'sala_jogos' => 'Sala de jogos'
+    ],
+    'Funcionalidades' => [
+        'elevador' => 'Elevador',
+        'portaria_24h' => 'Portaria',
+        'mobiliado' => 'Mobiliado',
+        'pet_friendly' => 'Pet friendly',
+        'lavanderia' => 'Lavanderia',
+        'lareira' => 'Lareira',
+        'interfone' => 'Interfone',
+        'alarme' => 'Sistema de alarme',
+        'garagem_coberta' => 'Garagem coberta'
+    ]
+];
+
+// Ícones para cada categoria
+$icones_categorias = [
+    'Quartos e Suítes' => '🛏️',
+    'Banheiros e Bem-estar' => '🛁',
+    'Áreas Sociais' => '🏡',
+    'Lazer e Recreação' => '🏊‍♂️',
+    'Funcionalidades' => '⚙️'
 ];
 
 // Lista de opções de posição solar
@@ -61,8 +102,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $bairro = trim($_POST['bairro'] ?? '');
         $endereco = trim($_POST['endereco'] ?? '');
     $cep = preg_replace('/\D+/', '', $_POST['cep'] ?? '');
-        // Normaliza preço: remove milhares e converte vírgula decimal para ponto
-        $preco = (float) str_replace(['.', ','], ['', '.'], $_POST['preco'] ?? '0');
+        // Normaliza preço: remove R$, pontos de milhares e converte vírgula decimal para ponto
+        $preco = (float) str_replace(['R$', '.', ',', ' '], ['', '', '.', ''], $_POST['preco'] ?? '0');
         $area = (float) str_replace(',', '.', $_POST['area'] ?? '0');
         
         // Novos campos de área
@@ -104,9 +145,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $destaque = isset($_POST['destaque']) ? 1 : 0;
         $id_proprietario = (int) ($_POST['id_proprietario'] ?? 0);
 
-        // Características principais (opcional)
+        // Características principais (opcional) - adaptado para nova estrutura
+        $todas_caracteristicas = [];
+        foreach ($lista_caracteristicas as $categoria => $items) {
+            $todas_caracteristicas = array_merge($todas_caracteristicas, $items);
+        }
+        
         $caracteristicas_post = isset($_POST['caracteristicas']) && is_array($_POST['caracteristicas'])
-            ? array_values(array_intersect(array_keys($lista_caracteristicas), $_POST['caracteristicas']))
+            ? array_values(array_intersect(array_keys($todas_caracteristicas), $_POST['caracteristicas']))
             : [];
         $caracteristicas_json = json_encode($caracteristicas_post, JSON_UNESCAPED_UNICODE);
 
@@ -354,12 +400,22 @@ include __DIR__ . '/../includes/admin-header.php';
         
         <div class="form-group">
             <label>Características principais</label>
-            <div class="caracteristicas-grid mobile-friendly" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;">
-                <?php foreach ($lista_caracteristicas as $key => $rotulo): ?>
-                    <label class="caracteristica-item" style="display:flex;gap:8px;align-items:center;padding:12px;background:#f8f9fa;border-radius:8px;border:2px solid transparent;cursor:pointer;transition:all 0.3s ease;">
-                        <input type="checkbox" name="caracteristicas[]" value="<?= $key ?>" <?= in_array($key, $_POST['caracteristicas'] ?? []) ? 'checked' : '' ?> style="width:20px;height:20px;margin:0;">
-                        <span><?= htmlspecialchars($rotulo) ?></span>
-                    </label>
+            <div class="caracteristicas-container">
+                <?php foreach ($lista_caracteristicas as $categoria => $items): ?>
+                    <div class="categoria-caracteristicas">
+                        <h4 class="categoria-titulo">
+                            <span class="categoria-icone"><?= $icones_categorias[$categoria] ?? '📋' ?></span>
+                            <?= htmlspecialchars($categoria) ?>
+                        </h4>
+                        <div class="caracteristicas-grid mobile-friendly" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;margin-bottom:20px;">
+                            <?php foreach ($items as $key => $rotulo): ?>
+                                <label class="caracteristica-item" style="display:flex;gap:8px;align-items:center;padding:12px;background:#f8f9fa;border-radius:8px;border:2px solid transparent;cursor:pointer;transition:all 0.3s ease;">
+                                    <input type="checkbox" name="caracteristicas[]" value="<?= $key ?>" <?= in_array($key, $_POST['caracteristicas'] ?? []) ? 'checked' : '' ?> style="width:20px;height:20px;margin:0;">
+                                    <span><?= htmlspecialchars($rotulo) ?></span>
+                                </label>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
                 <?php endforeach; ?>
             </div>
             <small class="form-text">Selecione as características que se aplicam ao imóvel.</small>
@@ -978,6 +1034,38 @@ document.addEventListener('DOMContentLoaded', () => {
 }
 
 /* Melhorar visibilidade das características */
+.caracteristicas-container {
+    margin: 15px 0;
+}
+
+.categoria-caracteristicas {
+    margin-bottom: 25px;
+    padding: 15px;
+    background: #ffffff;
+    border-radius: 12px;
+    border: 1px solid #e9ecef;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.categoria-titulo {
+    font-size: 16px;
+    font-weight: 600;
+    color: #495057;
+    margin: 0 0 12px 0;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #e9ecef;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.categoria-icone {
+    font-size: 20px;
+    display: inline-block;
+    width: 24px;
+    text-align: center;
+}
+
 .caracteristicas-grid {
     margin: 10px 0;
 }

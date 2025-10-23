@@ -62,21 +62,52 @@ $tipos = [
 
 // Características principais: mapa de chave => [rótulo, ícone FontAwesome]
 $caracteristicas_lista = [
+    // Quartos e Suítes
+    'suite'             => ['Suíte', 'fa-bed'],
+    'closet'            => ['Closet', 'fa-tshirt'],
     'ar_condicionado'   => ['Ar condicionado', 'fa-snowflake'],
     'armarios_embutidos'=> ['Armários embutidos', 'fa-warehouse'],
-    'churrasqueira'     => ['Churrasqueira', 'fa-fire'],
+    'suite_master'      => ['Suíte master', 'fa-crown'],
+    'varanda_suite'     => ['Varanda na suíte', 'fa-door-open'],
+    
+    // Banheiros e Bem-estar
+    'hidromassagem'     => ['Hidromassagem', 'fa-spa'],
+    'agua_aquecida'     => ['Água aquecida', 'fa-thermometer-half'],
+    'gas_central'       => ['Gás central', 'fa-fire-burner'],
+    'banheira'          => ['Banheira', 'fa-bath'],
+    'box_blindex'       => ['Box blindex', 'fa-shower'],
+    'sauna'             => ['Sauna', 'fa-hot-tub'],
+    
+    // Áreas Sociais
+    'sala_de_estar'     => ['Sala de estar', 'fa-couch'],
     'varanda'           => ['Varanda', 'fa-building'],
     'sacada'            => ['Sacada', 'fa-stairs'],
+    'sacada_gourmet'    => ['Sacada gourmet', 'fa-utensils'],
+    'area_gourmet'      => ['Área gourmet', 'fa-utensils'],
+    'churrasqueira'     => ['Churrasqueira', 'fa-fire'],
+    'salao_de_festas'   => ['Salão de festas', 'fa-glass-cheers'],
+    'quiosque'          => ['Quiosque', 'fa-umbrella-beach'],
+    'jardim'            => ['Jardim', 'fa-seedling'],
+    'terraço'           => ['Terraço', 'fa-building-columns'],
+    
+    // Lazer e Recreação
     'piscina'           => ['Piscina', 'fa-water-ladder'],
     'academia'          => ['Academia', 'fa-dumbbell'],
-    'area_gourmet'      => ['Área gourmet', 'fa-utensils'],
-    'portaria_24h'      => ['Portaria 24h', 'fa-shield-halved'],
+    'quintal'           => ['Quintal', 'fa-tree'],
+    'playground'        => ['Playground', 'fa-child'],
+    'quadra_esportiva'  => ['Quadra esportiva', 'fa-futbol'],
+    'sala_jogos'        => ['Sala de jogos', 'fa-gamepad'],
+    
+    // Funcionalidades
     'elevador'          => ['Elevador', 'fa-elevator'],
+    'portaria_24h'      => ['Portaria', 'fa-shield-halved'],
     'mobiliado'         => ['Mobiliado', 'fa-couch'],
     'pet_friendly'      => ['Pet friendly', 'fa-paw'],
-    'quintal'           => ['Quintal', 'fa-tree'],
     'lavanderia'        => ['Lavanderia', 'fa-soap'],
     'lareira'           => ['Lareira', 'fa-fire-flame-curved'],
+    'interfone'         => ['Interfone', 'fa-phone'],
+    'alarme'            => ['Sistema de alarme', 'fa-bell'],
+    'garagem_coberta'   => ['Garagem coberta', 'fa-car-garage'],
 ];
 
 // Decodifica características salvas (JSON) se existirem
@@ -222,6 +253,28 @@ include 'private/includes/header.php';
                             <i class="fas fa-car"></i>
                             <span>Vagas</span>
                             <strong><?= $imovel['garagem'] ?></strong>
+                        </div>
+                        <?php endif; ?>
+                        
+                        <?php if (!empty($imovel['posicao_solar'])): ?>
+                        <div class="detail-item">
+                            <?php 
+                            $icones_posicao = [
+                                'norte' => 'fa-compass',
+                                'sul' => 'fa-compass', 
+                                'leste' => 'fa-sun',
+                                'oeste' => 'fa-moon'
+                            ];
+                            $posicao_nome = [
+                                'norte' => 'Norte',
+                                'sul' => 'Sul',
+                                'leste' => 'Leste', 
+                                'oeste' => 'Oeste'
+                            ];
+                            ?>
+                            <i class="fas <?= $icones_posicao[$imovel['posicao_solar']] ?? 'fa-sun' ?>"></i>
+                            <span>Posição Solar</span>
+                            <strong><?= $posicao_nome[$imovel['posicao_solar']] ?? ucfirst($imovel['posicao_solar']) ?></strong>
                         </div>
                         <?php endif; ?>
                     </div>

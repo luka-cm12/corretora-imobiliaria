@@ -157,6 +157,26 @@ include __DIR__ . '/../includes/admin-header.php';
                                             <?php if ($imovel['area'] > 0): ?>
                                                 <span><i class="fas fa-expand-arrows-alt" style="color: #28a745;"></i> <?= number_format($imovel['area'], 0) ?>m²</span>
                                             <?php endif; ?>
+                                            <?php if (!empty($imovel['posicao_solar'])): ?>
+                                                <?php 
+                                                $icones_posicao = [
+                                                    'norte' => '🧭',
+                                                    'sul' => '🧭', 
+                                                    'leste' => '🌅',
+                                                    'oeste' => '🌇'
+                                                ];
+                                                $posicao_nome = [
+                                                    'norte' => 'Norte',
+                                                    'sul' => 'Sul',
+                                                    'leste' => 'Leste', 
+                                                    'oeste' => 'Oeste'
+                                                ];
+                                                ?>
+                                                <span title="Posição Solar: <?= ucfirst($imovel['posicao_solar']) ?>">
+                                                    <?= $icones_posicao[$imovel['posicao_solar']] ?? '☀️' ?> 
+                                                    <?= $posicao_nome[$imovel['posicao_solar']] ?? ucfirst($imovel['posicao_solar']) ?>
+                                                </span>
+                                            <?php endif; ?>
                                         </div>
                                     </div>
                                 </td>

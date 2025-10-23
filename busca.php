@@ -338,6 +338,27 @@ include 'private/includes/header.php';
                                     <?php if ($imovel['area'] > 0): ?>
                                         <span><i class="fas fa-vector-square"></i> <?= $imovel['area'] ?>m²</span>
                                     <?php endif; ?>
+                                    
+                                    <?php if (!empty($imovel['posicao_solar'])): ?>
+                                        <?php 
+                                        $icones_posicao = [
+                                            'norte' => '🧭',
+                                            'sul' => '🧭', 
+                                            'leste' => '🌅',
+                                            'oeste' => '🌇'
+                                        ];
+                                        $posicao_nome = [
+                                            'norte' => 'Norte',
+                                            'sul' => 'Sul',
+                                            'leste' => 'Leste', 
+                                            'oeste' => 'Oeste'
+                                        ];
+                                        ?>
+                                        <span title="Posição Solar: <?= ucfirst($imovel['posicao_solar']) ?>">
+                                            <?= $icones_posicao[$imovel['posicao_solar']] ?? '☀️' ?> 
+                                            <?= $posicao_nome[$imovel['posicao_solar']] ?? ucfirst($imovel['posicao_solar']) ?>
+                                        </span>
+                                    <?php endif; ?>
                                 </div>
                                 
                                 <p class="property-price"><?= $preco_formatado ?></p>
