@@ -53,8 +53,17 @@ $page_title = isset($page_title) ? $page_title : 'Corretora Claudia Colombo | Im
                     <img class="logo-dark" src="<?= $BASE_PATH ?>public/assets/images/logo/logo-dark.png" alt="Corretora Claudia Colombo">
                 </a>
                 <div class="logo-credentials">
-                    <span class="credential-badge">Avaliadora</span>
-                    <span class="credential-badge">Perita</span>
+                    <div class="credential-group">
+                        <span class="credential-title">CORRETORA DE IMÓVEIS</span>
+                        <span class="credential-number">CRECI 61839F</span>
+                    </div>
+                    <div class="credential-group">
+                        <span class="credential-title">AVALIADORA DE IMÓVEIS</span>
+                        <span class="credential-number">CNAI 54849</span>
+                    </div>
+                    <div class="credential-group">
+                        <span class="credential-title">PERITA JUDICIAL</span>
+                    </div>
                 </div>
             </div>
             

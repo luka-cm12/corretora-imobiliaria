@@ -133,9 +133,39 @@ img {
 }
 
 /* Ajustes de logo */
-#logo.catalogo-logo { display:flex; align-items:center; gap:12px; }
+#logo.catalogo-logo { 
+    display: flex; 
+    align-items: center; 
+    gap: 15px; 
+    position: relative;
+    padding: 10px 15px;
+    background: var(--secondary-color);
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+#logo.catalogo-logo:hover {
+    background: var(--primary-color);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
 .logo__bg { display:none; }
-.logo-dark { height: 80px !important; width:auto !important; display:block; object-fit: contain; }
+.logo-dark { 
+    height: 70px !important; 
+    width: auto !important; 
+    display: block; 
+    object-fit: contain;
+    filter: drop-shadow(0 3px 8px rgba(0,0,0,0.2));
+    transition: all 0.3s ease;
+    border-radius: 8px;
+}
+
+.logo-dark:hover {
+    filter: drop-shadow(0 5px 12px rgba(0,0,0,0.25));
+    transform: scale(1.05);
+}
 .logo-creci { margin-left: 6px; margin-top: 2px; font-size: 0.9rem; font-weight: 700; color: #2d2d2d; letter-spacing: 0.6px; opacity: 0.95; }
 .logo h1 { font-size: 1.8rem; color: var(--primary-color); }
 .logo h1 span { color: var(--primary-color); }
@@ -144,26 +174,60 @@ img {
 .logo-credentials {
     display: flex;
     flex-direction: column;
-    gap: 4px;
-    margin-left: 8px;
-}
-
-.credential-badge {
-    background: linear-gradient(135deg, #3498db, #2980b9);
-    color: white;
-    font-size: 0.75rem;
-    font-weight: 600;
-    padding: 3px 8px;
-    border-radius: 12px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    box-shadow: 0 2px 4px rgba(52, 152, 219, 0.3);
+    gap: 8px;
+    margin-left: 0;
+    padding: 10px 15px;
+    background: transparent;
+    border-radius: 10px;
+    border-left: 4px solid var(--white);
+    font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
     transition: all 0.3s ease;
 }
 
-.credential-badge:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 8px rgba(52, 152, 219, 0.4);
+.logo-credentials:hover {
+    border-left-color: var(--light-color);
+}
+
+.credential-group {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    line-height: 1.2;
+    position: relative;
+}
+
+.credential-group:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(to right, #e0e6ed 0%, transparent 100%);
+}
+
+.credential-title {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--white);
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    margin-bottom: 1px;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+}
+
+.credential-number {
+    font-size: 0.64rem;
+    font-weight: 600;
+    color: var(--light-color);
+    letter-spacing: 0.4px;
+    margin-left: 1px;
+    font-family: 'Courier New', monospace;
+    background: rgba(255, 255, 255, 0.2);
+    padding: 1px 4px;
+    border-radius: 3px;
+    display: inline-block;
+    max-width: fit-content;
 }
 
 .main-nav ul {
@@ -175,20 +239,25 @@ img {
 }
 
 .main-nav ul li a {
-    color: var(--dark-color);
+    color: var(--white);
     font-weight: 600;
     transition: color 0.3s ease;
 }
 
 .main-nav ul li a:hover {
-    color: var(--secondary-color);
+    color: var(--primary-color);
+}
+
+.main-nav ul li a.active {
+    color: var(--primary-color);
+    font-weight: 700;
 }
 
 .mobile-menu {
     font-size: 1.5rem;
     cursor: pointer;
     display: none;
-    color: var(--primary-color);
+    color: var(--white);
 }
 
 /* Home Slider - Estilo Attuale */
@@ -712,7 +781,7 @@ img {
 
 .footer-col p {
     margin-bottom: 20px;
-    color: #333; /* Cor mais escura para melhor legibilidade */
+    color: var(--white); /* Cor branca para melhor contraste */
     font-weight: 400;
 }
 
@@ -739,26 +808,26 @@ img {
 }
 
 .footer-col ul li a {
-    color: #333; /* Cor mais escura para melhor legibilidade */
+    color: var(--white); /* Cor branca para melhor contraste */
     transition: color 0.3s ease;
     font-weight: 500;
 }
 
 .footer-col ul li a:hover {
-    color: var(--primary-color); /* Hover na cor primária (marrom) */
+    color: var(--secondary-color); /* Hover na cor secundária (verde oliva) */
 }
 
 .contact-info li {
     margin-bottom: 15px;
     display: flex;
     align-items: center;
-    color: #333; /* Cor mais escura para melhor legibilidade */
+    color: var(--white); /* Cor branca para melhor contraste */
     font-weight: 500;
 }
 
 .contact-info i {
     margin-right: 10px;
-    color: var(--primary-color); /* Ícones na cor primária (marrom) */
+    color: var(--white); /* Ícones em branco para melhor contraste */
 }
 
 .footer-bottom {
@@ -2156,14 +2225,21 @@ text
 /* Ajuste responsivo para tablets */
 @media (max-width: 768px) {
     .logo-credentials {
-        gap: 3px;
-        margin-left: 6px;
+        gap: 6px;
+        margin-left: 10px;
+        padding: 6px 10px;
+        border-radius: 6px;
     }
     
-    .credential-badge {
-        font-size: 0.7rem;
-        padding: 2px 7px;
-        border-radius: 10px;
+    .credential-title {
+        font-size: 0.65rem;
+        letter-spacing: 0.5px;
+    }
+    
+    .credential-number {
+        font-size: 0.58rem;
+        letter-spacing: 0.3px;
+        padding: 1px 3px;
     }
 }
 
@@ -2173,13 +2249,78 @@ text
     .logo-creci { font-size: 0.8rem; }
     
     .logo-credentials {
-        gap: 2px;
-        margin-left: 4px;
+        gap: 5px;
+        margin-left: 8px;
+        padding: 5px 8px;
+        border-radius: 5px;
+        border-left-width: 2px;
     }
     
-    .credential-badge {
-        font-size: 0.65rem;
-        padding: 2px 6px;
-        border-radius: 8px;
+    .credential-group {
+        gap: 0px;
+    }
+    
+    .credential-title {
+        font-size: 0.58rem;
+        letter-spacing: 0.4px;
+        margin-bottom: 0px;
+    }
+    
+    .credential-number {
+        font-size: 0.52rem;
+        letter-spacing: 0.2px;
+        padding: 0px 3px;
+    }
+    
+    .credential-group:not(:last-child)::after {
+        bottom: -2px;
+    }
+}
+
+/* Ajuste para telas muito pequenas */
+@media (max-width: 480px) {
+    #logo.catalogo-logo {
+        gap: 6px;
+    }
+    
+    .logo-credentials {
+        margin-left: 6px;
+        gap: 4px;
+        padding: 4px 6px;
+        border-radius: 4px;
+    }
+    
+    .credential-title {
+        font-size: 0.52rem;
+        letter-spacing: 0.3px;
+    }
+    
+    .credential-number {
+        font-size: 0.46rem;
+        letter-spacing: 0.1px;
+        padding: 0px 2px;
+    }
+}
+
+/* Ajuste extra para telas muito pequenas (landscape mobile) */
+@media (max-width: 420px) {
+    .logo-credentials {
+        margin-left: 4px;
+        padding: 3px 5px;
+        gap: 3px;
+    }
+    
+    .credential-title {
+        font-size: 0.48rem;
+        letter-spacing: 0.2px;
+    }
+    
+    .credential-number {
+        font-size: 0.42rem;
+        letter-spacing: 0.1px;
+    }
+    
+    .credential-group:not(:last-child)::after {
+        display: none;
     }
 }

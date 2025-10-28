@@ -328,7 +328,7 @@ if (is_dir($carousel_folder)) {
         <div class="about-content">
             <h2 class="section-title">Sobre a Corretora Claudia</h2>
             <p>Há 20 anos oferecendo consultoria imobiliária para seu melhor negócio. Com anos de experiência no mercado, ajudamos você a vender ou encontrar o imóvel ideal, com segurança, tranquilidade, transparência e comprometimento.</p>
-            <p>Nossa equipe é formada por profissionais qualificados que entendem as necessidades de cada cliente e trabalham para superar expectativas.</p>
+            <p>Buscando entender as necessidades de cada cliente e trabalhar para superar suas expectativas.</p>
             <!--<a href="sobre.php" class="btn">Saiba Mais</a> -->
         </div>
         <div class="about-image">
@@ -350,7 +350,7 @@ if (is_dir($carousel_folder)) {
             <div class="service-card">
                 <i class="fas fa-file-signature"></i>
                 <h3>Locação</h3>
-                <p>Alugue imóveis residenciais ou comerciais com toda segurança jurídica.</p>
+                <p>Alugue imóveis comerciais com toda segurança jurídica.</p>
             </div>
             <div class="service-card">
                 <i class="fas fa-hand-holding-usd"></i>

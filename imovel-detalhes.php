@@ -166,12 +166,8 @@ include 'private/includes/header.php';
                 <h1><?= htmlspecialchars($imovel['titulo']) ?></h1>
                 <p class="property-address">
                     <i class="fas fa-map-marker-alt"></i> 
-                    <?= htmlspecialchars($imovel['endereco']) ?><?= !empty($imovel['endereco']) ? ',' : '' ?> 
                     <?= htmlspecialchars($imovel['bairro']) ?> - 
                     <?= htmlspecialchars($imovel['cidade']) ?>
-                    <?php if (!empty($imovel['cep'])): ?>
-                        <span style="margin-left:6px; color:#666;">CEP: <?= htmlspecialchars(preg_replace('/(\d{5})(\d{3})/','$1-$2', preg_replace('/\D+/','',$imovel['cep']))) ?></span>
-                    <?php endif; ?>
                 </p>
                 <p class="property-price"><?= $preco_formatado ?></p>
                 
@@ -228,7 +224,7 @@ include 'private/includes/header.php';
                         <div class="detail-item">
                             <i class="fas fa-vector-square"></i>
                             <span>Área</span>
-                            <strong><?= $imovel['area'] ?> m²</strong>
+                            <strong><?= number_format($imovel['area'], 2, ',', '.') ?> m²</strong>
                         </div>
                         <?php endif; ?>
                         
