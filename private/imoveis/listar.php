@@ -61,7 +61,14 @@ function formatar_tipo_imovel($tipo) {
         'semi_mobiliado' => '🛋️ Semi Mobiliado',
         'terreno' => '🌿 Terreno',
         'loft' => '🏙️ Loft',
-        'comercial' => '🏪 Comercial'
+        'comercial' => '🏪 Comercial',
+        'pavilhao' => '🏭 Pavilhão',
+        'fazenda' => '🚜 Fazenda',
+        'laja_terrea' => '🏘️ Laja Térrea',
+        'sala_area' => '📦 Sala Área',
+        'area_terras' => '🌍 Área de Terras',
+        'loteamento' => '🗺️ Loteamento',
+        'condominio_fechado' => '🏛️ Condomínio Fechado'
     ];
     
     return $tipos[$tipo] ?? ucfirst(str_replace('_', ' ', $tipo));
@@ -267,24 +274,30 @@ include __DIR__ . '/../includes/admin-header.php';
                                 </td>
                                 <?php endif; ?>
                                 <td class="actions" style="vertical-align: middle; text-align: center;">
-                                    <div style="display: flex; gap: 8px; justify-content: center;">
+                                    <div style="display: flex; gap: 6px; justify-content: center; flex-wrap: wrap;">
                                         <a href="editar.php?id=<?= $imovel['id'] ?>" 
                                            class="btn-edit" 
                                            title="Editar Imóvel"
-                                           style="display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; background: #007bff; color: white; border-radius: 6px; text-decoration: none; font-size: 14px; transition: all 0.3s;">
+                                           style="display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; background: #007bff; color: white; border-radius: 6px; text-decoration: none; font-size: 13px; transition: all 0.3s;">
                                             <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a href="ficha-tecnica-admin.php?id=<?= $imovel['id'] ?>" 
+                                           target="_blank"
+                                           title="Ficha Técnica Administrativa"
+                                           style="display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; background: #6f42c1; color: white; border-radius: 6px; text-decoration: none; font-size: 13px; transition: all 0.3s;">
+                                            <i class="fas fa-print"></i>
                                         </a>
                                         <a href="../../imovel-detalhes.php?id=<?= $imovel['id'] ?>" 
                                            target="_blank"
                                            title="Visualizar no Site"
-                                           style="display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; background: #28a745; color: white; border-radius: 6px; text-decoration: none; font-size: 14px; transition: all 0.3s;">
+                                           style="display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; background: #28a745; color: white; border-radius: 6px; text-decoration: none; font-size: 13px; transition: all 0.3s;">
                                             <i class="fas fa-eye"></i>
                                         </a>
                                         <a href="excluir.php?id=<?= $imovel['id'] ?>" 
                                            class="btn-delete" 
                                            title="Excluir Imóvel"
                                            onclick="return confirm('Tem certeza que deseja excluir este imóvel?\n\nImóvel: <?= htmlspecialchars($imovel['titulo']) ?>\nEsta ação não pode ser desfeita.')"
-                                           style="display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; background: #dc3545; color: white; border-radius: 6px; text-decoration: none; font-size: 14px; transition: all 0.3s;">
+                                           style="display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; background: #dc3545; color: white; border-radius: 6px; text-decoration: none; font-size: 13px; transition: all 0.3s;">
                                             <i class="fas fa-trash"></i>
                                         </a>
                                     </div>

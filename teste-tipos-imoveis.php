@@ -19,7 +19,15 @@ function formatar_tipo_imovel($tipo) {
         'chacara' => '🌾 Chácara',
         'semi_mobiliado' => '🛋️ Semi Mobiliado',
         'terreno' => '🌿 Terreno',
-        'comercial' => '🏪 Comercial'
+        'loft' => '🏙️ Loft',
+        'comercial' => '🏪 Comercial',
+        'pavilhao' => '🏭 Pavilhão',
+        'fazenda' => '🚜 Fazenda',
+        'laja_terrea' => '🏘️ Laja Térrea',
+        'sala_area' => '📦 Sala Área',
+        'area_terras' => '🌍 Área de Terras',
+        'loteamento' => '🗺️ Loteamento',
+        'condominio_fechado' => '🏛️ Condomínio Fechado'
     ];
     
     return $tipos[$tipo] ?? ucfirst(str_replace('_', ' ', $tipo));

@@ -6,6 +6,7 @@ require_once 'private/includes/functions.php';
 $filtros = [
     'q' => isset($_GET['q']) ? trim($_GET['q']) : '',
     'tipo' => isset($_GET['tipo']) ? $_GET['tipo'] : '',
+    'finalidade' => isset($_GET['finalidade']) ? $_GET['finalidade'] : '',
     'cidade' => isset($_GET['cidade']) ? $_GET['cidade'] : '',
     'bairro' => isset($_GET['bairro']) ? $_GET['bairro'] : '',
     'preco' => isset($_GET['preco']) ? $_GET['preco'] : '', // faixa predefinida (compatibilidade)
@@ -31,6 +32,11 @@ if (!empty($filtros['q'])) {
 if (!empty($filtros['tipo'])) {
     $whereParts[] = "tipo = ?";
     $params[] = $filtros['tipo'];
+}
+
+if (!empty($filtros['finalidade'])) {
+    $whereParts[] = "finalidade = ?";
+    $params[] = $filtros['finalidade'];
 }
 
 if (!empty($filtros['cidade'])) {
@@ -141,7 +147,14 @@ function formatar_tipo_imovel($tipo) {
         'semi_mobiliado' => '🛋️ Semi Mobiliado',
         'terreno' => '🌿 Terreno',
         'loft' => '🏙️ Loft',
-        'comercial' => '🏪 Comercial'
+        'comercial' => '🏪 Comercial',
+        'pavilhao' => '🏭 Pavilhão',
+        'fazenda' => '🚜 Fazenda',
+        'laja_terrea' => '🏘️ Laja Térrea',
+        'sala_area' => '📦 Sala Área',
+        'area_terras' => '🌍 Área de Terras',
+        'loteamento' => '🗺️ Loteamento',
+        'condominio_fechado' => '🏛️ Condomínio Fechado'
     ];
     
     return $tipos[$tipo] ?? ucfirst(str_replace('_', ' ', $tipo));
@@ -199,6 +212,15 @@ include 'private/includes/header.php';
                                     <?= formatar_tipo_imovel($tipo['tipo']) ?>
                                 </option>
                             <?php endforeach; ?>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="finalidade">Finalidade</label>
+                        <select id="finalidade" name="finalidade">
+                            <option value="">Venda ou Locação</option>
+                            <option value="venda" <?= $filtros['finalidade'] == 'venda' ? 'selected' : '' ?>>💰 Venda</option>
+                            <option value="locacao" <?= $filtros['finalidade'] == 'locacao' ? 'selected' : '' ?>>🏠 Locação</option>
                         </select>
                     </div>
                     
@@ -319,6 +341,11 @@ include 'private/includes/header.php';
                                     <span style="background: #007bff; color: white; padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: 500;">
                                         <?= formatar_tipo_imovel($imovel['tipo']) ?>
                                     </span>
+                                    <?php if (isset($imovel['finalidade'])): ?>
+                                        <span style="background: <?= $imovel['finalidade'] === 'locacao' ? '#9C27B0' : '#28a745' ?>; color: white; padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: 500; margin-left: 5px;">
+                                            <?= $imovel['finalidade'] === 'locacao' ? '🏠 Locação' : '💰 Venda' ?>
+                                        </span>
+                                    <?php endif; ?>
                                 </div>
                                 <p class="property-address"><i class="fas fa-map-marker-alt"></i> <?= htmlspecialchars($imovel['bairro']) ?>, <?= htmlspecialchars($imovel['cidade']) ?></p>
                                 

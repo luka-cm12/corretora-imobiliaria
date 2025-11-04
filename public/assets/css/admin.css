@@ -1493,3 +1493,63 @@ body {
         font-size: 1.25rem;
     }
 }
+
+/* ==============================
+   Melhorias para Listagem de Imóveis
+============================== */
+
+/* Estilos para os botões de ação na listagem de imóveis */
+.actions div {
+    display: flex !important;
+    gap: 6px !important;
+    justify-content: center !important;
+    flex-wrap: wrap !important;
+}
+
+.actions a {
+    transition: all 0.3s ease !important;
+}
+
+.actions a:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2) !important;
+}
+
+/* Estilo específico para o botão de ficha técnica */
+.actions a[title="Ficha Técnica Administrativa"] {
+    background: #6f42c1 !important;
+}
+
+.actions a[title="Ficha Técnica Administrativa"]:hover {
+    background: #5a2d91 !important;
+}
+
+/* Responsividade para os botões de ação */
+@media (max-width: 768px) {
+    .actions div {
+        gap: 4px !important;
+    }
+    
+    .actions a {
+        width: 30px !important;
+        height: 30px !important;
+        font-size: 12px !important;
+    }
+}
+
+/* Melhorias para tabela responsiva */
+@media (max-width: 992px) {
+    .responsive-table {
+        overflow-x: auto;
+        margin: 0 -15px;
+        padding: 0 15px;
+    }
+    
+    .responsive-table table {
+        min-width: 800px;
+    }
+    
+    .actions {
+        white-space: nowrap;
+    }
+}

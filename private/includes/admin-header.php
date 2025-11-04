@@ -44,8 +44,9 @@ if (!isset($page_title)) {
                     <li><a href="<?= rtrim(BASE_URL,'/') ?>/private/imoveis/listar.php" <?= basename($_SERVER['PHP_SELF']) == 'listar.php' ? 'class="active"' : '' ?>><i class="fas fa-home"></i> Imóveis</a></li>
                     <li><a href="<?= rtrim(BASE_URL,'/') ?>/private/imoveis/adicionar.php" <?= basename($_SERVER['PHP_SELF']) == 'adicionar.php' ? 'class="active"' : '' ?>><i class="fas fa-plus-circle"></i> Adicionar Imóvel</a></li>
                     <li><a href="<?= rtrim(BASE_URL,'/') ?>/private/admin/lista_clientes.php" <?= basename($_SERVER['PHP_SELF']) == 'lista_clientes.php' ? 'class="active"' : '' ?>><i class="fas fa-users"></i> Leads (Clientes)</a></li>
-                    <li><a href="<?= rtrim(BASE_URL,'/') ?>/private/imoveis/proprietario-cadastrar.php" <?= in_array(basename($_SERVER['PHP_SELF']), ['proprietario-cadastrar.php','proprietarios.php']) ? 'class="active"' : '' ?>><i class="fas fa-user-tie"></i> Proprietários</a></li>
-                    <li><a href="<?= rtrim(BASE_URL,'/') ?>/private/admin/usuarios.php" <?= basename($_SERVER['PHP_SELF']) == 'usuarios.php' ? 'class="active"' : '' ?>><i class="fas fa-users"></i> Usuários</a></li>
+                    <li><a href="<?= rtrim(BASE_URL,'/') ?>/private/imoveis/proprietarios-listar.php" <?= basename($_SERVER['PHP_SELF']) == 'proprietarios-listar.php' ? 'class="active"' : '' ?>><i class="fas fa-list"></i> Listar Proprietários</a></li>
+                    <li><a href="<?= rtrim(BASE_URL,'/') ?>/private/imoveis/proprietario-cadastrar.php" <?= in_array(basename($_SERVER['PHP_SELF']), ['proprietario-cadastrar.php','proprietario-editar.php']) ? 'class="active"' : '' ?>><i class="fas fa-user-tie"></i> Novo Proprietário</a></li>
+                    <li><a href="<?= rtrim(BASE_URL,'/') ?>/private/admin/usuarios.php" <?= basename($_SERVER['PHP_SELF']) == 'usuarios.php' ? 'class="active"' : '' ?>><i class="fas fa-user-shield"></i> Usuários</a></li>
                     <li><a href="<?= rtrim(BASE_URL,'/') ?>/private/admin/configuracoes.php" <?= basename($_SERVER['PHP_SELF']) == 'configuracoes.php' ? 'class="active"' : '' ?>><i class="fas fa-cog"></i> Configurações</a></li>
                     <li><a href="<?= rtrim(BASE_URL,'/') ?>/private/admin/logout.php"><i class="fas fa-sign-out-alt"></i> Sair</a></li>
                 </ul>

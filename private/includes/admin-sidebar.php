@@ -63,6 +63,26 @@ $perfil_usuario = $_SESSION['usuario_tipo'] ?? 'corretor';
                 </ul>
             </li>
 
+            <!-- Proprietários -->
+            <li class="menu-item">
+                <a href="#submenu-proprietarios" data-bs-toggle="collapse" class="dropdown-toggle">
+                    <i class="fas fa-user-tie"></i>
+                    <span>Proprietários</span>
+                </a>
+                <ul class="collapse list-unstyled" id="submenu-proprietarios">
+                    <li>
+                        <a href="<?php echo BASE_URL; ?>imoveis/proprietarios-listar.php" class="<?php echo (basename($_SERVER['PHP_SELF']) == 'proprietarios-listar.php') ? 'active' : ''; ?>">
+                            <i class="fas fa-list"></i> Listar Proprietários
+                        </a>
+                    </li>
+                    <li>
+                        <a href="<?php echo BASE_URL; ?>imoveis/proprietario-cadastrar.php" class="<?php echo (basename($_SERVER['PHP_SELF']) == 'proprietario-cadastrar.php') ? 'active' : ''; ?>">
+                            <i class="fas fa-plus-circle"></i> Novo Proprietário
+                        </a>
+                    </li>
+                </ul>
+            </li>
+
             <!-- Clientes -->
             <li class="menu-item">
                 <a href="#submenu-clientes" data-bs-toggle="collapse" class="dropdown-toggle">

@@ -48,12 +48,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   if ($nome === '') {
     $errors[] = 'O nome é obrigatório.';
   }
-  if ($cpf === '') {
-    $errors[] = 'O CPF é obrigatório.';
-  } else {
-    if (!cpf_valido($cpf)) {
-      $errors[] = 'Informe um CPF com 11 dígitos.';
-    }
+  if ($cpf !== '' && !cpf_valido($cpf)) {
+    $errors[] = 'Informe um CPF com 11 dígitos.';
   }
   if ($email !== '' && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
     $errors[] = 'Informe um e-mail válido.';
@@ -61,14 +57,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
   // Verificações de duplicidade (CPF e e-mail)
   if (empty($errors)) {
-    $cpf_norm = normalizar_cpf($cpf);
-    // Compara CPF normalizado contra CPF armazenado removendo pontuação
-    $cpf_dup = db_query(
-      "SELECT id_proprietario FROM proprietarios WHERE REPLACE(REPLACE(REPLACE(cpf, '.', ''), '-', ''), ' ', '') = ? LIMIT 1",
-      [$cpf_norm]
-    );
-    if (!empty($cpf_dup)) {
-      $errors[] = 'Já existe um proprietário cadastrado com este CPF.';
+    // Só verifica duplicidade de CPF se foi informado
+    if ($cpf !== '') {
+      $cpf_norm = normalizar_cpf($cpf);
+      // Compara CPF normalizado contra CPF armazenado removendo pontuação
+      $cpf_dup = db_query(
+        "SELECT id_proprietario FROM proprietarios WHERE REPLACE(REPLACE(REPLACE(cpf, '.', ''), '-', ''), ' ', '') = ? LIMIT 1",
+        [$cpf_norm]
+      );
+      if (!empty($cpf_dup)) {
+        $errors[] = 'Já existe um proprietário cadastrado com este CPF.';
+      }
     }
 
     if ($email !== '') {
@@ -126,9 +125,9 @@ include __DIR__ . '/../includes/admin-header.php';
       <input type="text" name="nome" value="<?= htmlspecialchars($_POST['nome'] ?? '') ?>" required maxlength="150" autocomplete="name" autofocus>
     </div>
     <div class="form-group">
-      <label>CPF *</label>
-      <input type="text" name="cpf" value="<?= htmlspecialchars($_POST['cpf'] ?? '') ?>" placeholder="000.000.000-00" required maxlength="14" pattern="\d{3}\.\d{3}\.\d{3}-\d{2}|\d{11}" title="Informe 11 dígitos ou no formato 000.000.000-00">
-      <div class="form-text">Somente números ou no formato 000.000.000-00</div>
+      <label>CPF</label>
+      <input type="text" name="cpf" value="<?= htmlspecialchars($_POST['cpf'] ?? '') ?>" placeholder="000.000.000-00" maxlength="14" pattern="\d{3}\.\d{3}\.\d{3}-\d{2}|\d{11}" title="Informe 11 dígitos ou no formato 000.000.000-00">
+      <div class="form-text">Somente números ou no formato 000.000.000-00 (opcional)</div>
     </div>
   </div>
 

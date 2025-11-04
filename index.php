@@ -178,6 +178,20 @@ if (is_dir($carousel_folder)) {
                     <option value="terreno">🌿 Terreno</option>
                     <option value="loft">🏙️ Loft</option>
                     <option value="comercial">🏪 Comercial</option>
+                    <option value="pavilhao">🏭 Pavilhão</option>
+                    <option value="fazenda">🚜 Fazenda</option>
+                    <option value="laja_terrea">🏘️ Laja Térrea</option>
+                    <option value="sala_area">📦 Sala Área</option>
+                    <option value="area_terras">🌍 Área de Terras</option>
+                    <option value="loteamento">🗺️ Loteamento</option>
+                    <option value="condominio_fechado">🏛️ Condomínio Fechado</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <select name="finalidade">
+                    <option value="">Venda ou Locação</option>
+                    <option value="venda">💰 Venda</option>
+                    <option value="locacao">🏠 Locação</option>
                 </select>
             </div>
             <div class="form-group">

@@ -7,8 +7,8 @@
                     <p>Oferecendo soluções imobiliárias completas com transparência e profissionalismo.</p>
                     <div class="footer-social">
                         <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
-                        <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
-                        <a href="#" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+                        <a href="https://www.instagram.com/corretoraclaudiacolombo" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                        <a href="https://w.app/cggjle" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
                     </div>
                 </div>
                 <div class="footer-col">

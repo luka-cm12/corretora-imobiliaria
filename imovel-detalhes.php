@@ -57,7 +57,14 @@ $tipos = [
     'semi_mobiliado' => 'Semi Mobiliado',
     'terreno' => 'Terreno',
     'loft' => 'Loft',
-    'comercial' => 'Comercial'
+    'comercial' => 'Comercial',
+    'pavilhao' => 'Pavilhão',
+    'fazenda' => 'Fazenda',
+    'laja_terrea' => 'Laja Térrea',
+    'sala_area' => 'Sala Área',
+    'area_terras' => 'Área de Terras',
+    'loteamento' => 'Loteamento',
+    'condominio_fechado' => 'Condomínio Fechado'
 ];
 
 // Características principais: mapa de chave => [rótulo, ícone FontAwesome]
@@ -219,6 +226,16 @@ include 'private/includes/header.php';
                             <span>Tipo</span>
                             <strong><?= $tipos[$imovel['tipo']] ?? ucfirst($imovel['tipo']) ?></strong>
                         </div>
+
+                        <?php if (isset($imovel['finalidade'])): ?>
+                        <div class="detail-item">
+                            <i class="fas fa-<?= $imovel['finalidade'] === 'locacao' ? 'key' : 'dollar-sign' ?>"></i>
+                            <span>Finalidade</span>
+                            <strong style="color: <?= $imovel['finalidade'] === 'locacao' ? '#9C27B0' : '#28a745' ?>;">
+                                <?= $imovel['finalidade'] === 'locacao' ? '🏠 Locação' : '💰 Venda' ?>
+                            </strong>
+                        </div>
+                        <?php endif; ?>
                         
                         <?php if ($imovel['area'] > 0): ?>
                         <div class="detail-item">

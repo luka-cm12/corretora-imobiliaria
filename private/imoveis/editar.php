@@ -640,6 +640,21 @@ include __DIR__ . '/../includes/admin-header.php';
                     <option value="terreno" <?= $imovel['tipo'] === 'terreno' ? 'selected' : '' ?>>🌿 Terreno</option>
                     <option value="loft" <?= $imovel['tipo'] === 'loft' ? 'selected' : '' ?>>🏙️ Loft</option>
                     <option value="comercial" <?= $imovel['tipo'] === 'comercial' ? 'selected' : '' ?>>🏪 Comercial</option>
+                    <option value="pavilhao" <?= $imovel['tipo'] === 'pavilhao' ? 'selected' : '' ?>>🏭 Pavilhão</option>
+                    <option value="fazenda" <?= $imovel['tipo'] === 'fazenda' ? 'selected' : '' ?>>🚜 Fazenda</option>
+                    <option value="laja_terrea" <?= $imovel['tipo'] === 'laja_terrea' ? 'selected' : '' ?>>🏘️ Laja Térrea</option>
+                    <option value="sala_area" <?= $imovel['tipo'] === 'sala_area' ? 'selected' : '' ?>>📦 Sala Área</option>
+                    <option value="area_terras" <?= $imovel['tipo'] === 'area_terras' ? 'selected' : '' ?>>🌍 Área de Terras</option>
+                    <option value="loteamento" <?= $imovel['tipo'] === 'loteamento' ? 'selected' : '' ?>>🗺️ Loteamento</option>
+                    <option value="condominio_fechado" <?= $imovel['tipo'] === 'condominio_fechado' ? 'selected' : '' ?>>🏛️ Condomínio Fechado</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="finalidade">Finalidade *</label>
+                <select id="finalidade" name="finalidade" required>
+                    <option value="">Selecione a finalidade</option>
+                    <option value="venda" <?= ($imovel['finalidade'] ?? 'venda') === 'venda' ? 'selected' : '' ?>>💰 Venda</option>
+                    <option value="locacao" <?= ($imovel['finalidade'] ?? 'venda') === 'locacao' ? 'selected' : '' ?>>🏠 Locação</option>
                 </select>
             </div>
         </div>

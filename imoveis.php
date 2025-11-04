@@ -13,6 +13,7 @@ $filtros = [
     'tipo' => isset($_GET['tipo']) ? $_GET['tipo'] : '',
     'cidade' => isset($_GET['cidade']) ? $_GET['cidade'] : '',
     'bairro' => isset($_GET['bairro']) ? $_GET['bairro'] : '',
+    'finalidade' => isset($_GET['finalidade']) ? $_GET['finalidade'] : '',
     'preco' => isset($_GET['preco']) ? $_GET['preco'] : '', // faixa rápida
     'preco_min' => isset($_GET['preco_min']) ? $_GET['preco_min'] : '',
     'preco_max' => isset($_GET['preco_max']) ? $_GET['preco_max'] : '',
@@ -33,6 +34,7 @@ if (!empty($filtros['q'])) {
 if (!empty($filtros['tipo'])) { $whereParts[] = "tipo = ?"; $params[] = $filtros['tipo']; }
 if (!empty($filtros['cidade'])) { $whereParts[] = "cidade = ?"; $params[] = $filtros['cidade']; }
 if (!empty($filtros['bairro'])) { $whereParts[] = "bairro = ?"; $params[] = $filtros['bairro']; }
+if (!empty($filtros['finalidade'])) { $whereParts[] = "finalidade = ?"; $params[] = $filtros['finalidade']; }
 
 $precoMin = $filtros['preco_min'] !== '' ? (float)$filtros['preco_min'] : null;
 $precoMax = $filtros['preco_max'] !== '' ? (float)$filtros['preco_max'] : null;
@@ -76,6 +78,7 @@ $imoveis = db_query($sql, $params);
 $tipos = db_query("SELECT DISTINCT tipo FROM imoveis ORDER BY tipo");
 $cidades = db_query("SELECT DISTINCT cidade FROM imoveis ORDER BY cidade");
 $bairros = !empty($filtros['cidade']) ? db_query("SELECT DISTINCT bairro FROM imoveis WHERE cidade = ? ORDER BY bairro", [$filtros['cidade']]) : [];
+$finalidades = db_query("SELECT DISTINCT finalidade FROM imoveis WHERE finalidade IS NOT NULL AND finalidade != '' ORDER BY finalidade");
 
 // Para paginação: total de páginas e construção de URLs
 $totalPages = (int)ceil($total / $perPage);
@@ -114,6 +117,18 @@ include 'private/includes/header.php';
                         <?php foreach ($tipos as $tipo): ?>
                             <option value="<?= $tipo['tipo'] ?>" <?= isset($filtros['tipo']) && $filtros['tipo'] == $tipo['tipo'] ? 'selected' : '' ?>>
                                 <?= ucfirst($tipo['tipo']) ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label for="finalidade">Finalidade</label>
+                    <select id="finalidade" name="finalidade">
+                        <option value="">Todas</option>
+                        <?php foreach ($finalidades as $finalidade): ?>
+                            <option value="<?= $finalidade['finalidade'] ?>" <?= isset($filtros['finalidade']) && $filtros['finalidade'] == $finalidade['finalidade'] ? 'selected' : '' ?>>
+                                <?= ucfirst($finalidade['finalidade']) ?>
                             </option>
                         <?php endforeach; ?>
                     </select>

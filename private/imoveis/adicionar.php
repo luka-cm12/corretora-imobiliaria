@@ -98,6 +98,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $titulo = trim($_POST['titulo'] ?? '');
         $descricao = trim($_POST['descricao'] ?? '');
         $tipo = trim($_POST['tipo'] ?? '');
+        $finalidade = trim($_POST['finalidade'] ?? '');
         $cidade = trim($_POST['cidade'] ?? '');
     $bairro = trim($_POST['bairro'] ?? '');
         $endereco = trim($_POST['endereco'] ?? '');
@@ -166,6 +167,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (empty($tipo)) {
             throw new Exception('O tipo do imóvel é obrigatório.');
         }
+        if (empty($finalidade)) {
+            throw new Exception('A finalidade (venda ou locação) é obrigatória.');
+        }
         if (empty($cidade)) {
             throw new Exception('A cidade é obrigatória.');
         }
@@ -219,8 +223,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $existing_columns = array_column($colCheck, 'COLUMN_NAME');
         
         // Campos base obrigatórios
-        $fields = ['titulo', 'descricao', 'tipo', 'cidade', 'bairro', 'endereco', 'preco', 'area', 'quartos', 'banheiros', 'garagem', 'imagens', 'destaque', 'id_proprietario'];
-        $values = [$titulo, $descricao, $tipo, $cidade, $bairro, $endereco, $preco, $area, $quartos, $banheiros, $garagem, $imagens_str, $destaque, $id_proprietario];
+        $fields = ['titulo', 'descricao', 'tipo', 'finalidade', 'cidade', 'bairro', 'endereco', 'preco', 'area', 'quartos', 'banheiros', 'garagem', 'imagens', 'destaque', 'id_proprietario'];
+        $values = [$titulo, $descricao, $tipo, $finalidade, $cidade, $bairro, $endereco, $preco, $area, $quartos, $banheiros, $garagem, $imagens_str, $destaque, $id_proprietario];
         
         // Adiciona campos opcionais se existirem
         if (in_array('cep', $existing_columns)) {
@@ -385,6 +389,22 @@ include __DIR__ . '/../includes/admin-header.php';
                 <option value="terreno" <?= ($_POST['tipo'] ?? '') === 'terreno' ? 'selected' : '' ?>>🌿 Terreno</option>
                 <option value="loft" <?= ($_POST['tipo'] ?? '') === 'loft' ? 'selected' : '' ?>>🏙️ Loft</option>
                 <option value="comercial" <?= ($_POST['tipo'] ?? '') === 'comercial' ? 'selected' : '' ?>>🏪 Comercial</option>
+                <option value="pavilhao" <?= ($_POST['tipo'] ?? '') === 'pavilhao' ? 'selected' : '' ?>>🏭 Pavilhão</option>
+                <option value="fazenda" <?= ($_POST['tipo'] ?? '') === 'fazenda' ? 'selected' : '' ?>>🚜 Fazenda</option>
+                <option value="laja_terrea" <?= ($_POST['tipo'] ?? '') === 'laja_terrea' ? 'selected' : '' ?>>🏘️ Laja Térrea</option>
+                <option value="sala_area" <?= ($_POST['tipo'] ?? '') === 'sala_area' ? 'selected' : '' ?>>📦 Sala Área</option>
+                <option value="area_terras" <?= ($_POST['tipo'] ?? '') === 'area_terras' ? 'selected' : '' ?>>🌍 Área de Terras</option>
+                <option value="loteamento" <?= ($_POST['tipo'] ?? '') === 'loteamento' ? 'selected' : '' ?>>🗺️ Loteamento</option>
+                <option value="condominio_fechado" <?= ($_POST['tipo'] ?? '') === 'condominio_fechado' ? 'selected' : '' ?>>🏛️ Condomínio Fechado</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="finalidade">Finalidade *</label>
+            <select id="finalidade" name="finalidade" required>
+                <option value="">Selecione a finalidade</option>
+                <option value="venda" <?= ($_POST['finalidade'] ?? '') === 'venda' ? 'selected' : '' ?>>💰 Venda</option>
+                <option value="locacao" <?= ($_POST['finalidade'] ?? '') === 'locacao' ? 'selected' : '' ?>>🏠 Locação</option>
             </select>
         </div>
 
