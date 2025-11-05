@@ -47,7 +47,7 @@ $tipos = [
     'pavilhao' => 'Pavilhão',
     'fazenda' => 'Fazenda',
     'laja_terrea' => 'Laja Térrea',
-    'sala_area' => 'Sala Área',
+    'sala_area' => 'Sala Aérea',
     'area_terras' => 'Área de Terras',
     'loteamento' => 'Loteamento',
     'condominio_fechado' => 'Condomínio Fechado'
@@ -102,7 +102,8 @@ $caracteristicas_lista = [
     'quintal' => ['Quintal', '🌳'],
     'escritorio' => ['Escritório', '💼'],
     'biblioteca' => ['Biblioteca', '📚'],
-    'deposito' => ['Depósito', '🏬']
+    'deposito' => ['Depósito', '🏬'],
+    'estacionamento' => ['Estacionamento', '🚗']
 ];
 
 // Função para obter características ativas
@@ -773,6 +774,10 @@ $todas_caracteristicas = array_unique($todas_caracteristicas, SORT_REGULAR);
                         <div class="checkbox-field">
                             <span class="checkbox <?= isset($imovel['alarme']) && $imovel['alarme'] ? 'checked' : '' ?>"></span>
                             <span>Alarme</span>
+                        </div>
+                        <div class="checkbox-field">
+                            <span class="checkbox <?= isset($imovel['estacionamento']) && $imovel['estacionamento'] ? 'checked' : '' ?>"></span>
+                            <span>Estacionamento</span>
                         </div>
                     </div>
                 </div>

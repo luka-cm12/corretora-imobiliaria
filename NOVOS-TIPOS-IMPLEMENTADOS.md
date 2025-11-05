@@ -15,7 +15,7 @@
 | **Pavilhão** | `pavilhao` | 🏭 | Estruturas industriais e comerciais |
 | **Fazenda** | `fazenda` | 🚜 | Propriedades rurais produtivas |
 | **Laja Térrea** | `laja_terrea` | 🏘️ | Casas térreas tradicionais |
-| **Sala Área** | `sala_area` | 📦 | Espaços comerciais e salas |
+| **Sala Térrea** | `sala_area` | 📦 | Espaços comerciais e salas |
 | **Área de Terras** | `area_terras` | 🌍 | Terrenos rurais e áreas de cultivo |
 | **Loteamento** | `loteamento` | 🗺️ | Empreendimentos de lotes |
 | **Condomínio Fechado** | `condominio_fechado` | 🏛️ | Condomínios residenciais fechados |

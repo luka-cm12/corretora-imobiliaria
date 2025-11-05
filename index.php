@@ -181,7 +181,7 @@ if (is_dir($carousel_folder)) {
                     <option value="pavilhao">🏭 Pavilhão</option>
                     <option value="fazenda">🚜 Fazenda</option>
                     <option value="laja_terrea">🏘️ Laja Térrea</option>
-                    <option value="sala_area">📦 Sala Área</option>
+                    <option value="sala_area">📦 Sala Aérea</option>
                     <option value="area_terras">🌍 Área de Terras</option>
                     <option value="loteamento">🗺️ Loteamento</option>
                     <option value="condominio_fechado">🏛️ Condomínio Fechado</option>

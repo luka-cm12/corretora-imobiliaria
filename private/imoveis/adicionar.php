@@ -67,7 +67,8 @@ $lista_caracteristicas = [
         'lareira' => 'Lareira',
         'interfone' => 'Interfone',
         'alarme' => 'Sistema de alarme',
-        'garagem_coberta' => 'Garagem coberta'
+        'garagem_coberta' => 'Garagem coberta',
+        'estacionamento' => 'Estacionamento'
     ]
 ];
 
@@ -392,7 +393,7 @@ include __DIR__ . '/../includes/admin-header.php';
                 <option value="pavilhao" <?= ($_POST['tipo'] ?? '') === 'pavilhao' ? 'selected' : '' ?>>🏭 Pavilhão</option>
                 <option value="fazenda" <?= ($_POST['tipo'] ?? '') === 'fazenda' ? 'selected' : '' ?>>🚜 Fazenda</option>
                 <option value="laja_terrea" <?= ($_POST['tipo'] ?? '') === 'laja_terrea' ? 'selected' : '' ?>>🏘️ Laja Térrea</option>
-                <option value="sala_area" <?= ($_POST['tipo'] ?? '') === 'sala_area' ? 'selected' : '' ?>>📦 Sala Área</option>
+                <option value="sala_area" <?= ($_POST['tipo'] ?? '') === 'sala_area' ? 'selected' : '' ?>>📦 Sala Aérea</option>
                 <option value="area_terras" <?= ($_POST['tipo'] ?? '') === 'area_terras' ? 'selected' : '' ?>>🌍 Área de Terras</option>
                 <option value="loteamento" <?= ($_POST['tipo'] ?? '') === 'loteamento' ? 'selected' : '' ?>>🗺️ Loteamento</option>
                 <option value="condominio_fechado" <?= ($_POST['tipo'] ?? '') === 'condominio_fechado' ? 'selected' : '' ?>>🏛️ Condomínio Fechado</option>

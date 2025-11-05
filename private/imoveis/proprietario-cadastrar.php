@@ -19,16 +19,25 @@ if (empty($_SESSION['csrf_token'])) {
   }
 }
 
-function normalizar_cpf(string $valor): string {
+function normalizar_documento(string $valor): string {
   return preg_replace('/\D+/', '', $valor);
 }
 
 function cpf_valido(string $cpf): bool {
   // Validação mais permissiva: aceita 11 dígitos (com ou sem pontuação)
-  $cpf = normalizar_cpf($cpf);
+  $cpf = normalizar_documento($cpf);
   if (strlen($cpf) !== 11) return false;
   // recusa sequência de dígitos iguais (ex: 00000000000)
   if (preg_match('/^(\d)\1{10}$/', $cpf)) return false;
+  return true;
+}
+
+function cnpj_valido(string $cnpj): bool {
+  // Validação básica: aceita 14 dígitos (com ou sem pontuação)
+  $cnpj = normalizar_documento($cnpj);
+  if (strlen($cnpj) !== 14) return false;
+  // recusa sequência de dígitos iguais (ex: 00000000000000)
+  if (preg_match('/^(\d)\1{13}$/', $cnpj)) return false;
   return true;
 }
 
@@ -40,7 +49,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   }
 
   $nome = trim($_POST['nome'] ?? '');
-  $cpf = trim($_POST['cpf'] ?? '');
+  $tipo_documento = trim($_POST['tipo_documento'] ?? 'cpf');
+  $documento = trim($_POST['documento'] ?? '');
   $telefone = trim($_POST['telefone'] ?? '');
   $email = trim($_POST['email'] ?? '');
   $endereco = trim($_POST['endereco'] ?? '');
@@ -48,25 +58,42 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   if ($nome === '') {
     $errors[] = 'O nome é obrigatório.';
   }
-  if ($cpf !== '' && !cpf_valido($cpf)) {
-    $errors[] = 'Informe um CPF com 11 dígitos.';
+  
+  // Validação do documento baseado no tipo escolhido
+  if ($documento !== '') {
+    if ($tipo_documento === 'cpf' && !cpf_valido($documento)) {
+      $errors[] = 'Informe um CPF válido com 11 dígitos.';
+    } elseif ($tipo_documento === 'cnpj' && !cnpj_valido($documento)) {
+      $errors[] = 'Informe um CNPJ válido com 14 dígitos.';
+    }
   }
   if ($email !== '' && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
     $errors[] = 'Informe um e-mail válido.';
   }
 
-  // Verificações de duplicidade (CPF e e-mail)
+  // Verificações de duplicidade (documento e e-mail)
   if (empty($errors)) {
-    // Só verifica duplicidade de CPF se foi informado
-    if ($cpf !== '') {
-      $cpf_norm = normalizar_cpf($cpf);
-      // Compara CPF normalizado contra CPF armazenado removendo pontuação
-      $cpf_dup = db_query(
-        "SELECT id_proprietario FROM proprietarios WHERE REPLACE(REPLACE(REPLACE(cpf, '.', ''), '-', ''), ' ', '') = ? LIMIT 1",
-        [$cpf_norm]
-      );
-      if (!empty($cpf_dup)) {
-        $errors[] = 'Já existe um proprietário cadastrado com este CPF.';
+    // Só verifica duplicidade de documento se foi informado
+    if ($documento !== '') {
+      $doc_norm = normalizar_documento($documento);
+      // Verifica duplicidade do documento nos campos CPF ou CNPJ
+      if ($tipo_documento === 'cpf') {
+        $doc_dup = db_query(
+          "SELECT id_proprietario FROM proprietarios WHERE REPLACE(REPLACE(REPLACE(COALESCE(cpf, ''), '.', ''), '-', ''), ' ', '') = ? LIMIT 1",
+          [$doc_norm]
+        );
+        if (!empty($doc_dup)) {
+          $errors[] = 'Já existe um proprietário cadastrado com este CPF.';
+        }
+      } else {
+        // Verifica CNPJ na coluna apropriada (cpf por enquanto, até criar coluna cnpj)
+        $doc_dup = db_query(
+          "SELECT id_proprietario FROM proprietarios WHERE REPLACE(REPLACE(REPLACE(COALESCE(cpf, ''), '.', ''), '-', ''), ' ', '') = ? AND LENGTH(REPLACE(REPLACE(REPLACE(COALESCE(cpf, ''), '.', ''), '-', ''), ' ', '')) = 14 LIMIT 1",
+          [$doc_norm]
+        );
+        if (!empty($doc_dup)) {
+          $errors[] = 'Já existe um proprietário cadastrado com este CNPJ.';
+        }
       }
     }
 
@@ -82,8 +109,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   }
 
   if (empty($errors)) {
+    // Por enquanto, salva tanto CPF quanto CNPJ no mesmo campo até criar coluna separada
     $sql = "INSERT INTO proprietarios (nome, cpf, telefone, email, endereco) VALUES (?, ?, ?, ?, ?)";
-    $result = db_query($sql, [$nome, $cpf, $telefone, $email, $endereco]);
+    $result = db_query($sql, [$nome, $documento, $telefone, $email, $endereco]);
 
     if ($result > 0) {
       $success = 'Proprietário cadastrado com sucesso!';
@@ -125,9 +153,21 @@ include __DIR__ . '/../includes/admin-header.php';
       <input type="text" name="nome" value="<?= htmlspecialchars($_POST['nome'] ?? '') ?>" required maxlength="150" autocomplete="name" autofocus>
     </div>
     <div class="form-group">
-      <label>CPF</label>
-      <input type="text" name="cpf" value="<?= htmlspecialchars($_POST['cpf'] ?? '') ?>" placeholder="000.000.000-00" maxlength="14" pattern="\d{3}\.\d{3}\.\d{3}-\d{2}|\d{11}" title="Informe 11 dígitos ou no formato 000.000.000-00">
-      <div class="form-text">Somente números ou no formato 000.000.000-00 (opcional)</div>
+      <label>Tipo de Documento</label>
+      <select name="tipo_documento" id="tipo_documento" onchange="alterarTipoDocumento()">
+        <option value="cpf" <?= ($_POST['tipo_documento'] ?? 'cpf') === 'cpf' ? 'selected' : '' ?>>CPF (Pessoa Física)</option>
+        <option value="cnpj" <?= ($_POST['tipo_documento'] ?? 'cpf') === 'cnpj' ? 'selected' : '' ?>>CNPJ (Pessoa Jurídica)</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="form-row">
+    <div class="form-group" style="width: 100%;">
+      <label id="label_documento">CPF</label>
+      <input type="text" name="documento" id="documento" value="<?= htmlspecialchars($_POST['documento'] ?? '') ?>" 
+             placeholder="000.000.000-00" maxlength="18" 
+             title="Informe o documento válido">
+      <div class="form-text" id="texto_documento">Somente números ou no formato 000.000.000-00 (opcional)</div>
     </div>
   </div>
 
@@ -153,5 +193,55 @@ include __DIR__ . '/../includes/admin-header.php';
   </div>
   <div class="form-text">Campos marcados com * são obrigatórios.</div>
 </form>
+
+<script>
+function alterarTipoDocumento() {
+  const tipoSelect = document.getElementById('tipo_documento');
+  const documentoInput = document.getElementById('documento');
+  const labelDocumento = document.getElementById('label_documento');
+  const textoDocumento = document.getElementById('texto_documento');
+  
+  if (tipoSelect.value === 'cpf') {
+    labelDocumento.textContent = 'CPF';
+    documentoInput.placeholder = '000.000.000-00';
+    documentoInput.maxLength = 14;
+    textoDocumento.textContent = 'Somente números ou no formato 000.000.000-00 (opcional)';
+  } else {
+    labelDocumento.textContent = 'CNPJ';
+    documentoInput.placeholder = '00.000.000/0000-00';
+    documentoInput.maxLength = 18;
+    textoDocumento.textContent = 'Somente números ou no formato 00.000.000/0000-00 (opcional)';
+  }
+  
+  // Limpa o valor atual quando muda o tipo
+  documentoInput.value = '';
+}
+
+// Executa quando a página carrega para definir o estado inicial
+document.addEventListener('DOMContentLoaded', function() {
+  alterarTipoDocumento();
+});
+
+// Máscaras para CPF e CNPJ
+document.getElementById('documento').addEventListener('input', function(e) {
+  const tipoSelect = document.getElementById('tipo_documento');
+  let valor = e.target.value.replace(/\D/g, '');
+  
+  if (tipoSelect.value === 'cpf') {
+    // Máscara CPF: 000.000.000-00
+    valor = valor.replace(/(\d{3})(\d)/, '$1.$2');
+    valor = valor.replace(/(\d{3})(\d)/, '$1.$2');
+    valor = valor.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+  } else {
+    // Máscara CNPJ: 00.000.000/0000-00
+    valor = valor.replace(/(\d{2})(\d)/, '$1.$2');
+    valor = valor.replace(/(\d{3})(\d)/, '$1.$2');
+    valor = valor.replace(/(\d{3})(\d)/, '$1/$2');
+    valor = valor.replace(/(\d{4})(\d{1,2})$/, '$1-$2');
+  }
+  
+  e.target.value = valor;
+});
+</script>
 
 <?php include __DIR__ . '/../includes/admin-footer.php'; ?>

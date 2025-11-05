@@ -65,7 +65,7 @@ function formatar_tipo_imovel($tipo) {
         'pavilhao' => '🏭 Pavilhão',
         'fazenda' => '🚜 Fazenda',
         'laja_terrea' => '🏘️ Laja Térrea',
-        'sala_area' => '📦 Sala Área',
+        'sala_area' => '📦 Sala Aérea',
         'area_terras' => '🌍 Área de Terras',
         'loteamento' => '🗺️ Loteamento',
         'condominio_fechado' => '🏛️ Condomínio Fechado'

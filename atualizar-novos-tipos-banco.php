@@ -10,7 +10,7 @@
  * - pavilhao (🏭 Pavilhão) 
  * - fazenda (🚜 Fazenda)
  * - laja_terrea (🏘️ Laja Térrea)
- * - sala_area (📦 Sala Área)
+ * - sala_area (📦 Sala Térrea)
  * - area_terras (🌍 Área de Terras)
  * - loteamento (🗺️ Loteamento)
  * - condominio_fechado (🏛️ Condomínio Fechado)
@@ -239,7 +239,7 @@ function verificar_tipos_existentes() {
             <div class="tipo-card">🏭<br><strong>Pavilhão</strong><br><code>pavilhao</code></div>
             <div class="tipo-card">🚜<br><strong>Fazenda</strong><br><code>fazenda</code></div>
             <div class="tipo-card">🏘️<br><strong>Laja Térrea</strong><br><code>laja_terrea</code></div>
-            <div class="tipo-card">📦<br><strong>Sala Área</strong><br><code>sala_area</code></div>
+            <div class="tipo-card">📦<br><strong>Sala Aérea</strong><br><code>sala_area</code></div>
             <div class="tipo-card">🌍<br><strong>Área de Terras</strong><br><code>area_terras</code></div>
             <div class="tipo-card">🗺️<br><strong>Loteamento</strong><br><code>loteamento</code></div>
             <div class="tipo-card">🏛️<br><strong>Condomínio Fechado</strong><br><code>condominio_fechado</code></div>

@@ -19,14 +19,21 @@ if (empty($_SESSION['csrf_token'])) {
     }
 }
 
-function normalizar_cpf(string $valor): string {
+function normalizar_documento(string $valor): string {
     return preg_replace('/\D+/', '', $valor);
 }
 
 function cpf_valido(string $cpf): bool {
-    $cpf = normalizar_cpf($cpf);
+    $cpf = normalizar_documento($cpf);
     if (strlen($cpf) !== 11) return false;
     if (preg_match('/^(\d)\1{10}$/', $cpf)) return false;
+    return true;
+}
+
+function cnpj_valido(string $cnpj): bool {
+    $cnpj = normalizar_documento($cnpj);
+    if (strlen($cnpj) !== 14) return false;
+    if (preg_match('/^(\d)\1{13}$/', $cnpj)) return false;
     return true;
 }
 
@@ -79,7 +86,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (empty($errors)) {
         // Verificar CPF duplicado
         if ($cpf !== '') {
-            $cpf_norm = normalizar_cpf($cpf);
+            $cpf_norm = normalizar_documento($cpf);
             $cpf_dup = db_query(
                 "SELECT id_proprietario FROM proprietarios WHERE REPLACE(REPLACE(REPLACE(cpf, '.', ''), '-', ''), ' ', '') = ? AND id_proprietario != ? LIMIT 1",
                 [$cpf_norm, $id]

@@ -111,7 +111,8 @@ $lista_caracteristicas = [
         'lareira' => 'Lareira',
         'interfone' => 'Interfone',
         'alarme' => 'Sistema de alarme',
-        'garagem_coberta' => 'Garagem coberta'
+        'garagem_coberta' => 'Garagem coberta',
+        'estacionamento' => 'Estacionamento'
     ]
 ];
 
@@ -643,7 +644,7 @@ include __DIR__ . '/../includes/admin-header.php';
                     <option value="pavilhao" <?= $imovel['tipo'] === 'pavilhao' ? 'selected' : '' ?>>🏭 Pavilhão</option>
                     <option value="fazenda" <?= $imovel['tipo'] === 'fazenda' ? 'selected' : '' ?>>🚜 Fazenda</option>
                     <option value="laja_terrea" <?= $imovel['tipo'] === 'laja_terrea' ? 'selected' : '' ?>>🏘️ Laja Térrea</option>
-                    <option value="sala_area" <?= $imovel['tipo'] === 'sala_area' ? 'selected' : '' ?>>📦 Sala Área</option>
+                    <option value="sala_area" <?= $imovel['tipo'] === 'sala_area' ? 'selected' : '' ?>>📦 Sala Aérea</option>
                     <option value="area_terras" <?= $imovel['tipo'] === 'area_terras' ? 'selected' : '' ?>>🌍 Área de Terras</option>
                     <option value="loteamento" <?= $imovel['tipo'] === 'loteamento' ? 'selected' : '' ?>>🗺️ Loteamento</option>
                     <option value="condominio_fechado" <?= $imovel['tipo'] === 'condominio_fechado' ? 'selected' : '' ?>>🏛️ Condomínio Fechado</option>
