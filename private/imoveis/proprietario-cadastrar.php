@@ -24,7 +24,9 @@ function normalizar_documento(string $valor): string {
 }
 
 function cpf_valido(string $cpf): bool {
-  // Validação mais permissiva: aceita 11 dígitos (com ou sem pontuação)
+  if (empty(trim($cpf))) return false;
+  
+  // Validação: aceita 11 dígitos (com ou sem pontuação)
   $cpf = normalizar_documento($cpf);
   if (strlen($cpf) !== 11) return false;
   // recusa sequência de dígitos iguais (ex: 00000000000)

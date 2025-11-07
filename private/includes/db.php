@@ -20,14 +20,24 @@ function db_query($sql, $params = []) {
     global $conn;
     try {
         $stmt = $conn->prepare($sql);
-        $stmt->execute($params);
+        $success = $stmt->execute($params);
+        
+        if (!$success) {
+            throw new PDOException("Execute failed");
+        }
 
         // SELECT retorna array de resultados
-        if (stripos(trim($sql), 'select') === 0) {
+        if (stripos(trim($sql), 'select') === 0 || stripos(trim($sql), 'show') === 0 || stripos(trim($sql), 'describe') === 0) {
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
         }
 
-        // INSERT/UPDATE/DELETE retorna número de linhas afetadas
+        // INSERT retorna o ID do registro inserido
+        if (stripos(trim($sql), 'insert') === 0) {
+            $insertId = $conn->lastInsertId();
+            return $insertId ? (int)$insertId : $stmt->rowCount();
+        }
+
+        // UPDATE/DELETE retorna número de linhas afetadas
         return $stmt->rowCount();
 
     } catch (PDOException $e) {
