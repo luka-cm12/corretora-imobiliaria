@@ -24,16 +24,38 @@ function normalizar_documento(string $valor): string {
 }
 
 function cpf_valido(string $cpf): bool {
+    if (empty(trim($cpf))) return false;
+    
+    // Validação: aceita 11 dígitos (com ou sem pontuação)
     $cpf = normalizar_documento($cpf);
+    
+    // Deve ter exatamente 11 dígitos
     if (strlen($cpf) !== 11) return false;
+    
+    // Recusa sequência de dígitos iguais (ex: 00000000000)
     if (preg_match('/^(\d)\1{10}$/', $cpf)) return false;
+    
+    // Verifica se contém apenas números
+    if (!ctype_digit($cpf)) return false;
+    
     return true;
 }
 
 function cnpj_valido(string $cnpj): bool {
+    if (empty(trim($cnpj))) return false;
+    
+    // Validação: aceita 14 dígitos (com ou sem pontuação)  
     $cnpj = normalizar_documento($cnpj);
+    
+    // Deve ter exatamente 14 dígitos
     if (strlen($cnpj) !== 14) return false;
+    
+    // Recusa sequência de dígitos iguais (ex: 00000000000000)
     if (preg_match('/^(\d)\1{13}$/', $cnpj)) return false;
+    
+    // Verifica se contém apenas números
+    if (!ctype_digit($cnpj)) return false;
+    
     return true;
 }
 
@@ -45,15 +67,34 @@ if ($id <= 0) {
 }
 
 // Buscar proprietário
-$proprietario = db_query("SELECT * FROM proprietarios WHERE id_proprietario = ?", [$id]);
-if (empty($proprietario)) {
+try {
+    $proprietario_result = db_query("SELECT * FROM proprietarios WHERE id_proprietario = ?", [$id]);
+    if (empty($proprietario_result)) {
+        header('Location: proprietarios-listar.php');
+        exit;
+    }
+    $proprietario = $proprietario_result[0];
+    
+    // Garantir que campos essenciais existem
+    $proprietario['nome'] = $proprietario['nome'] ?? '';
+    $proprietario['cpf'] = $proprietario['cpf'] ?? '';
+    $proprietario['cnpj'] = $proprietario['cnpj'] ?? '';
+    $proprietario['tipo_documento'] = $proprietario['tipo_documento'] ?? 'cpf';
+    $proprietario['telefone'] = $proprietario['telefone'] ?? '';
+    $proprietario['email'] = $proprietario['email'] ?? '';
+    $proprietario['endereco'] = $proprietario['endereco'] ?? '';
+    
+} catch (Exception $e) {
     header('Location: proprietarios-listar.php');
     exit;
 }
-$proprietario = $proprietario[0];
 
 // Buscar imóveis do proprietário
-$imoveis = db_query("SELECT id_imovel, titulo, tipo, cidade, preco FROM imoveis WHERE id_proprietario = ? ORDER BY titulo", [$id]);
+try {
+    $imoveis = db_query("SELECT id_imovel, titulo, tipo, cidade, preco FROM imoveis WHERE id_proprietario = ? ORDER BY titulo", [$id]);
+} catch (Exception $e) {
+    $imoveis = []; // Se falhar, inicializa como array vazio
+}
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Valida CSRF
@@ -63,7 +104,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     $nome = trim($_POST['nome'] ?? '');
-    $cpf = trim($_POST['cpf'] ?? '');
+    $tipo_documento = trim($_POST['tipo_documento'] ?? 'cpf');
+    $documento = trim($_POST['documento'] ?? '');
     $telefone = trim($_POST['telefone'] ?? '');
     $email = trim($_POST['email'] ?? '');
     $endereco = trim($_POST['endereco'] ?? '');
@@ -72,9 +114,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $errors[] = 'O nome é obrigatório.';
     }
 
-    // Validar CPF se informado
-    if ($cpf !== '' && !cpf_valido($cpf)) {
-        $errors[] = 'Informe um CPF com 11 dígitos.';
+    // Validação do documento baseado no tipo escolhido
+    if ($documento === '') {
+        if ($tipo_documento === 'cpf') {
+            $errors[] = 'O CPF é obrigatório.';
+        } else {
+            $errors[] = 'O CNPJ é obrigatório.';
+        }
+    } else {
+        // Documento foi informado, validar formato
+        if ($tipo_documento === 'cpf') {
+            if (!cpf_valido($documento)) {
+                $errors[] = 'Informe um CPF válido com 11 dígitos. Exemplo: 123.456.789-01';
+            }
+        } elseif ($tipo_documento === 'cnpj') {
+            if (!cnpj_valido($documento)) {
+                $errors[] = 'Informe um CNPJ válido com 14 dígitos. Exemplo: 12.345.678/0001-95';
+            }
+        }
     }
 
     // Validar email se informado
@@ -82,42 +139,83 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $errors[] = 'Informe um e-mail válido.';
     }
 
-    // Verificações de duplicidade (exceto o próprio registro)
     if (empty($errors)) {
-        // Verificar CPF duplicado
-        if ($cpf !== '') {
-            $cpf_norm = normalizar_documento($cpf);
-            $cpf_dup = db_query(
-                "SELECT id_proprietario FROM proprietarios WHERE REPLACE(REPLACE(REPLACE(cpf, '.', ''), '-', ''), ' ', '') = ? AND id_proprietario != ? LIMIT 1",
-                [$cpf_norm, $id]
-            );
-            if (!empty($cpf_dup)) {
-                $errors[] = 'Já existe outro proprietário cadastrado com este CPF.';
+        try {
+            // Detecta a estrutura da tabela
+            $columns_result = db_query("SHOW COLUMNS FROM proprietarios");
+            $columns = [];
+            foreach ($columns_result as $col) {
+                $columns[] = $col['Field'];
             }
-        }
-
-        // Verificar email duplicado
-        if ($email !== '') {
-            $email_dup = db_query(
-                "SELECT id_proprietario FROM proprietarios WHERE LOWER(email) = LOWER(?) AND id_proprietario != ? LIMIT 1",
-                [$email, $id]
-            );
-            if (!empty($email_dup)) {
-                $errors[] = 'Este e-mail já está cadastrado para outro proprietário.';
+            
+            $tem_tipo_documento = in_array('tipo_documento', $columns);
+            $tem_cnpj = in_array('cnpj', $columns);
+            
+            // Verificar documento duplicado
+            if ($documento !== '') {
+                $doc_norm = normalizar_documento($documento);
+                
+                if ($tem_tipo_documento && $tem_cnpj) {
+                    // Nova estrutura - verifica nas colunas corretas
+                    if ($tipo_documento === 'cpf') {
+                        $doc_dup = db_query("SELECT id_proprietario FROM proprietarios WHERE cpf = ? AND id_proprietario != ? LIMIT 1", [$doc_norm, $id]);
+                    } else {
+                        $doc_dup = db_query("SELECT id_proprietario FROM proprietarios WHERE cnpj = ? AND id_proprietario != ? LIMIT 1", [$doc_norm, $id]);
+                    }
+                } else {
+                    // Estrutura antiga - verifica na coluna cpf unificada
+                    $doc_dup = db_query("SELECT id_proprietario FROM proprietarios WHERE cpf = ? AND id_proprietario != ? LIMIT 1", [$doc_norm, $id]);
+                }
+                
+                if (!empty($doc_dup)) {
+                    $tipo_doc_nome = $tipo_documento === 'cpf' ? 'CPF' : 'CNPJ';
+                    $errors[] = "Já existe outro proprietário cadastrado com este {$tipo_doc_nome}.";
+                }
             }
-        }
-    }
 
-    if (empty($errors)) {
-        $sql = "UPDATE proprietarios SET nome = ?, cpf = ?, telefone = ?, email = ?, endereco = ? WHERE id_proprietario = ?";
-        $result = db_query($sql, [$nome, $cpf, $telefone, $email, $endereco, $id]);
+            // Verificar email duplicado
+            if ($email !== '' && empty($errors)) {
+                $email_dup = db_query("SELECT id_proprietario FROM proprietarios WHERE LOWER(email) = LOWER(?) AND id_proprietario != ? LIMIT 1", [$email, $id]);
+                if (!empty($email_dup)) {
+                    $errors[] = 'Este e-mail já está cadastrado para outro proprietário.';
+                }
+            }
 
-        if ($result !== false) {
-            $success = 'Proprietário atualizado com sucesso!';
-            // Recarregar dados atualizados
-            $proprietario = db_query("SELECT * FROM proprietarios WHERE id_proprietario = ?", [$id])[0];
-        } else {
-            $errors[] = 'Erro ao atualizar proprietário.';
+            // Salva os dados se não há erros
+            if (empty($errors)) {
+                $doc_limpo = $documento ? normalizar_documento($documento) : null;
+                
+                if ($tem_tipo_documento && $tem_cnpj) {
+                    // Nova estrutura com colunas separadas
+                    if ($tipo_documento === 'cpf') {
+                        $sql = "UPDATE proprietarios SET nome = ?, tipo_documento = 'cpf', cpf = ?, cnpj = NULL, telefone = ?, email = ?, endereco = ? WHERE id_proprietario = ?";
+                        $params = [$nome, $doc_limpo, $telefone ?: null, $email ?: null, $endereco ?: null, $id];
+                    } else {
+                        $sql = "UPDATE proprietarios SET nome = ?, tipo_documento = 'cnpj', cpf = NULL, cnpj = ?, telefone = ?, email = ?, endereco = ? WHERE id_proprietario = ?";
+                        $params = [$nome, $doc_limpo, $telefone ?: null, $email ?: null, $endereco ?: null, $id];
+                    }
+                } else {
+                    // Estrutura antiga - usa coluna cpf para ambos
+                    $sql = "UPDATE proprietarios SET nome = ?, cpf = ?, telefone = ?, email = ?, endereco = ? WHERE id_proprietario = ?";
+                    $params = [$nome, $doc_limpo, $telefone ?: null, $email ?: null, $endereco ?: null, $id];
+                }
+
+                $result = db_query($sql, $params);
+
+                if ($result !== false) {
+                    $tipo_msg = ($tipo_documento === 'cpf') ? 'CPF' : 'CNPJ';
+                    $doc_info = $documento ? " ({$tipo_msg}: {$documento})" : '';
+                    $success = "✅ Proprietário '{$nome}' atualizado com sucesso!{$doc_info}";
+                    
+                    // Recarrega dados atualizados
+                    $proprietario = db_query("SELECT * FROM proprietarios WHERE id_proprietario = ?", [$id])[0];
+                } else {
+                    $errors[] = 'Erro ao atualizar proprietário.';
+                }
+            }
+            
+        } catch (Exception $e) {
+            $errors[] = 'Erro no sistema: ' . $e->getMessage();
         }
     }
 }
@@ -284,10 +382,12 @@ include __DIR__ . '/../includes/admin-header.php';
         </div>
         
         <div class="info-item">
-            <h4>CPF</h4>
+            <h4>Documento</h4>
             <p>
                 <?php if (!empty($proprietario['cpf'])): ?>
-                    <?= htmlspecialchars($proprietario['cpf']) ?>
+                    <strong>CPF:</strong> <?= htmlspecialchars($proprietario['cpf']) ?>
+                <?php elseif (!empty($proprietario['cnpj'])): ?>
+                    <strong>CNPJ:</strong> <?= htmlspecialchars($proprietario['cnpj']) ?>
                 <?php else: ?>
                     <span class="badge badge-warning">Não informado</span>
                 <?php endif; ?>
@@ -368,15 +468,54 @@ include __DIR__ . '/../includes/admin-header.php';
                        autocomplete="name">
             </div>
             <div class="form-group">
-                <label>CPF</label>
+                <label>Tipo de Documento</label>
+                <?php
+                // Detectar tipo de documento baseado na coluna tipo_documento ou documento existente
+                $tipo_atual = $proprietario['tipo_documento'] ?? 'cpf';
+                
+                // Se não tem tipo_documento salvo, detectar pelo conteúdo
+                if (empty($tipo_atual)) {
+                    if (!empty($proprietario['cnpj'])) {
+                        $tipo_atual = 'cnpj';
+                    } elseif (!empty($proprietario['cpf'])) {
+                        $doc_limpo = preg_replace('/\D/', '', $proprietario['cpf']);
+                        $tipo_atual = (strlen($doc_limpo) >= 14) ? 'cnpj' : 'cpf';
+                    } else {
+                        $tipo_atual = 'cpf';
+                    }
+                }
+                ?>
+                <select name="tipo_documento" id="tipo_documento" onchange="alterarTipoDocumento()">
+                    <option value="cpf" <?= $tipo_atual === 'cpf' ? 'selected' : '' ?>>CPF (Pessoa Física)</option>
+                    <option value="cnpj" <?= $tipo_atual === 'cnpj' ? 'selected' : '' ?>>CNPJ (Pessoa Jurídica)</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group" style="width: 100%;">
+                <label id="label_documento">Documento</label>
+                <?php
+                // Pegar o documento correto baseado no tipo
+                $doc_atual = '';
+                if ($tipo_atual === 'cnpj' && !empty($proprietario['cnpj'])) {
+                    $doc_atual = $proprietario['cnpj'];
+                } elseif ($tipo_atual === 'cpf' && !empty($proprietario['cpf'])) {
+                    $doc_atual = $proprietario['cpf'];
+                } elseif (!empty($proprietario['cpf'])) {
+                    // Fallback para dados antigos
+                    $doc_atual = $proprietario['cpf'];
+                }
+                ?>
                 <input type="text" 
-                       name="cpf" 
-                       value="<?= htmlspecialchars($proprietario['cpf']) ?>" 
+                       name="documento" 
+                       id="documento"
+                       value="<?= htmlspecialchars($doc_atual) ?>" 
                        placeholder="000.000.000-00" 
-                       maxlength="14" 
-                       pattern="\d{3}\.\d{3}\.\d{3}-\d{2}|\d{11}" 
-                       title="Informe 11 dígitos ou no formato 000.000.000-00">
-                <div class="form-text">Somente números ou no formato 000.000.000-00 (opcional)</div>
+                       maxlength="18" 
+                       required
+                       title="Informe o documento válido">
+                <div class="form-text" id="texto_documento">Somente números ou no formato apropriado (obrigatório)</div>
             </div>
         </div>
 
@@ -391,21 +530,24 @@ include __DIR__ . '/../includes/admin-header.php';
                        autocomplete="tel">
             </div>
             <div class="form-group">
-                <label>Email</label>
+                <label>Email (opcional)</label>
                 <input type="email" 
                        name="email" 
                        value="<?= htmlspecialchars($proprietario['email']) ?>" 
                        placeholder="email@exemplo.com" 
                        maxlength="150" 
                        autocomplete="email">
+                <div class="form-text">Campo opcional - deixe em branco se não tiver email</div>
             </div>
         </div>
 
         <div class="form-group">
-            <label>Endereço</label>
+            <label>Endereço (opcional)</label>
             <textarea name="endereco" 
                       rows="3" 
-                      maxlength="255"><?= htmlspecialchars($proprietario['endereco']) ?></textarea>
+                      maxlength="255" 
+                      placeholder="Endereço completo do proprietário"><?= htmlspecialchars($proprietario['endereco']) ?></textarea>
+            <div class="form-text">Campo opcional - informe apenas se necessário</div>
         </div>
 
         <div class="form-actions" style="display:flex; gap:15px; margin-top: 30px;">
@@ -420,5 +562,52 @@ include __DIR__ . '/../includes/admin-header.php';
         <div class="form-text">Campos marcados com * são obrigatórios.</div>
     </form>
 </div>
+
+<script>
+function alterarTipoDocumento() {
+  const tipoSelect = document.getElementById('tipo_documento');
+  const documentoInput = document.getElementById('documento');
+  const labelDocumento = document.getElementById('label_documento');
+  const textoDocumento = document.getElementById('texto_documento');
+  
+  if (tipoSelect.value === 'cpf') {
+    labelDocumento.textContent = 'CPF *';
+    documentoInput.placeholder = '000.000.000-00';
+    documentoInput.maxLength = 14;
+    textoDocumento.textContent = 'Somente números ou no formato 000.000.000-00 (obrigatório)';
+  } else {
+    labelDocumento.textContent = 'CNPJ *';
+    documentoInput.placeholder = '00.000.000/0000-00';
+    documentoInput.maxLength = 18;
+    textoDocumento.textContent = 'Digite 14 números ou no formato 00.000.000/0000-00 (obrigatório)';
+  }
+}
+
+// Executa quando a página carrega para definir o estado inicial
+document.addEventListener('DOMContentLoaded', function() {
+  alterarTipoDocumento();
+});
+
+// Máscaras para CPF e CNPJ
+document.getElementById('documento').addEventListener('input', function(e) {
+  const tipoSelect = document.getElementById('tipo_documento');
+  let valor = e.target.value.replace(/\D/g, '');
+  
+  if (tipoSelect.value === 'cpf') {
+    // Máscara CPF: 000.000.000-00
+    valor = valor.replace(/(\d{3})(\d)/, '$1.$2');
+    valor = valor.replace(/(\d{3})(\d)/, '$1.$2');
+    valor = valor.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+  } else {
+    // Máscara CNPJ: 00.000.000/0000-00
+    valor = valor.replace(/(\d{2})(\d)/, '$1.$2');
+    valor = valor.replace(/(\d{3})(\d)/, '$1.$2');
+    valor = valor.replace(/(\d{3})(\d)/, '$1/$2');
+    valor = valor.replace(/(\d{4})(\d{1,2})$/, '$1-$2');
+  }
+  
+  e.target.value = valor;
+});
+</script>
 
 <?php include __DIR__ . '/../includes/admin-footer.php'; ?>

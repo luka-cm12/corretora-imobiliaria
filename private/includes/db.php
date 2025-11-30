@@ -8,13 +8,13 @@ if (!defined('DEV_ENVIRONMENT')) {
     define('DEV_ENVIRONMENT', in_array($host, ['localhost', '127.0.0.1']));
 }
 
-// A conexão $conn já foi criada no config.php
+// A conexão $conn já foi criada no config.php (PDO)
 
 /**
  * Executa uma consulta SQL usando PDO
  * @param string $sql SQL com placeholders (?)
  * @param array $params Parâmetros a serem bindados
- * @return array|int Resultado da query ou número de linhas afetadas
+ * @return array|int Resultado da query ou ID/linhas afetadas
  */
 function db_query($sql, $params = []) {
     global $conn;
@@ -42,9 +42,11 @@ function db_query($sql, $params = []) {
 
     } catch (PDOException $e) {
         if (DEV_ENVIRONMENT) {
-            die("<h2>Erro na consulta SQL</h2><p>{$e->getMessage()}</p>");
+            error_log("DB Query Error: " . $e->getMessage());
+            throw new Exception("Erro no banco: " . $e->getMessage());
         } else {
-            return false;
+            error_log("DB Query Error: " . $e->getMessage());
+            throw new Exception("Erro interno do sistema");
         }
     }
 }

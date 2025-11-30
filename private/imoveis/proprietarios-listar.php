@@ -7,26 +7,108 @@ require_once(__DIR__ . '/../includes/functions.php');
 $error = '';
 $success = '';
 
+// CSRF token
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+if (empty($_SESSION['csrf_token'])) {
+    try {
+        $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+    } catch (Exception $e) {
+        $_SESSION['csrf_token'] = bin2hex(openssl_random_pseudo_bytes(32));
+    }
+}
+
+// DEBUG: Log de todas as tentativas de exclusão
+$debug_info = '';
+
 // Processar exclusão
 if (isset($_POST['action']) && $_POST['action'] === 'delete' && isset($_POST['id'])) {
-    $id = (int)$_POST['id'];
+    $debug_info .= "🔍 INICIANDO PROCESSO DE EXCLUSÃO...\n";
+    $debug_info .= "• Action: " . ($_POST['action'] ?? 'N/A') . "\n";
+    $debug_info .= "• ID recebido: " . ($_POST['id'] ?? 'N/A') . "\n";
     
-    try {
-        // Verificar se o proprietário tem imóveis associados
-        $imoveis_count = db_query("SELECT COUNT(*) as count FROM imoveis WHERE id_proprietario = ?", [$id])[0]['count'];
+    // Verificar CSRF
+    $csrf = $_POST['csrf_token'] ?? '';
+    $debug_info .= "• CSRF POST: " . (!empty($csrf) ? 'Presente' : 'Ausente') . "\n";
+    $debug_info .= "• CSRF Session: " . (!empty($_SESSION['csrf_token']) ? 'Presente' : 'Ausente') . "\n";
+    
+    if (empty($_SESSION['csrf_token']) || empty($csrf) || !hash_equals($_SESSION['csrf_token'], $csrf)) {
+        $error = 'Token de segurança inválido. Atualize a página e tente novamente.';
+        $debug_info .= "❌ CSRF FALHOU\n";
+    } else {
+        $debug_info .= "✅ CSRF OK\n";
         
-        if ($imoveis_count > 0) {
-            $error = "Não é possível excluir este proprietário pois ele possui {$imoveis_count} imóvel(is) cadastrado(s).";
+        $id = (int)$_POST['id'];
+        $debug_info .= "• ID processado: {$id}\n";
+        
+        if ($id <= 0) {
+            $error = 'ID do proprietário inválido.';
+            $debug_info .= "❌ ID INVÁLIDO\n";
         } else {
-            $result = db_query("DELETE FROM proprietarios WHERE id_proprietario = ?", [$id]);
-            if ($result) {
-                $success = 'Proprietário excluído com sucesso!';
-            } else {
-                $error = 'Erro ao excluir proprietário.';
+            try {
+                $debug_info .= "🔍 Verificando imóveis associados...\n";
+                
+                // Verificar se o proprietário tem imóveis associados
+                $imoveis_result = db_query("SELECT COUNT(*) as count FROM imoveis WHERE id_proprietario = ?", [$id]);
+                $imoveis_count = $imoveis_result[0]['count'];
+                $debug_info .= "• Imóveis encontrados: {$imoveis_count}\n";
+                
+                if ($imoveis_count > 0) {
+                    $error = "Não é possível excluir este proprietário pois ele possui {$imoveis_count} imóvel(is) cadastrado(s).";
+                    $debug_info .= "❌ NÃO PODE EXCLUIR - TEM IMÓVEIS\n";
+                } else {
+                    $debug_info .= "✅ PODE EXCLUIR - SEM IMÓVEIS\n";
+                    $debug_info .= "🗑️ Executando DELETE...\n";
+                    
+                    // Antes da exclusão, verificar se o proprietário existe
+                    $prop_check = db_query("SELECT id_proprietario, nome FROM proprietarios WHERE id_proprietario = ?", [$id]);
+                    if (empty($prop_check)) {
+                        $debug_info .= "❌ PROPRIETÁRIO NÃO ENCONTRADO ANTES DA EXCLUSÃO\n";
+                        $error = 'Proprietário não encontrado.';
+                    } else {
+                        $debug_info .= "✅ Proprietário encontrado: " . $prop_check[0]['nome'] . "\n";
+                        
+                        // Executar a exclusão
+                        $debug_info .= "📋 SQL: DELETE FROM proprietarios WHERE id_proprietario = {$id}\n";
+                        $linhas_afetadas = db_query("DELETE FROM proprietarios WHERE id_proprietario = ?", [$id]);
+                        $debug_info .= "📊 Linhas afetadas: {$linhas_afetadas}\n";
+                        
+                        if ($linhas_afetadas > 0) {
+                            $success = 'Proprietário excluído com sucesso!';
+                            $debug_info .= "✅ SUCESSO! EXCLUSÃO REALIZADA\n";
+                            
+                            // Verificar se realmente foi excluído
+                            $verificar = db_query("SELECT COUNT(*) as count FROM proprietarios WHERE id_proprietario = ?", [$id])[0]['count'];
+                            if ($verificar == 0) {
+                                $debug_info .= "✅ CONFIRMADO - PROPRIETÁRIO NÃO EXISTE MAIS\n";
+                            } else {
+                                $debug_info .= "❌ ERRO - PROPRIETÁRIO AINDA EXISTE!\n";
+                            }
+                            
+                            // Redirecionar para evitar reenvio do formulário
+                            header("Location: " . $_SERVER['PHP_SELF'] . "?deleted=1&debug=" . urlencode($debug_info));
+                            exit;
+                        } else {
+                            $error = 'Proprietário não encontrado ou não foi possível excluir.';
+                            $debug_info .= "❌ FALHA - NENHUMA LINHA AFETADA\n";
+                        }
+                    }
+                }
+            } catch (Exception $e) {
+                $error = 'Erro ao excluir proprietário: ' . $e->getMessage();
+                $debug_info .= "❌ EXCEÇÃO: " . $e->getMessage() . "\n";
+                $debug_info .= "Stack trace: " . $e->getTraceAsString() . "\n";
             }
         }
-    } catch (Exception $e) {
-        $error = 'Erro ao excluir proprietário: ' . $e->getMessage();
+    }
+}
+
+// Verificar se houve exclusão bem-sucedida (via redirecionamento)
+if (isset($_GET['deleted']) && $_GET['deleted'] == '1') {
+    $success = 'Proprietário excluído com sucesso!';
+    if (isset($_GET['debug'])) {
+        $debug_info = urldecode($_GET['debug']);
     }
 }
 
@@ -41,9 +123,9 @@ $where_sql = '';
 $params = [];
 
 if (!empty($search)) {
-    $where_sql = "WHERE nome LIKE ? OR cpf LIKE ? OR email LIKE ? OR telefone LIKE ?";
+    $where_sql = "WHERE nome LIKE ? OR cpf LIKE ? OR cnpj LIKE ? OR email LIKE ? OR telefone LIKE ?";
     $search_term = '%' . $search . '%';
-    $params = [$search_term, $search_term, $search_term, $search_term];
+    $params = [$search_term, $search_term, $search_term, $search_term, $search_term];
 }
 
 // Contar total de registros
@@ -52,14 +134,32 @@ $total_records = db_query($count_sql, $params)[0]['total'];
 $total_pages = ceil($total_records / $per_page);
 
 // Buscar proprietários
-$sql = "SELECT p.*, 
-               (SELECT COUNT(*) FROM imoveis WHERE id_proprietario = p.id_proprietario) as total_imoveis
-        FROM proprietarios p 
-        {$where_sql}
-        ORDER BY p.nome ASC 
-        LIMIT {$per_page} OFFSET {$offset}";
+try {
+    $sql = "SELECT p.*, 
+                   (SELECT COUNT(*) FROM imoveis WHERE id_proprietario = p.id_proprietario) as total_imoveis
+            FROM proprietarios p 
+            {$where_sql}
+            ORDER BY p.nome ASC 
+            LIMIT {$per_page} OFFSET {$offset}";
 
-$proprietarios = db_query($sql, $params);
+    $proprietarios = db_query($sql, $params);
+} catch (Exception $e) {
+    // Se der erro, pode ser que as colunas não existam ainda - usar só as básicas
+    $sql_basico = "SELECT p.*, 
+                          (SELECT COUNT(*) FROM imoveis WHERE id_proprietario = p.id_proprietario) as total_imoveis
+                   FROM proprietarios p 
+                   {$where_sql}
+                   ORDER BY p.nome ASC 
+                   LIMIT {$per_page} OFFSET {$offset}";
+    
+    $proprietarios = db_query($sql_basico, $params);
+    
+    // Adicionar campos vazios para compatibilidade
+    foreach ($proprietarios as &$prop) {
+        if (!isset($prop['tipo_documento'])) $prop['tipo_documento'] = 'cpf';
+        if (!isset($prop['cnpj'])) $prop['cnpj'] = '';
+    }
+}
 
 $page_title = 'Gerenciar Proprietários | Admin';
 include __DIR__ . '/../includes/admin-header.php';
@@ -205,6 +305,16 @@ include __DIR__ . '/../includes/admin-header.php';
     background: #c82333;
 }
 
+.btn-delete:disabled {
+    background: #6c757d;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.btn-delete:disabled:hover {
+    background: #6c757d;
+}
+
 .pagination {
     display: flex;
     justify-content: center;
@@ -276,6 +386,31 @@ include __DIR__ . '/../includes/admin-header.php';
     margin-bottom: 25px;
 }
 
+/* Alertas de sucesso e erro */
+.alert {
+    padding: 15px;
+    margin: 20px 0;
+    border: 1px solid transparent;
+    border-radius: 5px;
+    position: relative;
+}
+
+.alert-success {
+    background-color: #d4edda !important;
+    border-color: #c3e6cb !important;
+    color: #155724 !important;
+}
+
+.alert-danger {
+    background-color: #f8d7da !important;
+    border-color: #f5c6cb !important;
+    color: #721c24 !important;
+}
+
+.alert i {
+    margin-right: 8px;
+}
+
 @media (max-width: 768px) {
     .proprietarios-table {
         font-size: 14px;
@@ -294,6 +429,11 @@ include __DIR__ . '/../includes/admin-header.php';
     .search-form {
         max-width: none;
     }
+    
+    .alert {
+        margin: 10px 0;
+        padding: 12px;
+    }
 }
 </style>
 
@@ -301,29 +441,47 @@ include __DIR__ . '/../includes/admin-header.php';
     <a href="../admin/dashboard.php">Dashboard</a> / <span>Proprietários</span>
 </div>
 
+<!-- DEBUG INFO -->
+<?php if (!empty($debug_info)): ?>
+<div style="background: #e7f3ff; padding: 15px; margin: 15px 0; border-left: 4px solid #2196F3; border-radius: 5px; font-family: monospace; white-space: pre-line; font-size: 13px;">
+<strong>🔍 DEBUG DA EXCLUSÃO:</strong>
+<?= htmlspecialchars($debug_info) ?>
+</div>
+<?php endif; ?>
+
 <?php if (!empty($error)): ?>
-    <div class="alert alert-danger">
+    <div class="alert alert-danger" style="background: #f8d7da; color: #721c24; padding: 15px; margin: 20px 0; border: 1px solid #f5c6cb; border-radius: 5px;">
         <i class="fas fa-exclamation-triangle"></i>
-        <?= htmlspecialchars($error) ?>
+        <strong>Erro:</strong> <?= htmlspecialchars($error) ?>
     </div>
 <?php endif; ?>
 
 <?php if (!empty($success)): ?>
-    <div class="alert alert-success">
+    <div class="alert alert-success" style="background: #d4edda; color: #155724; padding: 15px; margin: 20px 0; border: 1px solid #c3e6cb; border-radius: 5px;">
         <i class="fas fa-check-circle"></i>
-        <?= htmlspecialchars($success) ?>
+        <strong>Sucesso:</strong> <?= htmlspecialchars($success) ?>
     </div>
 <?php endif; ?>
 
 <!-- Estatísticas -->
 <?php
-$stats = db_query("
-    SELECT 
-        COUNT(*) as total_proprietarios,
-        COUNT(CASE WHEN cpf IS NOT NULL AND cpf != '' THEN 1 END) as com_cpf,
-        COUNT(CASE WHEN email IS NOT NULL AND email != '' THEN 1 END) as com_email,
-        (SELECT COUNT(DISTINCT id_proprietario) FROM imoveis) as com_imoveis
-")[0];
+try {
+    $stats = db_query("
+        SELECT 
+            COUNT(*) as total_proprietarios,
+            COUNT(CASE WHEN cpf IS NOT NULL AND cpf != '' THEN 1 END) as com_cpf,
+            COUNT(CASE WHEN email IS NOT NULL AND email != '' THEN 1 END) as com_email,
+            (SELECT COUNT(DISTINCT id_proprietario) FROM imoveis) as com_imoveis
+    ")[0];
+} catch (Exception $e) {
+    // Fallback se der erro
+    $stats = [
+        'total_proprietarios' => 0,
+        'com_cpf' => 0, 
+        'com_email' => 0,
+        'com_imoveis' => 0
+    ];
+}
 ?>
 
 <div class="stats-cards">
@@ -386,7 +544,7 @@ $stats = db_query("
         <thead>
             <tr>
                 <th>Nome</th>
-                <th>CPF</th>
+                <th>Documento</th>
                 <th>Contato</th>
                 <th>Imóveis</th>
                 <th>Cadastrado em</th>
@@ -401,7 +559,9 @@ $stats = db_query("
                     </td>
                     <td>
                         <?php if (!empty($proprietario['cpf'])): ?>
-                            <?= htmlspecialchars($proprietario['cpf']) ?>
+                            <div><small>CPF:</small><br><?= htmlspecialchars($proprietario['cpf']) ?></div>
+                        <?php elseif (!empty($proprietario['cnpj'])): ?>
+                            <div><small>CNPJ:</small><br><?= htmlspecialchars($proprietario['cnpj']) ?></div>
                         <?php else: ?>
                             <span class="badge badge-warning">Não informado</span>
                         <?php endif; ?>
@@ -427,7 +587,9 @@ $stats = db_query("
                         <?php endif; ?>
                     </td>
                     <td>
-                        <?php if (isset($proprietario['created_at'])): ?>
+                        <?php if (isset($proprietario['data_cadastro'])): ?>
+                            <?= date('d/m/Y', strtotime($proprietario['data_cadastro'])) ?>
+                        <?php elseif (isset($proprietario['created_at'])): ?>
                             <?= date('d/m/Y', strtotime($proprietario['created_at'])) ?>
                         <?php else: ?>
                             -
@@ -443,15 +605,25 @@ $stats = db_query("
                             
                             <form method="POST" 
                                   style="display: inline;" 
-                                  onsubmit="return confirm('Tem certeza que deseja excluir este proprietário?')">
+                                  onsubmit="return confirmarExclusao(this, '<?= htmlspecialchars($proprietario['nome']) ?>')"
+                                  class="form-exclusao">
                                 <input type="hidden" name="action" value="delete">
+                                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token'] ?? '') ?>">
                                 <input type="hidden" name="id" value="<?= $proprietario['id_proprietario'] ?>">
-                                <button type="submit" 
-                                        class="btn-sm btn-delete" 
-                                        title="Excluir proprietário"
-                                        <?= $proprietario['total_imoveis'] > 0 ? 'disabled title="Não é possível excluir: possui imóveis cadastrados"' : '' ?>>
-                                    <i class="fas fa-trash"></i>
-                                </button>
+                                <?php if ($proprietario['total_imoveis'] > 0): ?>
+                                    <button type="button" 
+                                            class="btn-sm btn-delete" 
+                                            disabled
+                                            title="Não é possível excluir: proprietário possui <?= $proprietario['total_imoveis'] ?> imóvel(is) cadastrado(s)">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                <?php else: ?>
+                                    <button type="submit" 
+                                            class="btn-sm btn-delete" 
+                                            title="Excluir proprietário">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                <?php endif; ?>
                             </form>
                         </div>
                     </td>
@@ -490,5 +662,45 @@ $stats = db_query("
         </p>
     <?php endif; ?>
 <?php endif; ?>
+
+<script>
+function confirmarExclusao(form, nome) {
+    // Verificar se os campos necessários estão preenchidos
+    const action = form.querySelector('input[name="action"]');
+    const id = form.querySelector('input[name="id"]');
+    const csrf = form.querySelector('input[name="csrf_token"]');
+    
+    if (!action || !id || !csrf) {
+        alert('Erro: Dados do formulário incompletos.');
+        return false;
+    }
+    
+    if (!action.value || !id.value || !csrf.value) {
+        alert('Erro: Dados do formulário vazios.');
+        return false;
+    }
+    
+    // Confirmar exclusão
+    const confirmar = confirm(`Tem certeza que deseja excluir o proprietário "${nome}"?\n\nEsta ação não pode ser desfeita.`);
+    
+    if (confirmar) {
+        // Mostrar loading
+        const submitBtn = form.querySelector('button[type="submit"]');
+        if (submitBtn) {
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            submitBtn.disabled = true;
+        }
+    }
+    
+    return confirmar;
+}
+
+// Remover parâmetro deleted da URL após mostrar mensagem
+if (window.location.search.includes('deleted=1')) {
+    const url = new URL(window.location);
+    url.searchParams.delete('deleted');
+    window.history.replaceState({}, document.title, url.pathname + url.search);
+}
+</script>
 
 <?php include __DIR__ . '/../includes/admin-footer.php'; ?>

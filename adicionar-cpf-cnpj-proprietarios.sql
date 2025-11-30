@@ -1,32 +1,45 @@
 -- =====================================================
--- SCRIPT PARA ADICIONAR SUPORTE A CPF/CNPJ PROPRIETÁRIOS
+-- SCRIPT COMPLETO PARA SUPORTE A CPF/CNPJ PROPRIETÁRIOS
 -- =====================================================
--- Execute este comando no seu banco de dados MySQL
--- Adiciona funcionalidade de CPF ou CNPJ para proprietários
+-- Execute TUDO no seu MySQL (localhost ou Hostgator)
+-- Adiciona funcionalidade de CPF OU CNPJ para proprietários
 -- =====================================================
 
--- Adicionar coluna tipo_documento para identificar se é CPF ou CNPJ
-ALTER TABLE proprietarios ADD tipo_documento ENUM('cpf', 'cnpj') DEFAULT 'cpf' 
-COMMENT 'Tipo do documento: cpf para pessoa física, cnpj para pessoa jurídica';
+-- 1. Verificar se a tabela proprietarios existe
+-- Se NÃO existir, criar a tabela completa
+CREATE TABLE IF NOT EXISTS proprietarios (
+    id_proprietario INT AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(150) NOT NULL,
+    tipo_documento ENUM('cpf', 'cnpj') DEFAULT 'cpf',
+    cpf VARCHAR(20) NULL,
+    cnpj VARCHAR(20) NULL,
+    telefone VARCHAR(20) NULL,
+    email VARCHAR(150) NULL,
+    endereco TEXT NULL,
+    data_cadastro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_cpf (cpf),
+    INDEX idx_cnpj (cnpj),
+    INDEX idx_email (email)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Adicionar coluna cnpj separada (opcional - manter cpf para compatibilidade)
-ALTER TABLE proprietarios ADD cnpj VARCHAR(18) NULL 
-COMMENT 'CNPJ do proprietário pessoa jurídica (formato: 00.000.000/0000-00)';
+-- 2. Para tabelas EXISTENTES: adicionar colunas que faltam
+-- ATENÇÃO: Execute apenas se a tabela já existir e faltar essas colunas
 
--- Verificar se as colunas foram adicionadas
+-- Adicionar tipo_documento (use apenas se não tiver esta coluna)
+-- ALTER TABLE proprietarios ADD COLUMN tipo_documento VARCHAR(10) DEFAULT 'cpf';
+
+-- Adicionar coluna CNPJ (use apenas se não tiver esta coluna)  
+-- ALTER TABLE proprietarios ADD COLUMN cnpj VARCHAR(20) NULL;
+
+-- 3. VERIFICAR se tudo foi criado corretamente
 DESCRIBE proprietarios;
 
--- Mostrar informações das novas colunas
+-- 4. CONTAR registros existentes
 SELECT 
-    COLUMN_NAME as 'Nome da Coluna',
-    COLUMN_TYPE as 'Tipo',
-    IS_NULLABLE as 'Permite NULL',
-    COLUMN_DEFAULT as 'Valor Padrão',
-    COLUMN_COMMENT as 'Comentário'
-FROM information_schema.COLUMNS 
-WHERE TABLE_SCHEMA = DATABASE() 
-    AND TABLE_NAME = 'proprietarios' 
-    AND COLUMN_NAME IN ('tipo_documento', 'cnpj');
+    COUNT(*) as 'Total de Proprietários',
+    SUM(CASE WHEN tipo_documento = 'cpf' OR (tipo_documento IS NULL AND cpf IS NOT NULL) THEN 1 ELSE 0 END) as 'Com CPF',
+    SUM(CASE WHEN tipo_documento = 'cnpj' AND cnpj IS NOT NULL THEN 1 ELSE 0 END) as 'Com CNPJ'
+FROM proprietarios;
 
 -- =====================================================
 -- EXEMPLOS DE USO:

@@ -31,15 +31,19 @@ function cpf_valido(string $cpf): bool {
   if (strlen($cpf) !== 11) return false;
   // recusa sequência de dígitos iguais (ex: 00000000000)
   if (preg_match('/^(\d)\1{10}$/', $cpf)) return false;
+  if (!ctype_digit($cpf)) return false;
   return true;
 }
 
 function cnpj_valido(string $cnpj): bool {
-  // Validação básica: aceita 14 dígitos (com ou sem pontuação)
+  if (empty(trim($cnpj))) return false;
+  
+  // Validação: aceita 14 dígitos (com ou sem pontuação)
   $cnpj = normalizar_documento($cnpj);
   if (strlen($cnpj) !== 14) return false;
   // recusa sequência de dígitos iguais (ex: 00000000000000)
   if (preg_match('/^(\d)\1{13}$/', $cnpj)) return false;
+  if (!ctype_digit($cnpj)) return false;
   return true;
 }
 
@@ -61,65 +65,96 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $errors[] = 'O nome é obrigatório.';
   }
   
-  // Validação do documento baseado no tipo escolhido
+  // Validação do documento baseado no tipo escolhido (OPCIONAL)
   if ($documento !== '') {
     if ($tipo_documento === 'cpf' && !cpf_valido($documento)) {
-      $errors[] = 'Informe um CPF válido com 11 dígitos.';
+      $errors[] = 'Informe um CPF válido com 11 dígitos. Exemplo: 123.456.789-01';
     } elseif ($tipo_documento === 'cnpj' && !cnpj_valido($documento)) {
-      $errors[] = 'Informe um CNPJ válido com 14 dígitos.';
+      $errors[] = 'Informe um CNPJ válido com 14 dígitos. Exemplo: 12.345.678/0001-95';
     }
   }
   if ($email !== '' && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
     $errors[] = 'Informe um e-mail válido.';
   }
 
-  // Verificações de duplicidade (documento e e-mail)
   if (empty($errors)) {
-    // Só verifica duplicidade de documento se foi informado
-    if ($documento !== '') {
-      $doc_norm = normalizar_documento($documento);
-      // Verifica duplicidade do documento nos campos CPF ou CNPJ
-      if ($tipo_documento === 'cpf') {
-        $doc_dup = db_query(
-          "SELECT id_proprietario FROM proprietarios WHERE REPLACE(REPLACE(REPLACE(COALESCE(cpf, ''), '.', ''), '-', ''), ' ', '') = ? LIMIT 1",
-          [$doc_norm]
-        );
-        if (!empty($doc_dup)) {
-          $errors[] = 'Já existe um proprietário cadastrado com este CPF.';
-        }
-      } else {
-        // Verifica CNPJ na coluna apropriada (cpf por enquanto, até criar coluna cnpj)
-        $doc_dup = db_query(
-          "SELECT id_proprietario FROM proprietarios WHERE REPLACE(REPLACE(REPLACE(COALESCE(cpf, ''), '.', ''), '-', ''), ' ', '') = ? AND LENGTH(REPLACE(REPLACE(REPLACE(COALESCE(cpf, ''), '.', ''), '-', ''), ' ', '')) = 14 LIMIT 1",
-          [$doc_norm]
-        );
-        if (!empty($doc_dup)) {
-          $errors[] = 'Já existe um proprietário cadastrado com este CNPJ.';
+    try {
+      // Detecta a estrutura da tabela automaticamente
+      $columns_result = db_query("SHOW COLUMNS FROM proprietarios");
+      $columns = [];
+      foreach ($columns_result as $col) {
+        $columns[] = $col['Field'];
+      }
+      
+      $tem_tipo_documento = in_array('tipo_documento', $columns);
+      $tem_cnpj = in_array('cnpj', $columns);
+      
+      // Verifica duplicidade baseada na estrutura disponível
+      if ($documento !== '') {
+        $doc_norm = normalizar_documento($documento);
+        
+        if ($tem_tipo_documento && $tem_cnpj) {
+          // Nova estrutura - verifica nas colunas corretas
+          if ($tipo_documento === 'cpf') {
+            $doc_dup = db_query("SELECT id_proprietario FROM proprietarios WHERE cpf = ? LIMIT 1", [$doc_norm]);
+            if (!empty($doc_dup)) {
+              $errors[] = 'Já existe um proprietário com este CPF.';
+            }
+          } else {
+            $doc_dup = db_query("SELECT id_proprietario FROM proprietarios WHERE cnpj = ? LIMIT 1", [$doc_norm]);
+            if (!empty($doc_dup)) {
+              $errors[] = 'Já existe um proprietário com este CNPJ.';
+            }
+          }
+        } else {
+          // Estrutura antiga - verifica na coluna cpf unificada
+          $doc_dup = db_query("SELECT id_proprietario FROM proprietarios WHERE cpf = ? LIMIT 1", [$doc_norm]);
+          if (!empty($doc_dup)) {
+            $errors[] = 'Já existe um proprietário com este documento.';
+          }
         }
       }
-    }
 
-    if ($email !== '') {
-      $email_dup = db_query(
-        "SELECT id_proprietario FROM proprietarios WHERE LOWER(email) = LOWER(?) LIMIT 1",
-        [$email]
-      );
-      if (!empty($email_dup)) {
-        $errors[] = 'Este e-mail já está cadastrado.';
+      if ($email !== '' && empty($errors)) {
+        $email_dup = db_query("SELECT id_proprietario FROM proprietarios WHERE LOWER(email) = LOWER(?) LIMIT 1", [$email]);
+        if (!empty($email_dup)) {
+          $errors[] = 'Este e-mail já está cadastrado.';
+        }
       }
-    }
-  }
 
-  if (empty($errors)) {
-    // Por enquanto, salva tanto CPF quanto CNPJ no mesmo campo até criar coluna separada
-    $sql = "INSERT INTO proprietarios (nome, cpf, telefone, email, endereco) VALUES (?, ?, ?, ?, ?)";
-    $result = db_query($sql, [$nome, $documento, $telefone, $email, $endereco]);
+      // Cadastra se não há erros
+      if (empty($errors)) {
+        $doc_limpo = $documento ? normalizar_documento($documento) : null;
+        
+        if ($tem_tipo_documento && $tem_cnpj) {
+          // Nova estrutura com colunas separadas
+          if ($tipo_documento === 'cpf') {
+            $sql = "INSERT INTO proprietarios (nome, cpf, cnpj, tipo_documento, telefone, email, endereco, data_cadastro) VALUES (?, ?, NULL, 'cpf', ?, ?, ?, NOW())";
+            $params = [$nome, $doc_limpo, $telefone ?: null, $email ?: null, $endereco ?: null];
+          } else {
+            $sql = "INSERT INTO proprietarios (nome, cpf, cnpj, tipo_documento, telefone, email, endereco, data_cadastro) VALUES (?, NULL, ?, 'cnpj', ?, ?, ?, NOW())";
+            $params = [$nome, $doc_limpo, $telefone ?: null, $email ?: null, $endereco ?: null];
+          }
+        } else {
+          // Estrutura antiga - usa coluna cpf para ambos
+          $sql = "INSERT INTO proprietarios (nome, cpf, telefone, email, endereco, data_cadastro) VALUES (?, ?, ?, ?, ?, NOW())";
+          $params = [$nome, $doc_limpo, $telefone ?: null, $email ?: null, $endereco ?: null];
+        }
 
-    if ($result > 0) {
-      $success = 'Proprietário cadastrado com sucesso!';
-      $_POST = []; // limpa form
-    } else {
-      $errors[] = 'Erro ao cadastrar proprietário.';
+        $result = db_query($sql, $params);
+
+        if ($result > 0) {
+          $tipo_msg = ($tipo_documento === 'cpf') ? 'CPF' : 'CNPJ';
+          $doc_info = $documento ? " ({$tipo_msg}: {$documento})" : '';
+          $success = "✅ Proprietário '{$nome}' cadastrado com sucesso! ID: {$result}{$doc_info}";
+          $_POST = []; // limpa form
+        } else {
+          $errors[] = 'Falha no cadastro. Tente novamente.';
+        }
+      }
+
+    } catch (Exception $e) {
+      $errors[] = 'Erro no sistema: ' . $e->getMessage();
     }
   }
 }
@@ -165,28 +200,28 @@ include __DIR__ . '/../includes/admin-header.php';
 
   <div class="form-row">
     <div class="form-group" style="width: 100%;">
-      <label id="label_documento">CPF</label>
+      <label id="label_documento">CPF (opcional)</label>
       <input type="text" name="documento" id="documento" value="<?= htmlspecialchars($_POST['documento'] ?? '') ?>" 
              placeholder="000.000.000-00" maxlength="18" 
-             title="Informe o documento válido">
+             title="Campo opcional - informe se tiver documento">
       <div class="form-text" id="texto_documento">Somente números ou no formato 000.000.000-00 (opcional)</div>
     </div>
   </div>
 
   <div class="form-row">
     <div class="form-group">
-      <label>Telefone</label>
+      <label>Telefone (opcional)</label>
       <input type="text" name="telefone" value="<?= htmlspecialchars($_POST['telefone'] ?? '') ?>" placeholder="(99) 99999-9999" maxlength="20" autocomplete="tel">
     </div>
     <div class="form-group">
-      <label>Email</label>
+      <label>Email (opcional)</label>
       <input type="email" name="email" value="<?= htmlspecialchars($_POST['email'] ?? '') ?>" placeholder="email@exemplo.com" maxlength="150" autocomplete="email">
     </div>
   </div>
 
   <div class="form-group">
-    <label>Endereço</label>
-    <textarea name="endereco" rows="3" maxlength="255"><?= htmlspecialchars($_POST['endereco'] ?? '') ?></textarea>
+    <label>Endereço (opcional)</label>
+    <textarea name="endereco" rows="3" maxlength="255" placeholder="Endereço completo do proprietário"><?= htmlspecialchars($_POST['endereco'] ?? '') ?></textarea>
   </div>
 
   <div class="form-actions" style="display:flex; gap:10px;">
@@ -204,12 +239,12 @@ function alterarTipoDocumento() {
   const textoDocumento = document.getElementById('texto_documento');
   
   if (tipoSelect.value === 'cpf') {
-    labelDocumento.textContent = 'CPF';
+    labelDocumento.textContent = 'CPF (opcional)';
     documentoInput.placeholder = '000.000.000-00';
     documentoInput.maxLength = 14;
     textoDocumento.textContent = 'Somente números ou no formato 000.000.000-00 (opcional)';
   } else {
-    labelDocumento.textContent = 'CNPJ';
+    labelDocumento.textContent = 'CNPJ (opcional)';
     documentoInput.placeholder = '00.000.000/0000-00';
     documentoInput.maxLength = 18;
     textoDocumento.textContent = 'Somente números ou no formato 00.000.000/0000-00 (opcional)';
