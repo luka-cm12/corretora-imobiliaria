@@ -1,6 +1,6 @@
 <?php
 require_once(__DIR__ . '/../includes/auth.php');
-//require_login();
+require_login();
 
 require_once(__DIR__ . '/../includes/db.php');
 require_once(__DIR__ . '/../includes/functions.php');
@@ -23,38 +23,22 @@ if (isset($_GET['busca']) && !empty($_GET['busca'])) {
 }
 
 // Total de imóveis
-$total_query = "SELECT COUNT(*) as total FROM imoveis" . $filtro;
-$stmt = db_query($total_query, $params, $types);
+$total_query = "SELECT COUNT(*) as total FROM imoveis i 
+                LEFT JOIN proprietarios p ON i.id_proprietario = p.id_proprietario" . $filtro;
+$stmt = db_query($total_query, $params);
 $total_imoveis = $stmt[0]['total'] ?? 0; // pega o primeiro elemento do array
 $total_paginas = ceil($total_imoveis / $por_pagina);
 
-// Obter imóveis
-$query = "SELECT * FROM imoveis" . $filtro . " ORDER BY created_at DESC LIMIT ? OFFSET ?";
-$params[] = $por_pagina;
-$params[] = $offset;
-$types .= 'ii';
+// Obter imóveis com proprietários
+$query = "SELECT i.*, p.nome as proprietario_nome FROM imoveis i 
+          LEFT JOIN proprietarios p ON i.id_proprietario = p.id_proprietario" 
+          . $filtro . " ORDER BY i.created_at DESC LIMIT " . (int)$por_pagina . " OFFSET " . (int)$offset;
 
-$imoveis = db_query($query, $params, $types); // já é array
+$imoveis = db_query($query, $params); // já é array
 
 $page_title = 'Listar Imóveis | Corretora Base';
 include __DIR__ . '/../includes/admin-header.php';
 ?>
-
-<div class="admin-container">
-    <?php include __DIR__ . '/../includes/admin-sidebar.php'; ?>
-    
-    <div class="main-content">
-        <header class="admin-header">
-            <div class="header-left">
-                <h2>Lista de Imóveis</h2>
-            </div>
-            <div class="header-right">
-                <span class="welcome">Bem-vindo, <?= $_SESSION['admin_username'] ?></span>
-                <a href="logout.php" class="btn-logout"><i class="fas fa-sign-out-alt"></i></a>
-            </div>
-        </header>
-        
-        <div class="content">
             <div class="toolbar">
                 <form action="" method="get" class="search-form">
                     <input type="text" name="busca" placeholder="Buscar imóveis..." value="<?= htmlspecialchars($_GET['busca'] ?? '') ?>">
@@ -77,6 +61,7 @@ include __DIR__ . '/../includes/admin-header.php';
                                 <th>ID</th>
                                 <th>Imagem</th>
                                 <th>Título</th>
+                                <th>Proprietário</th>
                                 <th>Localização</th>
                                 <th>Preço</th>
                                 <th>Destaque</th>
@@ -85,8 +70,8 @@ include __DIR__ . '/../includes/admin-header.php';
                         </thead>
                         <tbody>
                         <?php foreach ($imoveis as $imovel): 
-                            $imagens = explode(',', $imovel['imagens']);
-                            $firstImage = (!empty($imagens[0])) 
+                            $imagens = array_values(array_filter(explode(',', $imovel['imagens'])));
+                            $firstImage = (!empty($imagens)) 
                                 ? '../../public/uploads/' . $imagens[0] 
                                 : '../../public/assets/images/default-property.jpg';
                             $preco_formatado = formatar_preco($imovel['preco']);
@@ -94,10 +79,21 @@ include __DIR__ . '/../includes/admin-header.php';
                             <tr>
                                 <td><?= $imovel['id'] ?></td>
                                 <td>
-                                    <img src="<?= $firstImage ?>" alt="<?= htmlspecialchars($imovel['titulo']) ?>" class="thumbnail">
+                                    <img src="<?= $firstImage ?>"
+                                         alt="<?= htmlspecialchars($imovel['titulo']) ?>"
+                                         class="thumbnail"
+                                         width="80" height="60"
+                                         style="max-width:120px;height:auto;object-fit:cover;border-radius:4px;border:1px solid #e9ecef;">
                                 </td>
-                                <td><?= htmlspecialchars($imovel['titulo']) ?></td>
-                                <td><?= htmlspecialchars($imovel['bairro']) ?>, <?= htmlspecialchars($imovel['cidade']) ?></td>
+                                <td><?= htmlspecialchars($imovel['titulo'] ?? '') ?></td>
+                                <td>
+                                    <?php if (!empty($imovel['proprietario_nome'])): ?>
+                                        <?= htmlspecialchars($imovel['proprietario_nome']) ?>
+                                    <?php else: ?>
+                                        <span class="text-muted">Não informado</span>
+                                    <?php endif; ?>
+                                </td>
+                                <td><?= htmlspecialchars($imovel['bairro'] ?? '') ?>, <?= htmlspecialchars($imovel['cidade'] ?? '') ?></td>
                                 <td><?= $preco_formatado ?></td>
                                 <td>
                                     <?php if (!empty($imovel['destaque'])): ?>
@@ -133,8 +129,9 @@ include __DIR__ . '/../includes/admin-header.php';
                     </div>
                 <?php endif; ?>
             <?php endif; ?>
+
         </div>
     </div>
-</div>
+  </div>
 
 <?php include __DIR__ . '/../includes/admin-footer.php'; ?>

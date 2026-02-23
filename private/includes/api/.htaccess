@@ -1,0 +1,5 @@
+# Allow API scripts to be accessed via web
+Options -Indexes
+<FilesMatch "\.(php)$">
+  Require all granted
+</FilesMatch>

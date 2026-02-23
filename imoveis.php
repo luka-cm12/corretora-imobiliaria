@@ -7,90 +7,83 @@ $page_title = 'Imóveis Disponíveis | Corretora Base';
 $meta_description = 'Confira nossa seleção de imóveis disponíveis para compra e aluguel na Corretora Base. Encontre o lar dos seus sonhos!';
 $load_lightbox = true;
 
-// Processar filtros
-$filtros = [];
-$where = [];
+// Processar filtros avançados (q, faixa min/max, ordenação, paginação)
+$filtros = [
+    'q' => isset($_GET['q']) ? trim($_GET['q']) : '',
+    'tipo' => isset($_GET['tipo']) ? $_GET['tipo'] : '',
+    'cidade' => isset($_GET['cidade']) ? $_GET['cidade'] : '',
+    'bairro' => isset($_GET['bairro']) ? $_GET['bairro'] : '',
+    'preco' => isset($_GET['preco']) ? $_GET['preco'] : '', // faixa rápida
+    'preco_min' => isset($_GET['preco_min']) ? $_GET['preco_min'] : '',
+    'preco_max' => isset($_GET['preco_max']) ? $_GET['preco_max'] : '',
+    'quartos' => isset($_GET['quartos']) ? $_GET['quartos'] : '',
+    'banheiros' => isset($_GET['banheiros']) ? $_GET['banheiros'] : '',
+    'ordenar' => isset($_GET['ordenar']) ? $_GET['ordenar'] : 'recentes',
+    'page' => isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1,
+];
+
+$whereParts = [];
 $params = [];
-$types = '';
 
-// Filtro por tipo
-if (isset($_GET['tipo']) && !empty($_GET['tipo'])) {
-    $filtros['tipo'] = $_GET['tipo'];
-    $where[] = "tipo = ?";
-    $params[] = $filtros['tipo'];
-    $types .= 's';
+if (!empty($filtros['q'])) {
+    $whereParts[] = "(titulo LIKE ? OR descricao LIKE ? OR bairro LIKE ? OR cidade LIKE ?)";
+    $qLike = '%' . $filtros['q'] . '%';
+    array_push($params, $qLike, $qLike, $qLike, $qLike);
 }
+if (!empty($filtros['tipo'])) { $whereParts[] = "tipo = ?"; $params[] = $filtros['tipo']; }
+if (!empty($filtros['cidade'])) { $whereParts[] = "cidade = ?"; $params[] = $filtros['cidade']; }
+if (!empty($filtros['bairro'])) { $whereParts[] = "bairro = ?"; $params[] = $filtros['bairro']; }
 
-// Filtro por cidade
-if (isset($_GET['cidade']) && !empty($_GET['cidade'])) {
-    $filtros['cidade'] = $_GET['cidade'];
-    $where[] = "cidade = ?";
-    $params[] = $filtros['cidade'];
-    $types .= 's';
-}
-
-// Filtro por bairro
-if (isset($_GET['bairro']) && !empty($_GET['bairro'])) {
-    $filtros['bairro'] = $_GET['bairro'];
-    $where[] = "bairro = ?";
-    $params[] = $filtros['bairro'];
-    $types .= 's';
-}
-
-// Filtro por preço
-if (isset($_GET['preco']) && !empty($_GET['preco'])) {
-    $filtros['preco'] = $_GET['preco'];
-    switch ($_GET['preco']) {
-        case '1':
-            $where[] = "preco <= 200000";
-            break;
-        case '2':
-            $where[] = "preco BETWEEN 200000 AND 500000";
-            break;
-        case '3':
-            $where[] = "preco > 500000";
-            break;
+$precoMin = $filtros['preco_min'] !== '' ? (float)$filtros['preco_min'] : null;
+$precoMax = $filtros['preco_max'] !== '' ? (float)$filtros['preco_max'] : null;
+if ($precoMin !== null) { $whereParts[] = "preco >= ?"; $params[] = $precoMin; }
+if ($precoMax !== null) { $whereParts[] = "preco <= ?"; $params[] = $precoMax; }
+if ($precoMin === null && $precoMax === null && !empty($filtros['preco'])) {
+    switch ($filtros['preco']) {
+        case '1': $whereParts[] = "preco <= 200000"; break;
+        case '2': $whereParts[] = "preco BETWEEN 200000 AND 500000"; break;
+        case '3': $whereParts[] = "preco > 500000"; break;
     }
 }
+if (!empty($filtros['quartos'])) { $whereParts[] = "quartos >= ?"; $params[] = (int)$filtros['quartos']; }
+if (!empty($filtros['banheiros'])) { $whereParts[] = "banheiros >= ?"; $params[] = (int)$filtros['banheiros']; }
 
-// Filtro por quartos
-if (isset($_GET['quartos']) && !empty($_GET['quartos'])) {
-    $filtros['quartos'] = $_GET['quartos'];
-    $where[] = "quartos >= ?";
-    $params[] = $filtros['quartos'];
-    $types .= 'i';
+// Ordenação
+$orderBy = 'created_at DESC';
+switch ($filtros['ordenar']) {
+    case 'preco_asc': $orderBy = 'preco ASC'; break;
+    case 'preco_desc': $orderBy = 'preco DESC'; break;
+    case 'area_desc': $orderBy = 'area DESC'; break;
+    default: $orderBy = 'created_at DESC';
 }
 
-// Filtro por banheiros
-if (isset($_GET['banheiros']) && !empty($_GET['banheiros'])) {
-    $filtros['banheiros'] = $_GET['banheiros'];
-    $where[] = "banheiros >= ?";
-    $params[] = $filtros['banheiros'];
-    $types .= 'i';
-}
+// Paginação
+$perPage = 12;
+$page = $filtros['page'];
+$offset = ($page - 1) * $perPage;
 
-// Construir a consulta SQL
-$sql = "SELECT * FROM imoveis";
-if (!empty($where)) {
-    $sql .= " WHERE " . implode(" AND ", $where);
-}
-$sql .= " ORDER BY created_at DESC";
+$whereSql = !empty($whereParts) ? (' WHERE ' . implode(' AND ', $whereParts)) : '';
 
-// Executar a consulta
-$stmt = $conn->prepare($sql);
-if (!empty($params)) {
-    $stmt->bind_param($types, ...$params);
-}
-$stmt->execute();
-$result = $stmt->get_result();
-$imoveis = $result->fetch_all(MYSQLI_ASSOC);
+// Total de registros
+$row = db_query("SELECT COUNT(*) AS total FROM imoveis" . $whereSql, $params);
+$total = isset($row[0]['total']) ? (int)$row[0]['total'] : 0;
+
+// Resultados com ordenação e paginação
+$sql = "SELECT * FROM imoveis" . $whereSql . " ORDER BY $orderBy LIMIT " . (int)$perPage . " OFFSET " . (int)$offset;
+$imoveis = db_query($sql, $params);
 
 // Obter opções para filtros
 $tipos = db_query("SELECT DISTINCT tipo FROM imoveis ORDER BY tipo");
 $cidades = db_query("SELECT DISTINCT cidade FROM imoveis ORDER BY cidade");
-$bairros = !empty($filtros['cidade']) ? 
-    db_query("SELECT DISTINCT bairro FROM imoveis WHERE cidade = ?", [$filtros['cidade']], 's') 
-    : [];
+$bairros = !empty($filtros['cidade']) ? db_query("SELECT DISTINCT bairro FROM imoveis WHERE cidade = ? ORDER BY bairro", [$filtros['cidade']]) : [];
+
+// Para paginação: total de páginas e construção de URLs
+$totalPages = (int)ceil($total / $perPage);
+$query = $_GET; unset($query['page']);
+$baseQueryString = http_build_query($query);
+function buildPageUrl($p, $baseQueryString) {
+    return 'imoveis.php?' . ($baseQueryString ? ($baseQueryString . '&') : '') . 'page=' . (int)$p;
+}
 
 
 // Incluir o header
@@ -110,6 +103,10 @@ include 'private/includes/header.php';
     <div class="container">
         <form action="imoveis.php" method="get" class="filter-form">
             <div class="filter-row">
+                <div class="filter-group" style="flex:2">
+                    <label for="q">Palavra‑chave</label>
+                    <input type="text" id="q" name="q" placeholder="Título, bairro, cidade..." value="<?= isset($filtros['q']) ? htmlspecialchars($filtros['q']) : '' ?>">
+                </div>
                 <div class="filter-group">
                     <label for="tipo">Tipo</label>
                     <select id="tipo" name="tipo">
@@ -147,13 +144,21 @@ include 'private/includes/header.php';
                 </div>
                 
                 <div class="filter-group">
-                    <label for="preco">Faixa de Preço</label>
+                    <label for="preco">Faixa de Preço (rápida)</label>
                     <select id="preco" name="preco">
                         <option value="">Todas</option>
                         <option value="1" <?= isset($filtros['preco']) && $filtros['preco'] == '1' ? 'selected' : '' ?>>Até R$ 200.000</option>
                         <option value="2" <?= isset($filtros['preco']) && $filtros['preco'] == '2' ? 'selected' : '' ?>>R$ 200.000 - R$ 500.000</option>
                         <option value="3" <?= isset($filtros['preco']) && $filtros['preco'] == '3' ? 'selected' : '' ?>>Acima de R$ 500.000</option>
                     </select>
+                </div>
+                <div class="filter-group">
+                    <label for="preco_min">Preço mínimo</label>
+                    <input type="number" id="preco_min" name="preco_min" min="0" step="1000" value="<?= isset($filtros['preco_min']) ? htmlspecialchars($filtros['preco_min']) : '' ?>" placeholder="Ex: 150000">
+                </div>
+                <div class="filter-group">
+                    <label for="preco_max">Preço máximo</label>
+                    <input type="number" id="preco_max" name="preco_max" min="0" step="1000" value="<?= isset($filtros['preco_max']) ? htmlspecialchars($filtros['preco_max']) : '' ?>" placeholder="Ex: 600000">
                 </div>
                 
                 <div class="filter-group">
@@ -176,6 +181,15 @@ include 'private/includes/header.php';
                         <option value="3" <?= isset($filtros['banheiros']) && $filtros['banheiros'] == '3' ? 'selected' : '' ?>>3+</option>
                     </select>
                 </div>
+                <div class="filter-group">
+                    <label for="ordenar">Ordenar por</label>
+                    <select id="ordenar" name="ordenar">
+                        <option value="recentes" <?= isset($filtros['ordenar']) && $filtros['ordenar'] === 'recentes' ? 'selected' : '' ?>>Mais recentes</option>
+                        <option value="preco_asc" <?= isset($filtros['ordenar']) && $filtros['ordenar'] === 'preco_asc' ? 'selected' : '' ?>>Menor preço</option>
+                        <option value="preco_desc" <?= isset($filtros['ordenar']) && $filtros['ordenar'] === 'preco_desc' ? 'selected' : '' ?>>Maior preço</option>
+                        <option value="area_desc" <?= isset($filtros['ordenar']) && $filtros['ordenar'] === 'area_desc' ? 'selected' : '' ?>>Maior área</option>
+                    </select>
+                </div>
                 
                 <div class="filter-group">
                     <button type="submit" class="btn-filter"><i class="fas fa-search"></i> Aplicar Filtros</button>
@@ -189,6 +203,9 @@ include 'private/includes/header.php';
 <!-- Property List -->
 <section class="property-list">
     <div class="container">
+        <?php if (isset($total) && $total > 0): ?>
+            <p style="margin-bottom: 1rem;">Mostrando <?= count($imoveis) > 0 ? ($offset + 1) : 0 ?>–<?= isset($total) ? min($offset + count($imoveis), $total) : count($imoveis) ?> de <?= $total ?> resultados</p>
+        <?php endif; ?>
         <?php if (empty($imoveis)): ?>
             <div class="no-results">
                 <i class="fas fa-home"></i>
@@ -199,8 +216,10 @@ include 'private/includes/header.php';
         <?php else: ?>
             <div class="properties-grid">
                 <?php foreach ($imoveis as $imovel): 
-                    $imagens = explode(',', $imovel['imagens']);
-                    $firstImage = !empty($imagens) ? 'uploads/' . $imagens[0] : 'assets/images/default-property.jpg';
+                    //$imagens = explode(',', $imovel['imagens']);
+                    $imagens = array_filter(explode(',', $imovel['imagens']));
+                    $firstImage = !empty($imagens) ? 'public/uploads/' . reset($imagens) : 'public/assets/images/default-property.jpg';
+
                     $preco_formatado = formatar_preco($imovel['preco']);
                 ?>
                     <div class="property-card">
@@ -244,6 +263,21 @@ include 'private/includes/header.php';
                     </div>
                 <?php endforeach; ?>
             </div>
+            <?php if (isset($totalPages) && $totalPages > 1): ?>
+                <nav class="pagination" aria-label="Paginação" style="margin-top: 1.5rem;">
+                    <?php 
+                        $window = 5; 
+                        $start = max(1, $page - floor($window/2));
+                        $end = min($totalPages, $start + $window - 1);
+                        $start = max(1, $end - $window + 1);
+                    ?>
+                    <a class="page-link <?= $page <= 1 ? 'disabled' : '' ?>" href="<?= $page > 1 ? buildPageUrl($page-1, $baseQueryString) : '#' ?>">Anterior</a>
+                    <?php for ($p = $start; $p <= $end; $p++): ?>
+                        <a class="page-link <?= $p == $page ? 'active' : '' ?>" href="<?= buildPageUrl($p, $baseQueryString) ?>"><?= $p ?></a>
+                    <?php endfor; ?>
+                    <a class="page-link <?= $page >= $totalPages ? 'disabled' : '' ?>" href="<?= $page < $totalPages ? buildPageUrl($page+1, $baseQueryString) : '#' ?>">Próxima</a>
+                </nav>
+            <?php endif; ?>
         <?php endif; ?>
     </div>
 </section>
@@ -252,3 +286,34 @@ include 'private/includes/header.php';
 // Incluir o footer
 include 'private/includes/footer.php';
 ?>
+<script>
+    // Atualizar dinamicamente os bairros quando a cidade muda
+    document.getElementById('cidade').addEventListener('change', function() {
+        const cidade = this.value;
+        const bairroSelect = document.getElementById('bairro');
+        
+        if (!cidade) {
+            bairroSelect.innerHTML = '<option value="">Todos</option>';
+            bairroSelect.disabled = true;
+            return;
+        }
+        
+        // Fazer requisição AJAX para obter bairros
+        fetch(`private/includes/api/bairros.php?cidade=${encodeURIComponent(cidade)}`)
+            .then(response => response.json())
+            .then(bairros => {
+                let options = '<option value="">Todos</option>';
+                bairros.forEach(bairro => {
+                    const selected = bairro === '<?= isset($filtros["bairro"]) ? $filtros["bairro"] : '' ?>' ? 'selected' : '';
+                    options += `<option value="${bairro}" ${selected}>${bairro}</option>`;
+                });
+                bairroSelect.innerHTML = options;
+                bairroSelect.disabled = false;
+            });
+    });
+    
+    // Disparar o evento change se já houver uma cidade selecionada
+    <?php if (isset($filtros['cidade']) && !empty($filtros['cidade'])): ?>
+        document.getElementById('cidade').dispatchEvent(new Event('change'));
+    <?php endif; ?>
+</script>

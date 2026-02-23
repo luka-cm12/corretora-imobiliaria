@@ -1,25 +1,32 @@
 <?php
-// conexao segura com MySQL usando PDO
+// Garante sessão ativa para uso de CSRF e outras verificações
+if (session_status() !== PHP_SESSION_ACTIVE) {
+    session_start();
+}
+
+// Reutiliza a conexão global compartilhada
+require_once __DIR__ . '/../config/config.php';
+
 function getConnection() {
-    $host = "localhost";
-    $db   = "corretora_base";
-    $user = "admin";
-    $pass = "senha_admin";
-    $charset = "utf8mb4";
-
-    $dsn = "mysql:host=$host;dbname=$db;charset=$charset";
-
-    $options = [
-        PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
-        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-        PDO::ATTR_EMULATE_PREPARES   => false,
-    ];
-
-    try {
-        return new PDO($dsn, $user, $pass, $options);
-    } catch (PDOException $e) {
-        die("Erro de conexão: " . $e->getMessage());
+    global $conn;
+    if (!($conn instanceof PDO)) {
+        // Fallback defensivo (normalmente não ocorre pois config.php cria $conn)
+        try {
+            $conn = new PDO(
+                'mysql:host=' . DB_HOST . ';dbname=' . DB_NAME . ';charset=utf8mb4',
+                DB_USER,
+                DB_PASS,
+                [
+                    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                    PDO::ATTR_EMULATE_PREPARES => false,
+                ]
+            );
+        } catch (PDOException $e) {
+            die('Erro de conexão: ' . $e->getMessage());
+        }
     }
+    return $conn;
 }
 
 /**
@@ -45,5 +52,51 @@ function inserirUsuario($nome, $email, $senha) {
         ':senha' => hash_password($senha)
     ]);
     return $pdo->lastInsertId();
+}
+
+/**
+ * Sanitiza entrada básica (fallback simples)
+ */
+if (!function_exists('sanitize_input')) {
+    function sanitize_input($data) {
+        if (is_string($data)) {
+            return trim(filter_var($data, FILTER_SANITIZE_STRING, FILTER_FLAG_NO_ENCODE_QUOTES));
+        }
+        return $data;
+    }
+}
+
+/**
+ * Hash de senha usando algoritmo padrão
+ */
+if (!function_exists('hash_password')) {
+    function hash_password($senha) {
+        return password_hash((string)$senha, PASSWORD_DEFAULT);
+    }
+}
+
+/**
+ * Gera token CSRF se não existir
+ */
+if (!function_exists('ensureCsrfToken')) {
+    function ensureCsrfToken() {
+        if (empty($_SESSION['csrf_token'])) {
+            $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+        }
+        return $_SESSION['csrf_token'];
+    }
+}
+
+/**
+ * Verifica o token CSRF presente em POST/GET
+ */
+if (!function_exists('verificaCsrfToken')) {
+    function verificaCsrfToken() {
+        $token = $_POST['csrf_token'] ?? $_GET['csrf_token'] ?? null;
+        if (!$token || !isset($_SESSION['csrf_token']) || !hash_equals($_SESSION['csrf_token'], $token)) {
+            header('Location: acesso-negado.php');
+            exit;
+        }
+    }
 }
 ?>

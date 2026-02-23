@@ -1,11 +1,28 @@
 <?php
 require_once 'private/includes/db.php';
+if (session_status() === PHP_SESSION_NONE) { session_start(); }
 
 // Processar formulário de contato
 $mensagem_enviada = false;
 $erros = [];
+$nome = $email = $telefone = $assunto = $mensagem = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // CSRF check
+    $csrf = $_POST['csrf_token'] ?? '';
+    if (empty($csrf) || !hash_equals($_SESSION['csrf_token'] ?? '', $csrf)) {
+        $erros['csrf'] = 'Falha de segurança. Atualize a página e tente novamente.';
+    }
+    // Honeypot
+    if (!empty($_POST['website'] ?? '')) {
+        $erros['spam'] = 'Solicitação bloqueada.';
+    }
+    // Rate limit 20s
+    $now = time();
+    if (isset($_SESSION['last_contact_submit']) && ($now - (int)$_SESSION['last_contact_submit']) < 20) {
+        $erros['rate'] = 'Aguarde alguns segundos antes de enviar novamente.';
+    }
+
     // Validar e sanitizar os dados
     $nome = trim($_POST['nome'] ?? '');
     $email = trim($_POST['email'] ?? '');
@@ -40,6 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if ($result) {
             $mensagem_enviada = true;
+            $_SESSION['last_contact_submit'] = $now;
             
             // Enviar email (opcional)
             $para = 'contato@corretorabase.com.br';
@@ -149,6 +167,12 @@ include 'private/includes/header.php';
                         <p>Tire suas dúvidas ou agende uma visita</p>
                         
                         <form action="contato.php" method="post">
+                            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token'] ?? '') ?>">
+                            <!-- Honeypot: campo invisível -->
+                            <div style="position:absolute;left:-9999px;">
+                                <label for="website">Não preencha este campo</label>
+                                <input type="text" id="website" name="website" autocomplete="off">
+                            </div>
                             <div class="form-row">
                                 <div class="form-group <?= isset($erros['nome']) ? 'has-error' : '' ?>">
                                     <label for="nome">Nome *</label>

@@ -11,29 +11,6 @@ $sobre_nos = [
 ];
 
 // Buscar equipe (exemplo com dados estáticos, pode ser adaptado para BD)
-$equipe = [
-    [
-        'nome' => 'João Silva',
-        'cargo' => 'Corretor Associado',
-        'foto' => 'assets/images/team1.jpg',
-        'telefone' => '(XX) XXXX-XXXX',
-        'email' => 'joao@corretorabase.com.br'
-    ],
-    [
-        'nome' => 'Maria Santos',
-        'cargo' => 'Corretora Sênior',
-        'foto' => 'assets/images/team2.jpg',
-        'telefone' => '(XX) XXXX-XXXX',
-        'email' => 'maria@corretorabase.com.br'
-    ],
-    [
-        'nome' => 'Carlos Oliveira',
-        'cargo' => 'Gerente Comercial',
-        'foto' => 'assets/images/team3.jpg',
-        'telefone' => '(XX) XXXX-XXXX',
-        'email' => 'carlos@corretorabase.com.br'
-    ]
-];
 
 // Buscar estatísticas (pode ser substituído por dados reais do BD)
 $estatisticas = [
@@ -43,28 +20,41 @@ $estatisticas = [
     'premiacoes' => 5
 ];
 
-// Incluir o header
+// Metas para o header
+$page_title = 'Sobre Nós | Corretora Claudia Colombo';
+$meta_description = 'Conheça nossa história, missão, visão, valores e equipe especializada.';
+
+// Incluir o header padrão do site
 include 'private/includes/header.php';
 ?>
 
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sobre Nós | Corretora Claudia Colombo</title>
-    <link rel="stylesheet" href="public/assets/css/style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-</head>
-<body>
 
 
-
-    <!-- Page Header -->
-    <section class="page-header">
+    <!-- Page Header com imagem de fundo -->
+    <?php
+    // Seleção da imagem de fundo, priorizando nome sem espaços
+    $__hero_candidates = [
+        'public/assets/images/cta-bg.jpg',
+        'public/assets/images/contato.jpg',
+        'public/assets/images/about.jpg'
+    ];
+    $__hero_img_url = 'public/assets/images/about.jpg';
+    foreach ($__hero_candidates as $__candidate) {
+        if (file_exists($__candidate)) { $__hero_img_url = str_replace(' ', '%20', $__candidate); break; }
+    }
+    ?>
+    <section class="page-header" style="
+        min-height: 260px;
+        background-image: linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45)), url('<?= $__hero_img_url ?>');
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+        display: flex; align-items: center;
+    ">
         <div class="container">
-            <h1>Sobre Nós</h1>
-            <p>Conheça nossa história, missão e equipe especializada</p>
+            <h1 style="color:#fff; margin-bottom:8px;">Sobre Nós</h1>
+            <p style="color:#f5f5f5;">Conheça nossa história, missão e equipe especializada</p>
         </div>
     </section>
 
@@ -91,7 +81,7 @@ include 'private/includes/header.php';
             </div>
             
             <div class="about-image">
-                <img src="public/assets/images/about.jpg" alt="Sobre a Corretora Base">
+                <img src="public/assets/images/claudia/claudiaCO.jpeg" alt="Claudia Colombo - Corretora">
             </div>
         </div>
     </section>
@@ -141,89 +131,39 @@ include 'private/includes/header.php';
     </section>
 
     <!-- Team Section -->
-    <section class="team-section">
-        <div class="container">
-            <h2 class="section-title">Nossa Equipe</h2>
-            <p class="section-subtitle">Profissionais qualificados para te atender</p>
-            
-            <div class="team-grid">
-                <?php foreach ($equipe as $membro): ?>
-                    <div class="team-member">
-                        <div class="member-image">
-                            <img src="<?= $membro['foto'] ?>" alt="<?= htmlspecialchars($membro['nome']) ?>">
-                            <div class="member-social">
-                                <a href="tel:<?= $membro['telefone'] ?>"><i class="fas fa-phone"></i></a>
-                                <a href="mailto:<?= $membro['email'] ?>"><i class="fas fa-envelope"></i></a>
-                                <a href="#"><i class="fab fa-whatsapp"></i></a>
-                            </div>
-                        </div>
-                        <div class="member-info">
-                            <h3><?= htmlspecialchars($membro['nome']) ?></h3>
-                            <p><?= htmlspecialchars($membro['cargo']) ?></p>
-                        </div>
-                    </div>
-                <?php endforeach; ?>
-            </div>
-        </div>
-    </section>
-
-    <!-- Testimonials Section -->
-    <section class="testimonials-section">
-        <div class="container">
-            <h2 class="section-title">O Que Nossos Clientes Dizem</h2>
-            
-            <div class="testimonials-slider">
-                <div class="testimonial">
-                    <div class="testimonial-content">
-                        <i class="fas fa-quote-left"></i>
-                        <p>A Corretora Claudia Colombo foi fundamental para eu encontrar meu apartamento dos sonhos. Profissionais extremamente competentes e atenciosos.</p>
-                    </div>
-                    <div class="client-info">
-                        <h4>Ana Paula Mendes</h4>
-                        <p>Compradora de Apartamento</p>
-                    </div>
-                </div>
-                
-                <div class="testimonial">
-                    <div class="testimonial-content">
-                        <i class="fas fa-quote-left"></i>
-                        <p>Vendi meu imóvel em tempo recorde e com ótimo valor de mercado. Recomendo a todos que buscam seriedade e resultados.</p>
-                    </div>
-                    <div class="client-info">
-                        <h4>Roberto Almeida</h4>
-                        <p>Vendedor de Casa</p>
-                    </div>
-                </div>
-                
-                <div class="testimonial">
-                    <div class="testimonial-content">
-                        <i class="fas fa-quote-left"></i>
-                        <p>Atendimento personalizado e focado nas minhas necessidades. Encontraram exatamente o que eu procurava dentro do meu orçamento.</p>
-                    </div>
-                    <div class="client-info">
-                        <h4>Fernanda Costa</h4>
-                        <p>Locatária</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
+    
 
     <!-- CTA Section -->
-    <section class="cta-section">
+    <?php
+    // Define imagem do CTA com prioridade para nome sem espaços e fallback seguro
+    $__cta_candidates = [
+        'public/assets/images/contato.jpg',
+        'public/assets/images/contato.jpg',
+        'public/assets/images/contato.jpg'
+    ];
+    $__cta_img_url = 'public/assets/images/contato.jpg';
+    foreach ($__cta_candidates as $__candidate) {
+        if (file_exists($__candidate)) { $__cta_img_url = str_replace(' ', '%20', $__candidate); break; }
+    }
+    ?>
+    <section class="contact-cta" style="
+        min-height:320px;
+        background: linear-gradient(135deg, #2c3e50 0%, #34495e 50%, #2c3e50 100%);
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        position: relative;
+    ">
         <div class="container">
-            <h2>Pronto para encontrar seu imóvel ideal?</h2>
-            <p>Entre em contato conosco e agende uma visita</p>
+            <h2 style="color:#fff;">Pronto para encontrar seu imóvel ideal?</h2>
+            <p style="color:#f5f5f5;">Entre em contato conosco e agende uma visita</p>
             <a href="contato.php" class="btn">Fale Conosco</a>
         </div>
     </section>
 
-            
-    
-    
     <?php   
     include 'private/includes/footer.php';
-    ?>                
+    ?>
 
     <script src="public/assets/js/main.js"></script>
     <script>
@@ -276,5 +216,3 @@ include 'private/includes/header.php';
         showTestimonial(0);
         setInterval(nextTestimonial, 5000);
     </script>
-</body>
-</html>

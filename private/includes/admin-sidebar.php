@@ -60,11 +60,6 @@ $perfil_usuario = $_SESSION['usuario_tipo'] ?? 'corretor';
                             <i class="fas fa-plus-circle"></i> Adicionar Imóvel
                         </a>
                     </li>
-                    <li>
-                        <a href="<?php echo BASE_URL; ?>admin/tipos_imoveis.php" class="<?php echo (basename($_SERVER['PHP_SELF']) == 'tipos_imoveis.php') ? 'active' : ''; ?>">
-                            <i class="fas fa-tags"></i> Tipos de Imóvel
-                        </a>
-                    </li>
                 </ul>
             </li>
 
@@ -80,16 +75,6 @@ $perfil_usuario = $_SESSION['usuario_tipo'] ?? 'corretor';
                             <i class="fas fa-list"></i> Listar Clientes
                         </a>
                     </li>
-                    <li>
-                        <a href="<?php echo BASE_URL; ?>admin/adicionar_cliente.php" class="<?php echo (basename($_SERVER['PHP_SELF']) == 'adicionar_cliente.php') ? 'active' : ''; ?>">
-                            <i class="fas fa-user-plus"></i> Adicionar Cliente
-                        </a>
-                    </li>
-                    <li>
-                        <a href="<?php echo BASE_URL; ?>admin/leads.php" class="<?php echo (basename($_SERVER['PHP_SELF']) == 'leads.php') ? 'active' : ''; ?>">
-                            <i class="fas fa-lightbulb"></i> Leads
-                        </a>
-                    </li>
                 </ul>
             </li>
 
@@ -101,42 +86,7 @@ $perfil_usuario = $_SESSION['usuario_tipo'] ?? 'corretor';
                 </a>
             </li>
 
-            <!-- Contratos -->
-            <li class="menu-item">
-                <a href="#submenu-contratos" data-bs-toggle="collapse" class="dropdown-toggle">
-                    <i class="fas fa-file-contract"></i>
-                    <span>Contratos</span>
-                </a>
-                <ul class="collapse list-unstyled" id="submenu-contratos">
-                    <li>
-                        <a href="<?php echo BASE_URL; ?>admin/lista_contratos.php" class="<?php echo (basename($_SERVER['PHP_SELF']) == 'lista_contratos.php') ? 'active' : ''; ?>">
-                            <i class="fas fa-list"></i> Listar Contratos
-                        </a>
-                    </li>
-                    <li>
-                        <a href="<?php echo BASE_URL; ?>admin/novo_contrato.php" class="<?php echo (basename($_SERVER['PHP_SELF']) == 'novo_contrato.php') ? 'active' : ''; ?>">
-                            <i class="fas fa-file-signature"></i> Novo Contrato
-                        </a>
-                    </li>
-                    <li>
-                        <a href="<?php echo BASE_URL; ?>admin/modelos_contrato.php" class="<?php echo (basename($_SERVER['PHP_SELF']) == 'modelos_contrato.php') ? 'active' : ''; ?>">
-                            <i class="fas fa-copy"></i> Modelos
-                        </a>
-                    </li>
-                </ul>
-            </li>
-
-            <!-- Relatórios (apenas para admin) -->
-            <?php if ($perfil_usuario == 'admin'): ?>
-            <li>
-                <a href="<?php echo BASE_URL; ?>admin/relatorios.php" class="<?php echo (basename($_SERVER['PHP_SELF']) == 'relatorios.php') ? 'active' : ''; ?>">
-                    <i class="fas fa-chart-bar"></i>
-                    <span>Relatórios</span>
-                </a>
-            </li>
-            <?php endif; ?>
-
-            <!-- Configurações (apenas para admin) -->
+           <!-- Configurações (apenas para admin) -->
             <?php if ($perfil_usuario == 'admin'): ?>
             <li class="menu-item">
                 <a href="#submenu-config" data-bs-toggle="collapse" class="dropdown-toggle">
@@ -150,7 +100,7 @@ $perfil_usuario = $_SESSION['usuario_tipo'] ?? 'corretor';
                         </a>
                     </li>
                     <li>
-                        <a href="<?php echo BASE_URL; ?>admin/config_sistema.php" class="<?php echo (basename($_SERVER['PHP_SELF']) == 'config_sistema.php') ? 'active' : ''; ?>">
+                        <a href="<?php echo BASE_URL; ?>admin/configuracoes.php" class="<?php echo (basename($_SERVER['PHP_SELF']) == 'config_sistema.php') ? 'active' : ''; ?>">
                             <i class="fas fa-sliders-h"></i> Sistema
                         </a>
                     </li>

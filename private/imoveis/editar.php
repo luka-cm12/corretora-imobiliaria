@@ -2,7 +2,17 @@
 require_once(__DIR__ . '/../includes/auth.php');
 require_once(__DIR__ . '/../includes/db.php');
 require_once(__DIR__ . '/../includes/functions.php');
-//require_login();
+require_once(__DIR__ . '/../config/config.php');
+require_login();
+
+// Garante token CSRF
+if (function_exists('ensureCsrfToken')) {
+    ensureCsrfToken();
+} else {
+    if (empty($_SESSION['csrf_token'])) {
+        $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+    }
+}
 
 // Verificar se o ID do imóvel foi passado
 if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
@@ -13,18 +23,55 @@ if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
 $imovel_id = intval($_GET['id']);
 
 // Buscar os dados do imóvel
-$imovel = db_query(
-    "SELECT * FROM imoveis WHERE id = ?", 
+$imovel_result = db_query(
+    "SELECT * FROM imoveis WHERE id = ?",
     [$imovel_id]
 );
 
-if (!$imovel || $imovel->num_rows === 0) {
+if (!is_array($imovel_result) || count($imovel_result) === 0) {
     header('Location: listar.php');
     exit;
 }
 
-$imovel = $imovel->fetch_assoc();
-$imovel['imagens'] = explode(',', $imovel['imagens']);
+$imovel = $imovel_result[0];
+$imovel['imagens'] = array_values(array_filter(explode(',', $imovel['imagens'])));
+
+// Garante colunas necessárias (executa ALTER TABLE se ausentes)
+if (function_exists('ensure_table_column')) {
+    // Características: usa JSON quando disponível; aqui adotamos TEXT por compatibilidade ampla.
+    ensure_table_column('imoveis', 'caracteristicas', 'TEXT NULL');
+    // CEP: apenas dígitos; usamos CHAR(8) NULL
+    ensure_table_column('imoveis', 'cep', 'CHAR(8) NULL');
+}
+
+// Lista padrão de características principais (mesma do adicionar.php)
+$lista_caracteristicas = [
+    'ar_condicionado' => 'Ar condicionado',
+    'armarios_embutidos' => 'Armários embutidos',
+    'churrasqueira' => 'Churrasqueira',
+    'varanda' => 'Varanda',
+    'sacada' => 'Sacada',
+    'piscina' => 'Piscina',
+    'academia' => 'Academia',
+    'area_gourmet' => 'Área gourmet',
+    'portaria_24h' => 'Portaria 24h',
+    'elevador' => 'Elevador',
+    'mobiliado' => 'Mobiliado',
+    'pet_friendly' => 'Pet friendly',
+    'quintal' => 'Quintal',
+    'lavanderia' => 'Lavanderia',
+    'lareira' => 'Lareira'
+];
+
+// Carrega características atuais do imóvel (se existir a coluna caracteristicas)
+$caracCol = db_query("SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'imoveis' AND COLUMN_NAME = 'caracteristicas'");
+$caracteristicas_atual = [];
+if (is_array($caracCol) && count($caracCol) > 0) {
+    if (!empty($imovel['caracteristicas'])) {
+        $decoded = json_decode($imovel['caracteristicas'], true);
+        if (is_array($decoded)) $caracteristicas_atual = $decoded;
+    }
+}
 
 // Processar formulário de edição
 $error = '';
@@ -32,6 +79,10 @@ $success = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
+        // Verifica CSRF se disponível
+        if (function_exists('verificaCsrfToken')) {
+            verificaCsrfToken();
+        }
         // Validar dados
         $titulo = trim($_POST['titulo'] ?? '');
         $descricao = trim($_POST['descricao'] ?? '');
@@ -39,31 +90,76 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $cidade = trim($_POST['cidade'] ?? '');
         $bairro = trim($_POST['bairro'] ?? '');
         $endereco = trim($_POST['endereco'] ?? '');
-        $preco = (float) str_replace(['.', ','], ['', '.'], $_POST['preco'] ?? '0');
+    $preco = (float) str_replace(['.', ','], ['', '.'], $_POST['preco'] ?? '0');
         $area = (float) str_replace(',', '.', $_POST['area'] ?? '0');
         $quartos = (int) ($_POST['quartos'] ?? 0);
         $banheiros = (int) ($_POST['banheiros'] ?? 0);
         $garagem = (int) ($_POST['garagem'] ?? 0);
         $destaque = isset($_POST['destaque']) ? 1 : 0;
+    // CEP (opcional)
+    $cep = preg_replace('/\D+/', '', $_POST['cep'] ?? '');
+        // Características principais (opcional)
+        $caracteristicas_post = isset($_POST['caracteristicas']) && is_array($_POST['caracteristicas'])
+            ? array_values(array_intersect(array_keys($lista_caracteristicas), $_POST['caracteristicas']))
+            : [];
+        $caracteristicas_json = json_encode($caracteristicas_post, JSON_UNESCAPED_UNICODE);
         
         // Validações básicas
         if (empty($titulo) || empty($descricao) || empty($tipo) || empty($cidade) || empty($bairro) || $preco <= 0) {
             throw new Exception('Preencha todos os campos obrigatórios');
         }
         
-        // Processar upload de novas imagens
-        $uploadDir = 'public/uploads/';
-        $novas_imagens = [];
-        $imagens_para_manter = $_POST['imagens_existentes'] ?? [];
+    // Diretório de uploads (upload_imagem usa caminho relativo à raiz do projeto)
+    // Em functions.php, upload_imagem monta __DIR__ . '/../../' . $pasta
+    // Portanto devemos usar 'public/uploads' aqui
+    $uploadDir = 'public/uploads';
+
+    $novas_imagens = [];
+        $substituicoes_novas = [];
         $imagens_removidas = [];
-        
-        // Identificar imagens que foram removidas
-        foreach ($imovel['imagens'] as $imagem_existente) {
-            if (!in_array($imagem_existente, $imagens_para_manter)) {
-                $imagens_removidas[] = $imagem_existente;
+        $todas_imagens = [];
+    $upload_erros = [];
+
+        // Lista marcada para remoção
+        $imagens_para_remover = isset($_POST['imagens_remover']) && is_array($_POST['imagens_remover'])
+            ? $_POST['imagens_remover'] : [];
+
+        // Processa imagens existentes: remover, substituir ou manter
+        foreach ($imovel['imagens'] as $idx => $imgAtual) {
+            // Substituir? (prioridade sobre remover se ambos marcados)
+            if (isset($_FILES['substituicoes']['name'][$idx]) && $_FILES['substituicoes']['name'][$idx] !== '') {
+                $filePart = [
+                    'name' => $_FILES['substituicoes']['name'][$idx],
+                    'type' => $_FILES['substituicoes']['type'][$idx],
+                    'tmp_name' => $_FILES['substituicoes']['tmp_name'][$idx],
+                    'error' => $_FILES['substituicoes']['error'][$idx],
+                    'size' => $_FILES['substituicoes']['size'][$idx],
+                ];
+                if ($filePart['error'] === UPLOAD_ERR_OK) {
+                    $novoNome = upload_imagem($filePart, $uploadDir, 1200, 800);
+                    if ($novoNome) {
+                        $todas_imagens[] = $novoNome;
+                        $substituicoes_novas[] = $novoNome;
+                        $imagens_removidas[] = $imgAtual; // remover a antiga
+                        continue;
+                    } else {
+                        $upload_erros[] = "Falha ao processar substituição da imagem #" . ($idx + 1) . ".";
+                    }
+                } else if ($filePart['error'] !== UPLOAD_ERR_NO_FILE) {
+                    $upload_erros[] = "Falha ao substituir a imagem #" . ($idx + 1) . ": " . upload_error_text($filePart['error']);
+                }
             }
+
+            // Remover?
+            if (in_array($imgAtual, $imagens_para_remover, true)) {
+                $imagens_removidas[] = $imgAtual;
+                continue;
+            }
+
+            // Manter imagem original
+            $todas_imagens[] = $imgAtual;
         }
-        
+
         // Processar novas imagens enviadas
         if (!empty($_FILES['novas_imagens']['name'][0])) {
             foreach ($_FILES['novas_imagens']['tmp_name'] as $key => $tmp_name) {
@@ -75,53 +171,76 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         'error' => $_FILES['novas_imagens']['error'][$key],
                         'size' => $_FILES['novas_imagens']['size'][$key]
                     ], $uploadDir, 1200, 800);
-                    
                     if ($fileName) {
                         $novas_imagens[] = $fileName;
+                        $todas_imagens[] = $fileName;
+                    } else {
+                        $upload_erros[] = "Falha ao processar nova imagem '" . htmlspecialchars($_FILES['novas_imagens']['name'][$key]) . "'.";
                     }
+                } else if ($_FILES['novas_imagens']['error'][$key] !== UPLOAD_ERR_NO_FILE) {
+                    $upload_erros[] = "Falha ao enviar nova imagem '" . htmlspecialchars($_FILES['novas_imagens']['name'][$key]) . "': " . upload_error_text($_FILES['novas_imagens']['error'][$key]);
                 }
             }
         }
-        
-        // Combinar imagens mantidas com novas imagens
-        $todas_imagens = array_merge($imagens_para_manter, $novas_imagens);
         
         if (empty($todas_imagens)) {
             throw new Exception('Pelo menos uma imagem é obrigatória');
         }
         
-        $imagens_str = implode(',', $todas_imagens);
+    $imagens_str = implode(',', $todas_imagens);
         
         // Atualizar no banco de dados
-        $result = db_query(
-            "UPDATE imoveis SET 
+        // Atualizar no banco de dados (condicionalmente inclui CEP se existir a coluna)
+        $cepCol = db_query("SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'imoveis' AND COLUMN_NAME = 'cep'");
+        $sqlUpdate = "UPDATE imoveis SET 
                 titulo = ?, 
                 descricao = ?, 
                 tipo = ?, 
                 cidade = ?, 
                 bairro = ?, 
                 endereco = ?, 
+                %CEP%
                 preco = ?, 
                 area = ?, 
                 quartos = ?, 
                 banheiros = ?, 
                 garagem = ?, 
                 imagens = ?, 
-                destaque = ? 
-             WHERE id = ?",
-            [
-                $titulo, $descricao, $tipo, $cidade, $bairro, $endereco, 
-                $preco, $area, $quartos, $banheiros, $garagem, 
-                $imagens_str, $destaque, $imovel_id
-            ]
-        );
+                destaque = ?
+                %CARAC% 
+             WHERE id = ?";
+
+        $params = [$titulo, $descricao, $tipo, $cidade, $bairro, $endereco];
+        $tail = [$preco, $area, $quartos, $banheiros, $garagem, $imagens_str, $destaque];
+
+        // CEP condicional
+        if (is_array($cepCol) && count($cepCol) > 0) {
+            $sqlUpdate = str_replace('%CEP%', 'cep = ?, ', $sqlUpdate);
+            $params[] = $cep;
+        } else {
+            $sqlUpdate = str_replace('%CEP%', '', $sqlUpdate);
+        }
+
+        // Características condicional
+        if (is_array($caracCol) && count($caracCol) > 0) {
+            $sqlUpdate = str_replace('%CARAC%', ', caracteristicas = ?', $sqlUpdate);
+            $tail[] = $caracteristicas_json;
+        } else {
+            $sqlUpdate = str_replace('%CARAC%', '', $sqlUpdate);
+        }
+
+        $params = array_merge($params, $tail, [$imovel_id]);
+        $result = db_query($sqlUpdate, $params);
         
         if ($result) {
             $success = 'Imóvel atualizado com sucesso!';
+            if (!empty($upload_erros)) {
+                $error .= ($error ? ' ' : '') . implode(' ', $upload_erros);
+            }
             
             // Excluir imagens removidas
             foreach ($imagens_removidas as $imagem_removida) {
-                @unlink($uploadDir . $imagem_removida);
+                @unlink(__DIR__ . '/../../public/uploads/' . $imagem_removida);
             }
             
             // Atualizar dados do imóvel para exibição
@@ -131,6 +250,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $imovel['cidade'] = $cidade;
             $imovel['bairro'] = $bairro;
             $imovel['endereco'] = $endereco;
+            if (!empty($cep)) { $imovel['cep'] = $cep; }
             $imovel['preco'] = $preco;
             $imovel['area'] = $area;
             $imovel['quartos'] = $quartos;
@@ -138,6 +258,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $imovel['garagem'] = $garagem;
             $imovel['destaque'] = $destaque;
             $imovel['imagens'] = $todas_imagens;
+            if (isset($caracteristicas_post)) $caracteristicas_atual = $caracteristicas_post;
         } else {
             throw new Exception('Erro ao atualizar imóvel no banco de dados');
         }
@@ -145,11 +266,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = $e->getMessage();
         
         // Excluir novas imagens que foram enviadas em caso de erro
-        if (!empty($novas_imagens)) {
-            foreach ($novas_imagens as $imagem) {
-                @unlink($uploadDir . $imagem);
+        $uploads_temp = array_merge($novas_imagens, $substituicoes_novas);
+        if (!empty($uploads_temp)) {
+            foreach ($uploads_temp as $imagem) {
+                @unlink(__DIR__ . '/../../public/uploads/' . $imagem);
             }
         }
+    }
+}
+
+// Helper: traduz códigos de erro de upload
+if (!function_exists('upload_error_text')) {
+    function upload_error_text($code) {
+        $map = [
+            UPLOAD_ERR_INI_SIZE   => 'Arquivo excede o tamanho máximo permitido pelo servidor.',
+            UPLOAD_ERR_FORM_SIZE  => 'Arquivo excede o limite de tamanho do formulário.',
+            UPLOAD_ERR_PARTIAL    => 'Upload feito parcialmente.',
+            UPLOAD_ERR_NO_FILE    => 'Nenhum arquivo foi enviado.',
+            UPLOAD_ERR_NO_TMP_DIR => 'Pasta temporária ausente.',
+            UPLOAD_ERR_CANT_WRITE => 'Falha ao escrever o arquivo no disco.',
+            UPLOAD_ERR_EXTENSION  => 'Uma extensão do PHP interrompeu o upload.'
+        ];
+        return $map[$code] ?? ('Erro de upload (código ' . (int)$code . ').');
     }
 }
 
@@ -160,7 +298,7 @@ include __DIR__ . '/../includes/admin-header.php';
 <div class="admin-content">
     <h1>Editar Imóvel</h1>
     <p class="breadcrumb">
-        <a href="private/admin/dashboard.php">Dashboard</a> /
+    <a href="<?= BASE_URL ?>private/admin/dashboard.php">Dashboard</a> /
         <a href="listar.php">Imóveis</a> /
         <span>Editar</span>
     </p>
@@ -174,6 +312,7 @@ include __DIR__ . '/../includes/admin-header.php';
     <?php endif; ?>
     
     <form action="editar.php?id=<?= $imovel_id ?>" method="post" enctype="multipart/form-data" class="imovel-form">
+        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token']) ?>">
         <div class="form-row">
             <div class="form-group">
                 <label for="titulo">Título *</label>
@@ -195,8 +334,27 @@ include __DIR__ . '/../includes/admin-header.php';
             <label for="descricao">Descrição *</label>
             <textarea id="descricao" name="descricao" rows="5" required><?= htmlspecialchars($imovel['descricao']) ?></textarea>
         </div>
+
+        <?php if (is_array($caracCol) && count($caracCol) > 0): ?>
+        <div class="form-group">
+            <label>Características principais</label>
+            <div class="caracteristicas-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;">
+                <?php foreach ($lista_caracteristicas as $key => $rotulo): ?>
+                    <label style="display:flex;gap:8px;align-items:center;">
+                        <input type="checkbox" name="caracteristicas[]" value="<?= $key ?>" <?= in_array($key, $caracteristicas_atual) ? 'checked' : '' ?>>
+                        <span><?= htmlspecialchars($rotulo) ?></span>
+                    </label>
+                <?php endforeach; ?>
+            </div>
+            <small class="form-text">Atualize as características que se aplicam ao imóvel.</small>
+        </div>
+        <?php endif; ?>
         
         <div class="form-row">
+            <div class="form-group">
+                <label for="cep">CEP</label>
+                <input type="text" id="cep" name="cep" value="<?= htmlspecialchars($imovel['cep'] ?? '') ?>" placeholder="00000-000">
+            </div>
             <div class="form-group">
                 <label for="cidade">Cidade *</label>
                 <input type="text" id="cidade" name="cidade" value="<?= htmlspecialchars($imovel['cidade']) ?>" required>
@@ -249,13 +407,19 @@ include __DIR__ . '/../includes/admin-header.php';
             <label>Imagens Atuais</label>
             <div class="imagens-grid">
                 <?php foreach ($imovel['imagens'] as $index => $imagem): ?>
-                    <div class="imagem-item">
-                        <img src="public/uploads/<?= htmlspecialchars($imagem) ?>" alt="Imagem <?= $index + 1 ?> do imóvel">
-                        <label class="checkbox-container">
-                            <input type="checkbox" name="imagens_existentes[]" value="<?= htmlspecialchars($imagem) ?>" checked>
-                            <span class="checkmark"></span>
-                            <span class="remove-text">Remover</span>
-                        </label>
+                    <div class="imagem-item" style="border:1px solid #eee; padding:10px; border-radius:8px;">
+                        <img src="<?= BASE_URL ?>public/uploads/<?= htmlspecialchars($imagem) ?>" alt="Imagem <?= $index + 1 ?> do imóvel" style="max-width:180px; display:block; margin-bottom:8px;">
+                        <div class="imagem-acoes" style="display:flex; gap:8px; align-items:center;">
+                            <label style="display:flex; gap:6px; align-items:center;">
+                                <input type="checkbox" name="imagens_remover[]" value="<?= htmlspecialchars($imagem) ?>">
+                                <span>Remover</span>
+                            </label>
+                            <div>
+                                <label style="font-size:12px;">Substituir:
+                                    <input type="file" name="substituicoes[<?= $index ?>]" accept="image/*">
+                                </label>
+                            </div>
+                        </div>
                     </div>
                 <?php endforeach; ?>
             </div>
@@ -278,3 +442,58 @@ include __DIR__ . '/../includes/admin-header.php';
 // Incluir footer administrativo
 include __DIR__ . '/../includes/admin-footer.php';
 ?>
+
+<script>
+// Máscara de CEP simples (se jQuery Mask já carregado no admin-footer)
+if (window.jQuery && $.fn.mask) {
+    $('#cep').mask('00000-000');
+}
+
+// Busca ViaCEP ao sair do campo CEP
+document.addEventListener('DOMContentLoaded', () => {
+    const cepInput = document.getElementById('cep');
+    if (!cepInput) return;
+
+    const cidade = document.getElementById('cidade');
+    const bairro = document.getElementById('bairro');
+    const endereco = document.getElementById('endereco');
+
+    function showToast(msg, tipo = 'error') {
+        if (window.toastr) {
+            toastr.options.timeOut = 4000;
+            toastr[tipo](msg);
+        } else {
+            alert(msg);
+        }
+    }
+
+    function limpaCampos() {
+        if (endereco) endereco.value = '';
+        if (bairro) bairro.value = '';
+        if (cidade) cidade.value = '';
+    }
+
+    async function buscarCEP(cepLimpo) {
+        try {
+            const resp = await fetch(`https://viacep.com.br/ws/${cepLimpo}/json/`);
+            if (!resp.ok) throw new Error('Falha ao consultar o ViaCEP');
+            const data = await resp.json();
+            if (data.erro) {
+                limpaCampos();
+                showToast('CEP não encontrado. Verifique e tente novamente.');
+                return;
+            }
+            if (endereco) endereco.value = [data.logradouro, data.complemento].filter(Boolean).join(' ');
+            if (bairro) bairro.value = data.bairro || '';
+            if (cidade) cidade.value = data.localidade || '';
+        } catch (e) {
+            showToast('Não foi possível buscar o CEP agora.');
+        }
+    }
+
+    cepInput.addEventListener('blur', () => {
+        const cep = cepInput.value.replace(/\D+/g, '');
+        if (cep.length === 8) buscarCEP(cep);
+    });
+});
+</script>

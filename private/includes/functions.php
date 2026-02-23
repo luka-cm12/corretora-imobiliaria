@@ -28,8 +28,13 @@ function formatar_preco($preco) {
 function upload_imagem($imagem, $pasta, $largura = null, $altura = null) {
     if ($imagem['error'] !== UPLOAD_ERR_OK) return false;
 
-    $tipos_permitidos = ['image/jpeg', 'image/png', 'image/gif'];
-    if (!in_array($imagem['type'], $tipos_permitidos)) return false;
+    // Detectar MIME real do arquivo
+    $finfo = function_exists('finfo_open') ? finfo_open(FILEINFO_MIME_TYPE) : null;
+    $mime_real = $finfo ? finfo_file($finfo, $imagem['tmp_name']) : ($imagem['type'] ?? '');
+    if ($finfo) { finfo_close($finfo); }
+
+    $tipos_permitidos = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+    if (!in_array(strtolower($mime_real), $tipos_permitidos)) return false;
 
     $extensao = pathinfo($imagem['name'], PATHINFO_EXTENSION);
     $nome_arquivo = uniqid() . '.' . strtolower($extensao);
@@ -47,8 +52,8 @@ function upload_imagem($imagem, $pasta, $largura = null, $altura = null) {
         redimensionar_imagem($caminho_completo, $largura, $altura);
     }
 
-    // Retorna URL relativa
-    return 'http://localhost/corretora-imobiliaria/' . trim($pasta, '/') . '/' . $nome_arquivo;
+    // Retorna apenas o nome do arquivo (sem caminho) para consistência com o restante do sistema
+    return $nome_arquivo;
 }
 
 /**
@@ -138,5 +143,35 @@ function enviar_email($para, $assunto, $mensagem, $de_nome = 'Corretora Base', $
         if (file_exists(__DIR__ . '/../../vendor/autoload.php')) {
             require_once __DIR__ . '/../../vendor/autoload.php';
         }
+    }
+}
+
+/**
+ * Garante que uma coluna exista na tabela, criando-a se estiver ausente.
+ * ATENÇÃO: Executa ALTER TABLE. Use com parcimônia.
+ *
+ * @param string $tabela Nome da tabela
+ * @param string $coluna Nome da coluna a garantir
+ * @param string $definicao Definição SQL da coluna (ex: 'TEXT NULL', 'CHAR(8) NULL')
+ * @return bool true se a coluna existe/criada; false em falha (silenciosa em produção)
+ */
+function ensure_table_column($tabela, $coluna, $definicao) {
+    try {
+        $exists = db_query(
+            "SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? AND COLUMN_NAME = ?",
+            [$tabela, $coluna]
+        );
+        if (is_array($exists) && count($exists) > 0) return true;
+
+        // Cria coluna
+        $sql = "ALTER TABLE `{$tabela}` ADD COLUMN `{$coluna}` {$definicao}";
+        $res = db_query($sql);
+        return $res !== false;
+    } catch (Throwable $e) {
+        // Evita quebrar a aplicação caso o ambiente não permita ALTER TABLE
+        if (defined('DEV_ENVIRONMENT') && DEV_ENVIRONMENT) {
+            error_log('ensure_table_column falhou: ' . $e->getMessage());
+        }
+        return false;
     }
 }

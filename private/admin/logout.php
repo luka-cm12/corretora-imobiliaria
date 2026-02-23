@@ -7,8 +7,8 @@
  * @date 2023-11-20
  */
 
-// Defina a BASE_URL conforme necessário
-define('BASE_URL', '/corretora-imobiliaria/');
+// Carrega configuração global (BASE_URL, $conn, etc.)
+require_once __DIR__ . '/../config/config.php';
 
 // Inicia a sessão se ainda não estiver iniciada
 if (session_status() === PHP_SESSION_NONE) {
@@ -17,24 +17,14 @@ if (session_status() === PHP_SESSION_NONE) {
 
 // Verifica se há um usuário logado
 if (isset($_SESSION['usuario_id'])) {
-    require_once 'db.php';
-    require_once 'log_acoes.php';
-    
-    // Define a função registrarLog caso não esteja definida
-    if (!function_exists('registrarLog')) {
-        function registrarLog($usuario_id, $acao, $descricao) {
-            global $conn;
-            $stmt = $conn->prepare("INSERT INTO logs (usuario_id, acao, descricao, data) VALUES (?, ?, ?, NOW())");
-            $stmt->execute([$usuario_id, $acao, $descricao]);
-        }
-    }
+    require_once __DIR__ . '/../includes/log_acoes.php';
     
     $usuario_id = $_SESSION['usuario_id'];
     $session_id = session_id();
     
     try {
         // 1. Registra o log de logout
-        registrarLog($usuario_id, 'logout', 'Usuário realizou logout no sistema');
+    registrarLog($conn, $usuario_id, 'logout', 'Usuário realizou logout no sistema');
         
         // 2. Remove a sessão ativa do banco de dados (se estiver usando controle de sessões)
         $stmt = $conn->prepare("DELETE FROM sessoes_ativas WHERE usuario_id = ? AND session_id = ?");
@@ -77,6 +67,6 @@ if (ini_get("session.use_cookies")) {
 session_destroy();
 
 // Redireciona para a página de login com mensagem
-header("Location: " . BASE_URL . "admin/login.php?logout=success");
+header("Location: " . rtrim(BASE_URL, '/') . "/private/admin/login.php?logout=success");
 exit();
 ?>

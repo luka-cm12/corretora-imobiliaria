@@ -50,12 +50,18 @@ if (!function_exists('verificaPermissao')) {
 verificaLogin();
 verificaPermissao('admin');
 
-// Conexão com o banco de dados
-require_once 'conexao.php';
+// Helpers de log
+require_once __DIR__ . '/../includes/log_acoes.php';
+
+// Garante que exista um token CSRF na sessão
+if (empty($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
 
 // Variáveis para controle da interface
 $pagina_atual = 'usuarios';
 $titulo_pagina = 'Gerenciamento de Usuários';
+$page_title = $titulo_pagina;
 
 // Processamento de formulários
 $mensagem = '';
@@ -119,8 +125,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $mensagem = "Usuário cadastrado com sucesso!";
         }
         
-        // Registra a ação no log
-        registrarLog($_SESSION['usuario_id'], 'usuarios', ($id > 0 ? 'Atualizou' : 'Cadastrou') . " o usuário ID: $id");
+    // Registra a ação no log
+    registrarLog($conn, $_SESSION['usuario_id'], 'usuarios', ($id > 0 ? 'Atualizou' : 'Cadastrou') . " o usuário ID: $id");
         
     } catch (Exception $e) {
         $erro = $e->getMessage();
@@ -138,20 +144,32 @@ if (isset($_GET['excluir'])) {
         $erro = "Você não pode excluir seu próprio usuário!";
     } else {
         try {
-            // Verifica se o usuário tem imóveis cadastrados
-            $stmt = $conn->prepare("SELECT COUNT(*) FROM imoveis WHERE usuario_id = ?");
-            $stmt->execute([$id_excluir]);
-            $total_imoveis = $stmt->fetchColumn();
-            
-            if ($total_imoveis > 0) {
+            // Verifica dinamicamente se existe alguma coluna em 'imoveis' que relacione com usuários
+            $possiveisColunas = ['usuario_id', 'id_usuario', 'criado_por', 'created_by', 'owner_user_id'];
+            $placeholders = implode(',', array_fill(0, count($possiveisColunas), '?'));
+            $stmt = $conn->prepare("SELECT COLUMN_NAME FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'imoveis' AND COLUMN_NAME IN ($placeholders) LIMIT 1");
+            $stmt->execute($possiveisColunas);
+            $colunaUsuario = $stmt->fetchColumn();
+
+            $bloquearExclusao = false;
+            if ($colunaUsuario && in_array($colunaUsuario, $possiveisColunas, true)) {
+                // Faz a checagem apenas se a coluna existir
+                $q = $conn->query("SELECT COUNT(*) FROM imoveis LIMIT 1"); // força erro cedo se tabela não existe
+                $stmt = $conn->prepare("SELECT COUNT(*) FROM imoveis WHERE $colunaUsuario = ?");
+                $stmt->execute([$id_excluir]);
+                $total_imoveis = (int)$stmt->fetchColumn();
+                $bloquearExclusao = $total_imoveis > 0;
+            }
+
+            if ($bloquearExclusao) {
                 $erro = "Este usuário possui imóveis cadastrados e não pode ser excluído!";
             } else {
                 // Exclui o usuário
                 $stmt = $conn->prepare("DELETE FROM usuarios WHERE id = ?");
                 $stmt->execute([$id_excluir]);
-                
+
                 $mensagem = "Usuário excluído com sucesso!";
-                registrarLog($_SESSION['usuario_id'], 'usuarios', "Excluiu o usuário ID: $id_excluir");
+                registrarLog($conn, $_SESSION['usuario_id'], 'usuarios', "Excluiu o usuário ID: $id_excluir");
             }
         } catch (PDOException $e) {
             $erro = "Erro ao excluir usuário: " . $e->getMessage();
@@ -166,7 +184,7 @@ $query = "SELECT id, nome, email, perfil, status, DATE_FORMAT(criado_em, '%d/%m/
 $usuarios = $conn->query($query)->fetchAll(PDO::FETCH_ASSOC);
 
 // Inclui o cabeçalho
-include 'private/includes/admin-header.php';
+include __DIR__ . '/../includes/admin-header.php';
 ?>
 
 <div class="container-fluid">
@@ -304,7 +322,7 @@ include 'private/includes/admin-header.php';
     </div>
 </div>
 
-<?php include 'private/includes/admin-footer.php'; ?>
+<?php include __DIR__ . '/../includes/admin-footer.php'; ?>
 
 <!-- Scripts específicos para esta página -->
 <script>
@@ -312,7 +330,7 @@ $(document).ready(function() {
     // DataTable para a tabela de usuários
     $('#tabelaUsuarios').DataTable({
         language: {
-            url: '<?php echo BASE_URL; ?>assets/js/datatables-pt-BR.json'
+            url: 'https://cdn.datatables.net/plug-ins/1.13.8/i18n/pt-BR.json'
         },
         columnDefs: [
             { orderable: false, targets: [5] }

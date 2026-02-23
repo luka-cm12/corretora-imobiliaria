@@ -1,6 +1,6 @@
-// Verifica a pasta uploads durante a inicialização
 <?php
-$upload_dir = __DIR__ . 'public/uploads';
+// Verifica a pasta uploads durante a inicialização
+$upload_dir = dirname(__DIR__) . '/public/uploads';
 
 if (!is_dir($upload_dir)) {
     if (!mkdir($upload_dir, 0755, true)) {

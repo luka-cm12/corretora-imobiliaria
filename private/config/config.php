@@ -1,10 +1,12 @@
 <?php
 /**
- * Configurações globais do sistema
+ * Configurações globais do sistema (prontas para Hostinger)
  */
 
-// Exibir erros (recomendo desativar em produção)
-ini_set('display_errors', 1);
+// Exibir erros: habilita no local, desabilita no servidor
+$__serverName = $_SERVER['SERVER_NAME'] ?? 'localhost';
+$__isLocal = in_array($__serverName, ['localhost', '127.0.0.1']);
+ini_set('display_errors', $__isLocal ? '1' : '0');
 error_reporting(E_ALL);
 
 // Fuso horário
@@ -15,72 +17,53 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-/**
- * Configuração do banco de dados
- */
+// Nome da corretora (branding)
 if (!defined('NOME_CORRETORA')) define('NOME_CORRETORA', 'Corretora Cláudia Colombo');
 
-// Detecta ambiente automaticamente
-$serverName = $_SERVER['SERVER_NAME'] ?? 'localhost';
-
-if ($serverName === 'localhost' || $serverName === '127.0.0.1') {
-    // Ambiente de desenvolvimento (local)
-    if (!defined('DB_HOST')) define('DB_HOST', '127.0.0.1');
-    if (!defined('DB_USER')) define('DB_USER', 'root');
-    if (!defined('DB_PASS')) define('DB_PASS', '');
-    if (!defined('DB_NAME')) define('DB_NAME', 'corretora_base');
+// BASE_URL dinâmico (sempre aponta para a raiz do projeto, não para a pasta atual)
+$__scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+$__host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+$__script = isset($_SERVER['SCRIPT_NAME']) ? str_replace('\\', '/', $_SERVER['SCRIPT_NAME']) : '/';
+if (preg_match('#^(.*?)/(?:private|public)/#', $__script, $m)) {
+    $__basePath = rtrim($m[1], '/') . '/';
 } else {
-    // Ambiente de produção (servidor real)
-    if (!defined('DB_HOST')) define('DB_HOST', '127.0.0.1');
-    if (!defined('DB_USER')) define('DB_USER', 'admin');
-    if (!defined('DB_PASS')) define('DB_PASS', 'senha_admin');
-    if (!defined('DB_NAME')) define('DB_NAME', 'corretora_base');
+    $__basePath = rtrim(dirname($__script), '/') . '/';
+    if ($__basePath === '//') { $__basePath = '/'; }
+}
+if (!defined('BASE_URL')) define('BASE_URL', $__scheme . '://' . $__host . $__basePath);
+
+// Permite sobrepor via arquivo local (não versionado) quando presente
+$__localOverride = __DIR__ . '/config.local.php';
+if (file_exists($__localOverride)) {
+    require_once $__localOverride;
 }
 
-/**
- * Configuração do banco de dados
- */
-if (!defined('NOME_CORRETORA')) define('NOME_CORRETORA', 'Corretora Cláudia Colombo');
+// Configurações do banco de dados (permite variáveis de ambiente ou override)
+if (!defined('DB_HOST')) define('DB_HOST', getenv('DB_HOST') ?: ($__isLocal ? '127.0.0.1' : 'localhost'));
+if (!defined('DB_NAME')) define('DB_NAME', getenv('DB_NAME') ?: 'corretora_base');
+if (!defined('DB_USER')) define('DB_USER', getenv('DB_USER') ?: ($__isLocal ? 'root' : 'admin'));
+if (!defined('DB_PASS')) define('DB_PASS', getenv('DB_PASS') ?: ($__isLocal ? '' : 'senha_admin'));
 
-try {
-    // Tenta primeiro com root (sem senha) - comum em PCs locais
-    $conn = new PDO("mysql:host=127.0.0.1;dbname=corretora_base", "root", "", [
-        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
-    ]);
-} catch (PDOException $e1) {
+// Única conexão PDO compartilhada
+if (!isset($conn) || !($conn instanceof PDO)) {
     try {
-        // Se falhar, tenta com admin/senha_admin
-        $conn = new PDO("mysql:host=127.0.0.1;dbname=corretora_base", "admin", "senha_admin", [
-            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
-        ]);
-    } catch (PDOException $e2) {
-        die("Erro ao conectar ao banco: verifique usuário/senha. <br>" . $e2->getMessage());
+        $conn = new PDO(
+            'mysql:host=' . DB_HOST . ';dbname=' . DB_NAME . ';charset=utf8mb4',
+            DB_USER,
+            DB_PASS,
+            [
+                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                PDO::ATTR_EMULATE_PREPARES => false,
+            ]
+        );
+    } catch (PDOException $e) {
+        die('Erro ao conectar ao banco: ' . $e->getMessage());
     }
 }
 
-
-// Tenta conectar
-try {
-    $conn = new PDO("mysql:host=" . DB_HOST . ";dbname=" . DB_NAME, DB_USER, DB_PASS, [
-        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
-    ]);
-} catch (PDOException $e) {
-    die("Erro ao conectar ao banco: " . $e->getMessage());
-}
-
-/**
- * Configurações de segurança
- */
-define('APP_NAME', 'CorretoraClaudiaColombo');
-define('BASE_URL', 'http://localhost/corretora-imobiliaria/'); // ajuste conforme sua pasta
-
 // Controle de acesso (tempo de sessão: 1h)
-define('SESSION_TIMEOUT', 3600);
-
-// Verifica expiração de sessão
+if (!defined('SESSION_TIMEOUT')) define('SESSION_TIMEOUT', 3600);
 if (isset($_SESSION['LAST_ACTIVITY']) && (time() - $_SESSION['LAST_ACTIVITY'] > SESSION_TIMEOUT)) {
     session_unset();
     session_destroy();

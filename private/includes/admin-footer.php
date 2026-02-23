@@ -11,6 +11,10 @@
 require_once __DIR__ . '/../config/config.php';
 ?>
 
+        </div><!-- /.content -->
+    </div><!-- /.main-content -->
+</div><!-- /.admin-container -->
+
 <footer class="admin-footer">
     <div class="container-fluid">
         <div class="row">
@@ -28,10 +32,10 @@ require_once __DIR__ . '/../config/config.php';
             <div class="col-md-4">
                 <h5>Links Rápidos</h5>
                 <ul class="list-unstyled">
-                    <li><a href="<?php echo BASE_URL; ?>admin/dashboard.php">Dashboard</a></li>
-                    <li><a href="<?php echo BASE_URL; ?>admin/lista_imoveis.php">Gerenciar Imóveis</a></li>
-                    <li><a href="<?php echo BASE_URL; ?>admin/lista_clientes.php">Gerenciar Clientes</a></li>
-                    <li><a href="<?php echo BASE_URL; ?>admin/relatorios.php">Relatórios</a></li>
+                    <li><a href="<?php echo BASE_URL; ?>private/admin/dashboard.php">Dashboard</a></li>
+                    <li><a href="<?php echo BASE_URL; ?>private/imoveis/listar.php">Gerenciar Imóveis</a></li>
+                    <li><a href="<?php echo BASE_URL; ?>private/admin/lista_clientes.php">Gerenciar Clientes</a></li>
+                    <li><a href="<?php echo BASE_URL; ?>private/admin/configuracoes.php">Configurações</a></li>
                 </ul>
             </div>
             
@@ -46,28 +50,14 @@ require_once __DIR__ . '/../config/config.php';
 </footer>
 
 <!-- Scripts essenciais -->
-<script src="<?php echo BASE_URL; ?>assets/js/jquery-3.6.0.min.js"></script>
-<script src="<?php echo BASE_URL; ?>assets/js/bootstrap.bundle.min.js"></script>
-<script src="<?php echo BASE_URL; ?>assets/js/admin-scripts.js"></script>
-
-<!-- Modal de logout -->
-<div class="modal fade" id="logoutModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Confirmar Logout</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <p>Tem certeza que deseja sair do sistema?</p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <a href="<?php echo BASE_URL; ?>admin/logout.php" class="btn btn-primary">Sair</a>
-            </div>
-        </div>
-    </div>
-</div>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.8/js/dataTables.bootstrap5.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
+<!-- Script customizado do admin (se existir localmente) -->
+<script src="<?php echo BASE_URL; ?>public/assets/js/admin-scripts.js"></script>
 
 <?php
 // Exibe mensagens de sessão (sucesso/erro)
